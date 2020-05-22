@@ -931,7 +931,6 @@ begin
     Panel_Tool,Panel_Color,Panel_Texture,Panel_Grid,Panel_PenWidth,Panel_ShapeOption,Panel_LineCap,Panel_JoinStyle,
     Panel_PenStyle,Panel_SplineStyle,Panel_Eraser,Panel_Tolerance,Panel_GradientType,Panel_Text,Panel_TextOutline,
     Panel_PhongShape,Panel_Altitude,Panel_PerspectiveOption,Panel_Brush],Panel_ToolbarBackground);
-  m.Apply;
   FLayout.Menu := m;
 
   MenuHorizFlipSub.ImageIndex := ImageHorizontalFlip.ImageIndex;
@@ -994,6 +993,8 @@ begin
     Config.SetDefault3dObjectDirectory(StartDirectory);
 
   MainMenu1.Images := LazPaintInstance.Icons[DoScaleX(20,OriginalDPI)];
+  Layout.Menu.SetToolbarImages(LazPaintInstance.Icons[DoScaleY(16, OriginalDPI)]);
+  Layout.Menu.Apply;
 
   Image := LazPaintInstance.Image;
   FImageActions := TImageActions.Create(LazPaintInstance);

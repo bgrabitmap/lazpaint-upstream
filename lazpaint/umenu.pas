@@ -5,7 +5,7 @@ unit UMenu;
 interface
 
 uses
-  Classes, SysUtils, ActnList, Forms, Menus, UTool, LCLType, ExtCtrls, UConfig;
+  Classes, SysUtils, ActnList, Forms, Menus, UTool, LCLType, ExtCtrls, UConfig, Controls;
 
 type
 
@@ -28,6 +28,7 @@ type
     constructor Create(AActionList: TActionList);
     procedure PredefinedMainMenus(const AMainMenus: array of TMenuItem);
     procedure Toolbars(const AToolbars: array of TPanel; AToolbarBackground: TPanel);
+    procedure SetToolbarImages(AImages: TImageList);
     procedure CycleTool(var ATool: TPaintToolType; var AShortCut: TUTF8Char);
     procedure Apply;
     procedure ArrangeToolbars(ClientWidth: integer);
@@ -38,7 +39,7 @@ type
 implementation
 
 uses UResourceStrings, LCLProc, LazPaintType, UScaleDPI, ComCtrls, Graphics,
-  Spin, StdCtrls, BGRAText, Controls{$if FPC_FULLVERSION>=030001}, LazUTF8{$endif};
+  Spin, StdCtrls, BGRAText{$if FPC_FULLVERSION>=030001}, LazUTF8{$endif};
 
 { TMainFormMenu }
 
@@ -157,7 +158,8 @@ begin
     FMainMenus[i] := AMainMenus[i];
 end;
 
-procedure TMainFormMenu.Toolbars(const AToolbars: array of TPanel; AToolbarBackground: TPanel);
+procedure TMainFormMenu.Toolbars(const AToolbars: array of TPanel;
+  AToolbarBackground: TPanel);
 var i,j: NativeInt;
 begin
   setlength(FToolbars, length(AToolbars));
@@ -175,6 +177,24 @@ begin
     end;
   end;
   FToolbarBackground := AToolbarBackground;
+end;
+
+procedure TMainFormMenu.SetToolbarImages(AImages: TImageList);
+var
+  i, j: Integer;
+begin
+  for i := 0 to high(FToolbars) do
+  begin
+    for j := 0 to FToolbars[i].ControlCount-1 do
+    begin
+      if (FToolbars[i].Controls[j] is TToolBar) then
+      begin
+        TToolBar(FToolbars[i].Controls[j]).Images := AImages;
+        TToolBar(FToolbars[i].Controls[j]).ButtonWidth := AImages.Width + DoScaleX(7, OriginalDPI);
+        TToolBar(FToolbars[i].Controls[j]).ButtonHeight := AImages.Height + DoScaleY(5, OriginalDPI);
+      end;
+    end;
+  end;
 end;
 
 procedure TMainFormMenu.CycleTool(var ATool: TPaintToolType;

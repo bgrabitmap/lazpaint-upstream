@@ -449,7 +449,7 @@ begin
       IconBGRA := TBGRABitmap.Create(Image_CurrentTool.Width,Image_CurrentTool.Height);
 
       ToolBmp := TBitmap.Create;
-      ImageList16.GetBitmap(img,ToolBmp);
+      ToolBar2.Images.GetBitmap(img,ToolBmp);
       ToolBGRA := TBGRABitmap.Create(ToolBmp);
       FreeAndNil(ToolBmp);
 
@@ -476,7 +476,7 @@ var lIcon: TBitmap;
 begin
   Image_CurrentTexture.Picture.Clear;
   lIcon := TBitmap.Create;
-  ImageList16.GetBitmap(56,lIcon);
+  Toolbar2.Images.GetBitmap(56,lIcon);
   Image_CurrentTexture.Picture.Assign(lIcon);
   lIcon.Free;
 end;
@@ -1124,7 +1124,7 @@ procedure TFMain.PaintBox_PenPreviewMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var t: integer;
 begin
-  t := ImageList16.Width;
+  t := Toolbar2.Images.Width;
   if (X < t) and (Y < t) then DecreasePenSize else
   if (X >= PaintBox_PenPreview.Width-t) and (Y < t) then IncreasePenSize;
   ShowPenPreview(False);
@@ -1168,7 +1168,7 @@ begin
       end;
   end else
     bmp.FillEllipseAntialias(x,y,visualSize/2,visualSize/2,ColorToBGRA(ColorToRGB(clBtnText)));
-  t := ImageList16.Width;
+  t := Toolbar2.Images.Width;
   m := t/10;
   x := 0;
   bmp.EllipseAntialias(x+(t-1)/2,(t-1)/2,t/2-m,t/2-m,BGRABlack,m,BGRAWhite);
