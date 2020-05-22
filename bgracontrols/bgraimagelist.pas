@@ -42,7 +42,7 @@ uses
   {$DEFINE BGRA_DRAW}
 {$ELSE}
   {$IFDEF LCLgtk2}
-    {$DEFINE BGRA_DRAW}
+    {$if FPC_FULLVERSION<030001}{$DEFINE BGRA_DRAW}{$endif}
   {$ENDIF}
 {$ENDIF}
 

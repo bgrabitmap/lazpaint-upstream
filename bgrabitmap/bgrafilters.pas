@@ -9,7 +9,7 @@ interface
   a result. }
 
 uses
-  Classes, BGRABitmapTypes;
+  Classes, Types, BGRABitmapTypes;
 
 type
   TCheckShouldStopFunc = function(ACurrentY: integer) : boolean of object;
@@ -130,7 +130,7 @@ function FilterPlane(bmp: TBGRACustomBitmap): TBGRACustomBitmap;
 
 implementation
 
-uses Math, BGRATransform, Types, SysUtils;
+uses Math, BGRATransform, SysUtils;
 
 type
   { TGrayscaleTask }

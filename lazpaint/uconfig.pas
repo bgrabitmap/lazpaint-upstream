@@ -277,7 +277,7 @@ var
 
 implementation
 
-uses forms, uparse, LCLProc, FileUtil;
+uses forms, uparse, LCLProc, FileUtil{$if FPC_FULLVERSION>=030001}, LazUTF8, LazFileUtils{$endif};
 
 const maxRecentFiles = 10;
       maxRecentDirectories = 10;

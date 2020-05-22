@@ -473,7 +473,7 @@ begin
     end;
 
   for i := 0 to clipboard.FormatCount-1 do
-    if (Clipboard.Formats[i] = PredefinedClipboardFormat(pcfDelphiBitmap)) or
+    if {$if FPC_FULLVERSION<030001}(Clipboard.Formats[i] = PredefinedClipboardFormat(pcfDelphiBitmap)) or{$endif}
        (Clipboard.Formats[i] = PredefinedClipboardFormat(pcfBitmap)) then
     begin
        Stream := TMemoryStream.Create;

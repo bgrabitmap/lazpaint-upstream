@@ -17,7 +17,7 @@ unit BGRACanvas2D;
 interface
 
 uses
-  Classes, SysUtils, BGRAGraphics, BGRABitmapTypes, BGRATransform, BGRAGradientScanner, BGRAPath;
+  Classes, SysUtils, BGRAGraphics, Types, BGRABitmapTypes, BGRATransform, BGRAGradientScanner, BGRAPath;
 
 type
   IBGRACanvasTextureProvider2D = interface
@@ -291,7 +291,7 @@ type
 
 implementation
 
-uses Types, Math, BGRAPen, BGRAFillInfo, BGRAPolygon, BGRABlend, FPWriteJPEG, FPWriteBMP, base64;
+uses Math, BGRAPen, BGRAFillInfo, BGRAPolygon, BGRABlend, FPWriteJPEG, FPWriteBMP, base64;
 
 type
   TColorStop = record

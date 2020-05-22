@@ -846,7 +846,7 @@ implementation
 
 uses LCLIntf, LCLProc, ugraph, math, umac, uclipboard, ucursors,
    ufilters, ULoadImage, ULoading, UFileExtensions, UBrushType,
-   ugeometricbrush;
+   ugeometricbrush{$if FPC_FULLVERSION>=030001}, LazFileUtils, LazUTF8{$endif};
 
 const PenWidthFactor = 10;
 

@@ -123,7 +123,7 @@ implementation
 
 {$R *.lfm}
 
-uses LCLType, UFileExtensions;
+uses LCLType, UFileExtensions{$if FPC_FULLVERSION>=030001}, LazFileUtils{$endif};
 
 { TFImageList }
 

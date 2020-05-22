@@ -64,9 +64,9 @@ uses BGRABitmapTypes, BGRADefaultBitmap, LCLType,
   {$ENDIF}
   FPImage, Dialogs;
 
-{$IFDEF LCLgtk2}
+{$if FPC_FULLVERSION<030001}{$IFDEF LCLgtk2}
 type TGtkDeviceContext = TGtk2DeviceContext;
-{$ENDIF}
+{$ENDIF}{$ENDIF}
 
 procedure TBGRAGtkBitmap.ReallocData;
 begin

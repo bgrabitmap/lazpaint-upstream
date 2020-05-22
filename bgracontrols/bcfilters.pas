@@ -216,6 +216,10 @@ procedure SimpleFilter(Bitmap: TBGRABitmap; Filter: TBCSimpleFilter);
 
 implementation
 
+{$if FPC_FULLVERSION>=030001}
+uses Lazutf8;
+{$endif}
+
 function StrToTBCSimpleFilter(const s: ansistring): TBCSimpleFilter;
 var
   sf: TBCSimpleFilter;

@@ -13,7 +13,7 @@ implementation
 
 uses
   SysUtils, FileUtil, LCLProc, BGRABitmap, BGRABitmapTypes, Dialogs, uparse,
-  UImage, UImageAction, ULayerAction;
+  UImage, UImageAction, ULayerAction{$if FPC_FULLVERSION>=030001}, LazUTF8, LazFileUtils{$endif};
 
 function ParamStrUTF8(AIndex: integer): string;
 begin

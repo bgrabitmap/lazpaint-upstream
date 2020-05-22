@@ -18,7 +18,8 @@ interface
   in BGRAFreeType. }
 
 uses
-  Classes, Types, SysUtils, BGRAGraphics, BGRABitmapTypes, InterfaceBase, BGRAPen, BGRAGrayscaleMask;
+  Classes, Types, SysUtils, BGRAGraphics, BGRABitmapTypes, InterfaceBase,
+  {$if FPC_FULLVERSION>=030001}LCLPlatformDef, {$ENDIF} BGRAPen, BGRAGrayscaleMask;
 
 type
   TWordBreakHandler = BGRABitmapTypes.TWordBreakHandler;

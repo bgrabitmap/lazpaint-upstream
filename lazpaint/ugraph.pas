@@ -54,7 +54,8 @@ procedure BCAssignSystemStyle(AButton: TBCButton);
 implementation
 
 uses GraphType, math, Types, LCLProc, FileUtil, dialogs, BGRAAnimatedGif,
-  BGRAGradients, BGRATextFX, uresourcestrings, uscaledpi, BCTypes;
+  BGRAGradients, BGRATextFX, uresourcestrings, uscaledpi, BCTypes
+  {$if FPC_FULLVERSION>=030001}, LazUTF8{$endif};
 
 procedure BCAssignSystemState(AState: TBCButtonState; AFontColor, ATopColor, AMiddleTopColor, AMiddleBottomColor, ABottomColor, ABorderColor: TColor);
 begin
@@ -1329,4 +1330,4 @@ initialization
   Randomize;
 
 end.
-
+

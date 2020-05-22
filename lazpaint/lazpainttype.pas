@@ -337,7 +337,7 @@ function GetWindowTopLeftCorner(AForm: TForm): TPoint;
 
 implementation
 
-uses LCLType, LCLProc, LCLIntf, FileUtil, UResourceStrings;
+uses LCLType, LCLProc, LCLIntf, FileUtil, UResourceStrings{$if FPC_FULLVERSION>=030001}, LazUTF8{$endif};
 
 function IsOnlyRenderChange(const ARect: TRect): boolean;
 begin

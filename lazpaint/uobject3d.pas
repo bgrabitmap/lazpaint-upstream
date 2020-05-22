@@ -152,7 +152,7 @@ function ShowObject3DDlg({%H-}Instance: TLazPaintCustomInstance; filenameUTF8: s
 
 implementation
 
-uses ugraph, uscaledpi, umac, ULoadImage;
+uses ugraph, uscaledpi, umac, ULoadImage{$if FPC_FULLVERSION>=030001}, LazFileUtils{$endif};
 
 const PointLightDist = 80;
 

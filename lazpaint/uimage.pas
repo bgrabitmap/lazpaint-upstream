@@ -254,7 +254,8 @@ implementation
 uses UGraph, UResourceStrings, Dialogs,
     BGRAOpenRaster, BGRAPaintNet, UImageDiff, ULoading,
     BGRAWriteLzp, lazutf8classes, LCLProc,
-    BGRAPalette, BGRAColorQuantization;
+    BGRAPalette, BGRAColorQuantization
+    {$if FPC_FULLVERSION>=030001}, LazUtf8{$endif};
 
 function ComputeAcceptableImageSize(AWidth, AHeight: integer): TSize;
 var ratio,newRatio: single;

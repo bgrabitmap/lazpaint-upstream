@@ -55,7 +55,7 @@ type
 implementation
 
 uses FileUtil, Dialogs,
-    UTranslation, lazutf8classes;
+    UTranslation, lazutf8classes{$if FPC_FULLVERSION>=030001}, LazFileUtils{$endif};
 
 const OnlineResourcesURL = 'http://lazpaint.sourceforge.net/';
 

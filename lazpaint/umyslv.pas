@@ -156,7 +156,7 @@ function FileSizeToStr(ASize: int64; AByteCaption: string): string;
 implementation
 
 uses LCLType, FileUtil, UResourceStrings, LazPaintType, LazUTF8, Forms, Math,
-  UFileSystem;
+  UFileSystem{$if FPC_FULLVERSION>=030001}, LazFileUtils{$endif};
 
 var
   SortTarget: TMyShellListView;

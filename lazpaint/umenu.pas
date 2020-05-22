@@ -38,7 +38,7 @@ type
 implementation
 
 uses UResourceStrings, LCLProc, LazPaintType, UScaleDPI, ComCtrls, Graphics,
-  Spin, StdCtrls, BGRAText, Controls;
+  Spin, StdCtrls, BGRAText, Controls{$if FPC_FULLVERSION>=030001}, LazUTF8{$endif};
 
 { TMainFormMenu }
 

@@ -48,7 +48,7 @@ type
 
 implementation
 
-uses umac,BGRABitmapTypes, BGRAFilters;
+uses umac,BGRABitmapTypes, BGRAFilters{$if FPC_FULLVERSION>=030001}, LazFileUtils{$endif};
 
 { TFCustomBlur }
 

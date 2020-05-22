@@ -61,7 +61,8 @@ type
 
 implementation
 
-uses ugraph, uresourcestrings, BGRAText, LazPaintType, Math, LCLProc, Clipbrd;
+uses ugraph, uresourcestrings, BGRAText, LazPaintType, Math, LCLProc, Clipbrd
+  {$if FPC_FULLVERSION>=030001}, LazUTF8{$endif};
 
 { TToolText }
 

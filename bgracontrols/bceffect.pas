@@ -87,6 +87,10 @@ type
 
 implementation
 
+{$if FPC_FULLVERSION>=030001}
+uses Lazutf8;
+{$endif}
+
 {-- Fading --}
 
 function StrToTFadingMode(const s: ansistring): TFadingMode;

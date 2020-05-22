@@ -143,7 +143,8 @@ uses BGRAThumbnail, BGRAPaintNet, BGRAOpenRaster, BGRAReadLzp,
     BGRAWriteLzp, FPimage,
     Types, UResourceStrings,
     UConfig, bgrareadjpeg, FPReadJPEG,
-    UFileExtensions, LazUTF8, UFileSystem;
+    UFileExtensions, LazUTF8, UFileSystem
+    {$if FPC_FULLVERSION>=030001}, LazFileUtils{$endif};
 
 var
   IconCache: TStringList;
