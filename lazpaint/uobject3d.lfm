@@ -1,0 +1,527 @@
+object FObject3D: TFObject3D
+  Left = 415
+  Height = 301
+  Top = 139
+  Width = 530
+  BorderIcons = [biSystemMenu, biMaximize]
+  Caption = '3D object'
+  ClientHeight = 301
+  ClientWidth = 530
+  Constraints.MinHeight = 300
+  Constraints.MinWidth = 340
+  KeyPreview = True
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  OnKeyPress = FormKeyPress
+  OnResize = FormResize
+  OnShow = FormShow
+  Position = poScreenCenter
+  LCLVersion = '1.0.10.0'
+  object BGRAView3D: TBGRAVirtualScreen
+    Left = 0
+    Height = 301
+    Top = 0
+    Width = 353
+    OnRedraw = BGRAView3DRedraw
+    Alignment = taLeftJustify
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    Color = clWhite
+    ParentColor = False
+    TabOrder = 0
+    OnMouseDown = BGRAView3DMouseDown
+    OnMouseMove = BGRAView3DMouseMove
+    OnMouseUp = BGRAView3DMouseUp
+    OnResize = BGRAView3DResize
+  end
+  object Button_OK: TButton
+    Left = 372
+    Height = 22
+    Top = 271
+    Width = 59
+    Anchors = [akRight, akBottom]
+    Caption = 'OK'
+    Default = True
+    ModalResult = 1
+    TabOrder = 1
+  end
+  object Button_Cancel: TButton
+    Left = 438
+    Height = 22
+    Top = 271
+    Width = 73
+    Anchors = [akRight, akBottom]
+    Cancel = True
+    Caption = 'Cancel'
+    ModalResult = 2
+    TabOrder = 2
+  end
+  object PageControl1: TPageControl
+    Left = 353
+    Height = 266
+    Top = 0
+    Width = 179
+    ActivePage = Lights
+    Anchors = [akTop, akRight, akBottom]
+    TabIndex = 2
+    TabOrder = 3
+    object Rendering: TTabSheet
+      Caption = 'Rendering'
+      ClientHeight = 238
+      ClientWidth = 171
+      object CheckBox_TextureInterp: TCheckBox
+        Left = 10
+        Height = 19
+        Top = 216
+        Width = 130
+        Caption = 'Texture interpolation'
+        Checked = True
+        OnChange = CheckBox_TextureInterpChange
+        State = cbChecked
+        TabOrder = 0
+        Visible = False
+      end
+      object BGRAKnob_Zoom: TBGRAKnob
+        Left = 59
+        Height = 45
+        Top = 24
+        Width = 48
+        CurveExponent = 0.200000002980232
+        KnobColor = clBtnShadow
+        LightIntensity = 300
+        PositionColor = clBtnText
+        PositionWidth = 4
+        PositionOpacity = 192
+        PositionMargin = 4
+        PositionType = kptLineSquareCap
+        UsePhongLighting = True
+        MinValue = 30
+        MaxValue = 330
+        Value = 89.9999847412109
+        OnValueChanged = BGRAKnob_ZoomValueChanged
+        StartFromBottom = True
+      end
+      object Label_Zoom: TLabel
+        Left = 67
+        Height = 16
+        Top = 8
+        Width = 33
+        Caption = 'Zoom'
+        ParentColor = False
+      end
+      object CheckBox_Biface: TCheckBox
+        Left = 10
+        Height = 19
+        Top = 178
+        Width = 89
+        Caption = '2-sided faces'
+        OnChange = CheckBox_BifaceChange
+        TabOrder = 1
+      end
+      object ComboBox_Normals: TComboBox
+        Left = 10
+        Height = 23
+        Top = 153
+        Width = 143
+        ItemHeight = 15
+        OnChange = ComboBox_NormalsChange
+        Style = csDropDownList
+        TabOrder = 2
+      end
+      object Label_LightingNormals: TLabel
+        Left = 10
+        Height = 16
+        Top = 136
+        Width = 97
+        Caption = 'Lighting normals :'
+        ParentColor = False
+      end
+      object Label_Width: TLabel
+        Left = 11
+        Height = 16
+        Top = 83
+        Width = 39
+        Caption = 'Width :'
+        ParentColor = False
+      end
+      object Label_Height: TLabel
+        Left = 11
+        Height = 16
+        Top = 110
+        Width = 43
+        Caption = 'Height :'
+        ParentColor = False
+      end
+      object SpinEdit_Width: TSpinEdit
+        Left = 75
+        Height = 23
+        Top = 80
+        Width = 79
+        Increment = 10
+        MaxValue = 10000
+        MinValue = 1
+        OnKeyPress = SpinEdit_WidthKeyPress
+        TabOrder = 3
+        Value = 1
+      end
+      object SpinEdit_Height: TSpinEdit
+        Left = 75
+        Height = 23
+        Top = 107
+        Width = 79
+        Increment = 10
+        MaxValue = 10000
+        MinValue = 1
+        OnKeyPress = SpinEdit_HeightKeyPress
+        TabOrder = 4
+        Value = 1
+      end
+      object CheckBox_Antialiasing: TCheckBox
+        Left = 10
+        Height = 19
+        Top = 197
+        Width = 82
+        Caption = 'Antialiasing'
+        Checked = True
+        OnChange = CheckBox_AntialiasingChange
+        State = cbChecked
+        TabOrder = 5
+      end
+    end
+    object Materials: TTabSheet
+      Caption = 'Materials'
+      ClientHeight = 238
+      ClientWidth = 171
+      object Label_Materials: TLabel
+        Left = 10
+        Height = 16
+        Top = 6
+        Width = 55
+        Caption = 'Materials :'
+        ParentColor = False
+      end
+      object ListBox_Materials: TListBox
+        Left = 4
+        Height = 86
+        Top = 24
+        Width = 158
+        ItemHeight = 0
+        OnKeyPress = ListBox_MaterialsKeyPress
+        OnSelectionChange = ListBox_MaterialsSelectionChange
+        TabOrder = 0
+      end
+      object GroupBox_SelectedMaterial: TGroupBox
+        Left = 4
+        Height = 120
+        Top = 112
+        Width = 158
+        Caption = 'Selected material'
+        ClientHeight = 102
+        ClientWidth = 154
+        TabOrder = 1
+        object Label_SpecularIndex: TLabel
+          Left = 7
+          Height = 16
+          Top = 6
+          Width = 66
+          Caption = 'Spec. index :'
+          ParentColor = False
+        end
+        object Label_Color: TLabel
+          Left = 7
+          Height = 16
+          Top = 30
+          Width = 36
+          Caption = 'Color :'
+          ParentColor = False
+        end
+        object Shape_MaterialColor: TShape
+          Left = 90
+          Height = 20
+          Top = 28
+          Width = 20
+          Enabled = False
+          OnMouseDown = Shape_MaterialColorMouseDown
+        end
+        object SpinEdit_SpecularIndex: TSpinEdit
+          Left = 90
+          Height = 23
+          Top = 3
+          Width = 59
+          Enabled = False
+          Increment = 10
+          MaxValue = 1000
+          OnChange = SpinEdit_SpecularIndexChange
+          OnKeyPress = SpinEdit_SpecularIndexKeyPress
+          TabOrder = 0
+        end
+        object Label_Opacity: TLabel
+          Left = 7
+          Height = 16
+          Top = 55
+          Width = 48
+          Caption = 'Opacity :'
+          ParentColor = False
+        end
+        object SpinEdit_ColorOpacity: TSpinEdit
+          Left = 90
+          Height = 23
+          Top = 52
+          Width = 52
+          Increment = 15
+          MaxValue = 255
+          OnChange = SpinEdit_ColorOpacityChange
+          OnKeyPress = SpinEdit_ColorOpacityKeyPress
+          TabOrder = 1
+          Value = 255
+        end
+        object Button_LoadTex: TButton
+          Left = 8
+          Height = 23
+          Top = 77
+          Width = 72
+          Caption = 'Texture...'
+          OnClick = Button_LoadTexClick
+          TabOrder = 2
+        end
+        object Button_NoTex: TButton
+          Left = 85
+          Height = 23
+          Top = 77
+          Width = 64
+          Caption = 'No tex.'
+          OnClick = Button_NoTexClick
+          TabOrder = 3
+        end
+      end
+    end
+    object Lights: TTabSheet
+      Caption = 'Lights'
+      ClientHeight = 238
+      ClientWidth = 171
+      object Label_Lights: TLabel
+        Left = 10
+        Height = 16
+        Top = 32
+        Width = 39
+        Caption = 'Lights :'
+        ParentColor = False
+      end
+      object ListBox_Lights: TListBox
+        Left = 4
+        Height = 62
+        Top = 48
+        Width = 158
+        ItemHeight = 0
+        OnKeyPress = ListBox_LightsKeyPress
+        OnSelectionChange = ListBox_LightsSelectionChange
+        TabOrder = 0
+      end
+      object GroupBox_SelectedLight: TGroupBox
+        Left = 4
+        Height = 120
+        Top = 112
+        Width = 158
+        Caption = 'Selected light'
+        ClientHeight = 102
+        ClientWidth = 154
+        TabOrder = 1
+        object Label_Color1: TLabel
+          Left = 7
+          Height = 16
+          Top = 4
+          Width = 36
+          Caption = 'Color :'
+          ParentColor = False
+        end
+        object Shape_LightColor: TShape
+          Left = 90
+          Height = 20
+          Top = 2
+          Width = 20
+          Enabled = False
+          OnMouseUp = Shape_LightColorMouseUp
+        end
+        object PaintBox_LightPos: TPaintBox
+          Left = 7
+          Height = 72
+          Top = 27
+          Width = 142
+          Color = clBtnFace
+          ParentColor = False
+          OnMouseDown = PaintBox_LightPosMouseDown
+          OnMouseMove = PaintBox_LightPosMouseMove
+          OnMouseUp = PaintBox_LightPosMouseUp
+          OnPaint = PaintBox_LightPosPaint
+        end
+      end
+      object ToolBar1: TToolBar
+        Left = 0
+        Height = 26
+        Top = 0
+        Width = 171
+        Images = BGRAImageList1
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 2
+        object ToolAddDirectional: TToolButton
+          Left = 1
+          Hint = 'Add a directional light'
+          Top = 2
+          ImageIndex = 0
+          OnClick = ToolAddDirectionalClick
+        end
+        object ToolPointLight: TToolButton
+          Left = 24
+          Hint = 'Add a point light'
+          Top = 2
+          ImageIndex = 1
+          OnClick = ToolPointLightClick
+        end
+        object ToolRemoveSelectedLight: TToolButton
+          Left = 47
+          Hint = 'Remove selected light'
+          Top = 2
+          ImageIndex = 2
+          OnClick = ToolRemoveSelectedLightClick
+        end
+      end
+    end
+  end
+  object ColorDialog1: TColorDialog
+    Color = clBlack
+    CustomColors.Strings = (
+      'ColorA=000000'
+      'ColorB=000080'
+      'ColorC=008000'
+      'ColorD=008080'
+      'ColorE=800000'
+      'ColorF=800080'
+      'ColorG=808000'
+      'ColorH=808080'
+      'ColorI=C0C0C0'
+      'ColorJ=0000FF'
+      'ColorK=00FF00'
+      'ColorL=00FFFF'
+      'ColorM=FF0000'
+      'ColorN=FF00FF'
+      'ColorO=FFFF00'
+      'ColorP=FFFFFF'
+      'ColorQ=C0DCC0'
+      'ColorR=F0CAA6'
+      'ColorS=F0FBFF'
+      'ColorT=A4A0A0'
+    )
+    left = 40
+    top = 24
+  end
+  object OpenTextureDialog: TOpenDialog
+    Title = 'Open texture'
+    DefaultExt = '.png'
+    Filter = 'Texture images (*.*)|*.bmp;*.gif;*.ico;*.jpg;*.jpeg;*.lzp;*.ora;*.pcx;*.pdn;*.png;*.psd;*.tga;*.tif;*.tiff;*.xwd;*.BMP;*.GIF;*.ICO;*.JPG;*.JPEG;*.LZP;*.ORA;*.PCX;*.PDN;*.PNG;*.PSD;*.TGA;*.TIF;*.TIFF;*.XWD;*.Bmp;*.Gif;*.Ico;*.Jpg;*.Jpeg;*.Lzp;*.Ora;*.Pcx;*.Pdn;*.Png;*.Psd;*.Tga;*.Tif;*.Tiff;*.Xwd|Layered images (*.lzp, *.ora, *.pdn)|*.lzp;*.ora;*.pdn;*.LZP;*.ORA;*.PDN;*.Lzp;*.Ora;*.Pdn|Bitmaps (*.bmp)|*.bmp;*.BMP;*.Bmp|Animated GIF (*.gif)|*.gif;*.GIF;*.Gif|Icon (*.ico)|*.ico;*.ICO;*.Ico|JPEG (*.jpg;*.jpeg)|*.jpg;*.jpeg;*.JPG;*.JPEG;*.Jpg;*.Jpeg|LazPaint image (*.lzp)|*.lzp;*.LZP;*.Lzp|OpenRaster (*.ora)|*.ora;*.ORA;*.Ora|Personal Computer eXchange (*.pcx)|*.pcx;*.PCX;*.Pcx|Paint.NET image (*.pdn)|*.pdn;*.PDN;*.Pdn|Portable Network Graphic (*.png)|*.png;*.PNG;*.Png|Flattened photoshop (*.psd)|*.psd;*.PSD;*.Psd|Targa (*.tga)|*.tga;*.TGA;*.Tga|Tiff (*.tif;*.tiff)|*.tif;*.tiff;*.TIF;*.TIFF;*.Tif;*.Tiff|X window capture (*.xwd)|*.xwd;*.XWD;*.Xwd'
+    left = 120
+    top = 24
+  end
+  object BGRAImageList1: TBGRAImageList
+    left = 438
+    top = 62
+    Bitmap = {
+      4C69030000001000000010000000FEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFF9797
+      98FFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFF9797
+      98FFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFF0000
+      00FF979798FFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFF0000
+      00FF979798FFFEFEFFFFFEFEFFFFFEFEFFFF000000FF000000FF000000FF0000
+      00FF000000FF979798FFFEFEFFFFFEFEFFFF000000FF000000FF000000FF0000
+      00FF000000FF979798FFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFF0000
+      00FF979798FFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFF0000
+      00FF979798FFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFF9797
+      98FFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFF9797
+      98FFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFF9797
+      98FFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFF9797
+      98FFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFF0000
+      00FF979798FFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFF0000
+      00FF979798FFFEFEFFFFFEFEFFFFFEFEFFFF000000FF000000FF000000FF0000
+      00FF000000FF979798FFFEFEFFFFFEFEFFFF000000FF000000FF000000FF0000
+      00FF000000FF979798FFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFF0000
+      00FF979798FFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFF0000
+      00FF979798FFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFF9797
+      98FFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFF9797
+      98FFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFF9797
+      98FFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFF9797
+      98FFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFF0000
+      00FF979798FFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFF0000
+      00FF979798FFFEFEFFFFFEFEFFFFFEFEFFFF000000FF000000FF000000FF0000
+      00FF000000FF979798FFFEFEFFFFFEFEFFFF000000FF000000FF000000FF0000
+      00FF000000FF979798FFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFF0000
+      00FF979798FFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFF0000
+      00FF979798FFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFF9797
+      98FFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFF9797
+      98FFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFE
+      FFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFE
+      FFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFE
+      FFFFFEFEFFFFFEFEFFFFFCFCFDFF99999AFFFEFEFFFFFEFEFFFFFEFEFFFFFEFE
+      FFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFE
+      FFFFFEFEFFFFFCFCFDFF959596FF020202FF99999AFFFEFEFFFFFEFEFFFFFEFE
+      FFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFE
+      FFFFFDFDFEFF959596FF000000FF000000FF020202FF99999AFFFEFEFFFFFEFE
+      FFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFE
+      FFFFFEFEFFFFFEFEFFFFFAFAFBFF040404FFFEFEFFFFFEFEFFFFFEFEFFFFFEFE
+      FFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFE
+      FFFFFEFEFFFFFEFEFFFFFAFAFBFF040404FFFEFEFFFFFEFEFFFFFEFEFFFFFEFE
+      FFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFF979798FFFEFE
+      FFFFFEFEFFFFFEFEFFFFFAFAFBFF040404FFFEFEFFFFFEFEFFFFFEFEFFFFFEFE
+      FFFF979798FFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFF979798FF000000FFFEFE
+      FFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFE
+      FFFF000000FF979798FFFEFEFFFFFEFEFFFF979798FF000000FF000000FF0000
+      00FF000000FF000000FFFEFEFFFFFEFEFFFFFEFEFFFF000000FF000000FF0000
+      00FF000000FF000000FF979798FFFEFEFFFFFEFEFFFF979798FF000000FFFEFE
+      FFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFE
+      FFFF000000FF979798FFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFF979798FFFEFE
+      FFFFFEFEFFFFFEFEFFFFFAFAFBFF040404FFFEFEFFFFFEFEFFFFFEFEFFFFFEFE
+      FFFF979798FFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFE
+      FFFFFEFEFFFFFEFEFFFFFAFAFBFF040404FFFEFEFFFFFEFEFFFFFEFEFFFFFEFE
+      FFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFE
+      FFFFFEFEFFFFFEFEFFFFFAFAFBFF040404FFFEFEFFFFFEFEFFFFFEFEFFFFFEFE
+      FFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFE
+      FFFFFEFEFFFF959596FF000000FF000000FF020202FF99999AFFFEFEFFFFFEFE
+      FFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFE
+      FFFFFEFEFFFFFCFCFDFF959596FF020202FF99999AFFFEFEFFFFFEFEFFFFFEFE
+      FFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFE
+      FFFFFEFEFFFFFEFEFFFFFCFCFDFF99999AFFFEFEFFFFFEFEFFFFFEFEFFFFFEFE
+      FFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFE
+      FFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFEFFFFFEFE
+      FFFFFEFEFFFFFEFEFFFFFEFEFFFF0000000052521F0097970000333349092E2E
+      44052F2F4F000000000000000000000000000000000000008000000077050000
+      780A0000000000003400000000004D4D3700181894002727752D1B1B9FAF1B1B
+      938B202056112020680000000000000000000E0E95000606870E2020B4872525
+      BCB20C0C95321C1CD30000003A002525810029296F2D2020A9C96161E3FF4646
+      CFFC191994981C1C58101E1E6D00121291000A0A800D1E1EAF926060D8FB8383
+      EAFF3333C7CE080898321919C10043432F091B1B9BAF5353E5FFC0C0F5FFA8A8
+      F0FF3D3DCBFC1919969819195C0F10107E0C1E1EAA925050D0FBAFAFEFFFC2C2
+      F4FF7E7EEFFF2727BDBA00004310494909041E1E8B8C3737D1FD8C8CEEFFA2A2
+      EDFF8888E8FF3535C4FC1A1A989F1D1DA29A4040C7FA8C8CE7FFA1A1EDFF9797
+      EEFF5E5EE1FF1C1CA0A300001C0C29295A002C2C43101B1B8C982E2ECCFC6B6B
+      E6FF7D7DE6FF6868DFFF2C2CBFFE2F2FBFFE6A6ADFFF7C7CE6FF7474E6FF4E4E
+      D9FE1B1B9EAF0000431C03036A000000000026265F00292948101C1C8F982525
+      C8FC4B4BDEFF5757E0FF4A4AD8FF4A4AD8FF5656E0FF5252DDFF3E3ED0FE1B1B
+      99AF0000421D050568000000000000000000000000002323630025254A0F1D1D
+      919F1C1CC5FF2C2CD6FF3131D9FF3030D9FF3030D5FF3030CBFF1A1A96B40101
+      3C1C0707630000000000000000000000000000000000292972002F2F5D0C2020
+      969A0D0DBFFF0606C0FF0A0AB8FF0F0FB7FF1A1ABBFF2929C3FF1D1DA4A60101
+      6E0F090984000000000000000000000000002C2C6C003333580D1F1F96920C0C
+      C6FB0000CBFF0000B6FF0000A3FF0808A1FF1818B0FF2929C2FF3333CDFC2020
+      B0980000751006068A0000000000303067003838510D202093920B0BCCFB0000
+      DAFF0000C9FF0101B8FF1010AFFF1717AFFF1919B2FF2828C0FF3838D1FF3D3D
+      D7FC2121B5980000781004048D0054540A03212190870A0AD2FC0000E7FF0000
+      D9FF0101CBFF0F0FB7FE191987B41D1D97A62222B9FB2828C2FF3737D0FF4848
+      E1FF4848E2FD2020B6900000300742422D091C1C98B10404E4FF0000E7FF0000
+      DAFF0D0DC0FE191983AF0E0E331C0E0E690F1F1FA3982C2CC4FC3838D1FF4747
+      E0FF5252ECFF2626B3C40000381425258000282864321717A4CE0505DBFF0C0C
+      C7FE191981AF1111321D1717520010107F0009096A102020A8983636CFFC4444
+      DFFF2C2CB9DD07076C476767FF002A2A1E001F1FA100252568331A1A95BB1919
+      7DA31313311D19194E0000000000000000000D0D8300060671102020A9902222
+      AAC509096A47FFFFFF0000000E000000000022220D00383800001D1D29111414
+      1D0D25253C000000000000000000000000000000000000004E00000045090000
+      3A14000000010000080000000000
+    }
+  end
+end

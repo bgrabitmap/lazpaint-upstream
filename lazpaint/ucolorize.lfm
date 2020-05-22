@@ -1,0 +1,150 @@
+object FColorize: TFColorize
+  Left = 476
+  Height = 140
+  Top = 173
+  Width = 489
+  BorderIcons = [biSystemMenu]
+  BorderStyle = bsDialog
+  Caption = 'Colorize'
+  ClientHeight = 140
+  ClientWidth = 489
+  Font.Height = -12
+  OnCreate = FormCreate
+  OnShow = FormShow
+  Position = poOwnerFormCenter
+  LCLVersion = '1.0.10.0'
+  object Label_Hue: TLabel
+    Left = 8
+    Height = 16
+    Top = 10
+    Width = 23
+    Caption = 'Hue'
+    ParentColor = False
+  end
+  object Label_Colorness: TLabel
+    Left = 8
+    Height = 16
+    Top = 48
+    Width = 53
+    Caption = 'Colorness'
+    ParentColor = False
+  end
+  object TrackBar_Hue: TTrackBar
+    Left = 69
+    Height = 30
+    Top = 8
+    Width = 328
+    OnChange = TrackBar_Change
+    Position = 0
+    TabOrder = 0
+  end
+  object TrackBar_Saturation: TTrackBar
+    Left = 69
+    Height = 30
+    Top = 44
+    Width = 328
+    OnChange = TrackBar_Change
+    Position = 0
+    TabOrder = 1
+  end
+  object Button_OK: TButton
+    Left = 173
+    Height = 22
+    Top = 109
+    Width = 59
+    Anchors = [akLeft, akBottom]
+    Caption = 'OK'
+    Default = True
+    ModalResult = 1
+    OnClick = Button_OKClick
+    TabOrder = 2
+  end
+  object Button_Cancel: TButton
+    Left = 237
+    Height = 22
+    Top = 109
+    Width = 72
+    Anchors = [akLeft, akBottom]
+    Cancel = True
+    Caption = 'Cancel'
+    ModalResult = 2
+    TabOrder = 3
+  end
+  object FloatSpinEdit_Hue: TFloatSpinEdit
+    Left = 408
+    Height = 23
+    Top = 7
+    Width = 72
+    DecimalPlaces = 1
+    Increment = 1
+    MaxValue = 360
+    MinValue = 0
+    OnChange = FloatSpinEdit_HueChange
+    TabOrder = 4
+    Value = 0
+  end
+  object FloatSpinEdit_Saturation: TFloatSpinEdit
+    Left = 408
+    Height = 23
+    Top = 43
+    Width = 72
+    DecimalPlaces = 3
+    Increment = 1
+    MaxValue = 1
+    MinValue = 0
+    OnChange = FloatSpinEdit_SaturationChange
+    TabOrder = 5
+    Value = 0
+  end
+  object CheckBox_GSBA: TCheckBox
+    Left = 8
+    Height = 19
+    Top = 80
+    Width = 168
+    Caption = 'Corrected hue and lightness'
+    OnChange = CheckBox_GSBAChange
+    TabOrder = 6
+  end
+  object Label_Preset: TLabel
+    Left = 184
+    Height = 16
+    Top = 83
+    Width = 80
+    Alignment = taRightJustify
+    AutoSize = False
+    Caption = 'Preset'
+    ParentColor = False
+  end
+  object Combo_Preset: TComboBox
+    Left = 272
+    Height = 23
+    Top = 80
+    Width = 154
+    ItemHeight = 15
+    OnChange = Combo_PresetChange
+    Style = csDropDownList
+    TabOrder = 7
+  end
+  object ToolBar8: TToolBar
+    Left = 432
+    Height = 24
+    Top = 80
+    Width = 48
+    Align = alNone
+    EdgeBorders = []
+    Images = FMain.ImageList1
+    TabOrder = 8
+    object ToolButton23: TToolButton
+      Left = 1
+      Top = 0
+      ImageIndex = 81
+      OnClick = ToolButton23Click
+    end
+    object ToolButton1: TToolButton
+      Left = 24
+      Top = 0
+      ImageIndex = 39
+      OnClick = ToolButton1Click
+    end
+  end
+end
