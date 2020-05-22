@@ -63,6 +63,11 @@ begin
       result := GetResourcesPath+'i18n'+PathDelim
     else
     {$ENDIF}
+    {$IFDEF LINUX}
+    If DirectoryExists(ExtractFilePath(Application.ExeName)+'../share/lazpaint/i18n') then
+      result:=ExtractFilePath(Application.ExeName)+'../share/lazpaint/i18n'+PathDelim
+    else
+    {$ENDIF}
     result:='i18n'+PathDelim;
   {$ENDIF}
 end;

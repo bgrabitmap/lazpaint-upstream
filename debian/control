@@ -1,0 +1,19 @@
+Source: lazpaint
+Section: graphics
+Priority: optional
+Maintainer: circular <circular@operamail.com>
+Build-Depends: lazarus-project (>= 1.8.6), dpkg-dev (>= 9)
+Standards-Version: 3.9.8
+Homepage: https://wiki.freepascal.org/LazPaint
+Vcs-Git: https://github.com/bgrabitmap/lazpaint.git
+Vcs-Browser: https://github.com/bgrabitmap/lazpaint
+
+Package: lazpaint
+Architecture: any
+Version: 6.4.1
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Graphics viewer and editor. 
+ Can read layered files (lzp, ora, pdn), multi-images (gif, ico), 
+ flat files (bmp, jpeg, pcx, png, psd, tga, tiff, xpm, xwd), vectorial (svg), 3D (obj).
+ Has drawing tools, phong shading, curve adjustments,
+ filters and render some textures.
