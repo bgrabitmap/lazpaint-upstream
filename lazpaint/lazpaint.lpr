@@ -11,6 +11,7 @@ uses
   Interfaces,
 
   process, Forms, SysUtils, Inifiles, FileUtil, printer4lazarus, //packages
+  {$if FPC_FULLVERSION>=030001}LazUTF8, {$endif}
 
   LazPaintType, LazpaintInstance, LazpaintMainForm, UConfig, UOnline,
 
