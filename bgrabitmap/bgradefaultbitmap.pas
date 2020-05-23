@@ -302,7 +302,7 @@ type
     {** Reads the image in a stream that was previously serialized }
     procedure Deserialize(AStream: TStream); override;
     {** Stores an empty image (of size zero) }
-    class procedure SerializeEmpty(AStream: TStream);
+    class procedure SerializeEmpty(AStream: TStream); {$if FPC_FULLVERSION>=030100}static;{$endif}
 
     {* Example:
        <syntaxhighlight>

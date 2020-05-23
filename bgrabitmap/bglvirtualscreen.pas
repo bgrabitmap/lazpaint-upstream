@@ -47,7 +47,7 @@ type
     { Protected declarations }
     procedure RedrawContent(ctx: TBGLContext); virtual;
     procedure SetEnabled(Value: boolean); override;
-    class procedure OnAppIdle(Sender: TObject; var Done: Boolean);
+    class procedure OnAppIdle(Sender: TObject; var Done: Boolean); {$if FPC_FULLVERSION>=030100}static;{$endif}
     procedure LoadTextures; virtual;
     function PrepareBGLContext: TBGLContext;
     procedure ReleaseBGLContext(ctx: TBGLContext);

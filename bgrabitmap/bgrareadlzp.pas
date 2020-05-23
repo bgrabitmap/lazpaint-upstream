@@ -25,7 +25,7 @@ type
     function InternalCheck(Str: TStream): boolean; override;
   public
     WantThumbnail: boolean;
-    class procedure LoadRLEImage(Str: TStream; Img: TFPCustomImage; out ACaption: string);
+    class procedure LoadRLEImage(Str: TStream; Img: TFPCustomImage; out ACaption: string); {$if FPC_FULLVERSION>=030100}static;{$endif}
     property Width: integer read FWidth;
     property Height: integer read FHeight;
     property NbLayers: integer read FNbLayers;
