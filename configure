@@ -1,0 +1,19 @@
+#!/bin/bash
+args=("$@")
+defaultprefix=/usr/local
+wantedprefix=$defaultprefix
+for param in "${args[@]}"
+do
+	if [ param == "-h" ] || [ param == "--help" ]; then
+		echo "Usage: ./configure --prefix=PREFIX"
+		echo "by default prefix is $defaultprefix" 
+		exit 0
+	elif [ "${param:0:9}" == "--prefix=" ]; then
+		wantedprefix=${param:9}
+	else
+		echo "Unknown option: $param"
+	fi
+done
+echo "Prefix set to $wantedprefix"
+echo $wantedprefix >prefix
+
