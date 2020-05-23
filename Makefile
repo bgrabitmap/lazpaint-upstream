@@ -1,13 +1,17 @@
 prefix := $(shell cat prefix)
+SHELL := /bin/bash
 USER_DIR = $(DESTDIR)$(prefix)
 BIN_DIR = $(USER_DIR)/bin
 SHARE_DIR=$(USER_DIR)/share
 RESOURCE_DIR=$(SHARE_DIR)/lazpaint
 DOC_DIR=$(SHARE_DIR)/doc/lazpaint
+ICON_DIR=$(SHARE_DIR)/icons/hicolor
 SOURCE_BIN_DIR=lazpaint/release
 SOURCE_DEBIAN_DIR=debian
 PO_FILES:=$(shell find "$(SOURCE_BIN_DIR)/i18n" -maxdepth 1 -type f -name *.po -printf "\"%f\" ")
 MODEL_FILES:=$(shell find "$(SOURCE_BIN_DIR)/models" -maxdepth 1 -type f -printf "\"%f\" ")
+ICON:=lazpaint/lazpaint.ico
+ICONS:=$(shell identify $(ICON) | awk -F '[[]|[]] | ' '{ printf "[%s]=%s ", $$2, $$4 }')
 
 ifeq ($(OS),Windows_NT)     # true for Windows_NT or later
   COPY := winmake\copyfile
@@ -33,7 +37,8 @@ else ifeq ($(shell uname),Linux)
 	for f in $(PO_FILES); do install -D --mode=0644 "$(SOURCE_BIN_DIR)/i18n/$$f" "${RESOURCE_DIR}/i18n/$$f"; done
 	for f in $(MODEL_FILES); do install -D --mode=0644 "$(SOURCE_BIN_DIR)/models/$$f" "${RESOURCE_DIR}/models/$$f"; done
 	install -D "$(SOURCE_DEBIAN_DIR)/applications/lazpaint.desktop" "$(SHARE_DIR)/applications/lazpaint.desktop"
-	install -D --mode=0644 "$(SOURCE_DEBIAN_DIR)/pixmaps/lazpaint.png" "$(SHARE_DIR)/pixmaps/lazpaint.png"
+	install -D "$(SOURCE_DEBIAN_DIR)/pixmaps/lazpaint.png" "$(SHARE_DIR)/pixmaps/lazpaint.png"
+	declare -A icons=($(ICONS)); for s in "$${icons[@]}"; do install -D --mode=0644 icons/$$s.png $(ICON_DIR)/$$s/apps/lazpaint.png; done
 	install -d "$(SHARE_DIR)/man/man1"
 	gzip -9 -n -c "$(SOURCE_DEBIAN_DIR)/man/man1/lazpaint.1" >"$(SHARE_DIR)/man/man1/lazpaint.1.gz"
 	chmod 0644 "$(SHARE_DIR)/man/man1/lazpaint.1.gz"
@@ -46,25 +51,31 @@ else
 	echo Unhandled OS
 endif
 
+install_icons:
+
 uninstall: prefix
 ifeq ($(OS),Windows_NT)     # true for Windows_NT or later
 	echo Under Windows, go to Add/Remove programs
 else ifeq ($(shell uname),Linux)
 	$(REMOVE) $(BIN_DIR)/lazpaint
 	$(REMOVEDIR) $(RESOURCE_DIR)
-	$(REMOVEDIR) $(DOC_DIR)
 	$(REMOVE) "$(SHARE_DIR)/applications/lazpaint.desktop"
+	declare -A icons=($(ICONS)); for s in "$${icons[@]}"; do $(REMOVE) $(ICON_DIR)/$$s/apps/lazpaint.png; done
 	$(REMOVE) "$(SHARE_DIR)/pixmaps/lazpaint.png"
 	$(REMOVE) "$(SHARE_DIR)/man/man1/lazpaint.1.gz"
+	$(REMOVEDIR) $(DOC_DIR)
 else
 	echo Unhandled OS
 endif
 
-distclean: clean clean_configure
+distclean: clean clean_configure clean_icons
 clean: clean_bgrabitmap clean_bgracontrols clean_lazpaint
 
 clean_configure:
 	$(REMOVE) "prefix"
+
+clean_icons:
+	$(REMOVEDIR) "icons"
 
 clean_bgrabitmap:
 	$(REMOVEDIR) "bgrabitmap/lib"
@@ -84,7 +95,7 @@ clean_lazpaint:
 	$(REMOVEDIR) "lazpaint/backup"
 	$(REMOVEDIR) "lazpaint/test_embedded/backup"
 
-compile: bgrabitmap bgracontrols lazpaint
+compile: bgrabitmap bgracontrols lazpaint icons
 lazbuild:
 	#lazbuild will determine what to recompile
 bgrabitmap: lazbuild bgrabitmap/bgrabitmappack.lpk
@@ -93,4 +104,8 @@ bgracontrols: lazbuild bgracontrols/bgracontrols.lpk
 	lazbuild bgracontrols/bgracontrols.lpk
 lazpaint: lazbuild lazpaint/lazpaint.lpi
 	lazbuild lazpaint/lazpaint.lpi
+
+icons:
+	mkdir -p icons
+	declare -A icons=($(ICONS)); for i in "$${!icons[@]}"; do convert $(ICON)[$$i] icons/$${icons[$$i]}.png; done
 
