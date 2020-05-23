@@ -714,8 +714,7 @@ begin
   NeedBitmapUpdate(False);
 end;
 
-initialization
-  {$I usaveoption.lrs}
+{$R *.lfm}
 
 end.
 
