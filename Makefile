@@ -60,7 +60,11 @@ else
 	echo Unhandled OS
 endif
 
+distclean: clean clean_configure
 clean: clean_bgrabitmap clean_bgracontrols clean_lazpaint
+
+clean_configure:
+	$(REMOVE) "prefix"
 
 clean_bgrabitmap:
 	$(REMOVEDIR) "bgrabitmap/lib"
