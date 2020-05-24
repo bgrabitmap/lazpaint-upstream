@@ -106,6 +106,8 @@ lazpaint: lazbuild lazpaint/lazpaint.lpi
 	lazbuild lazpaint/lazpaint.lpi
 
 icons:
+ifneq ($(OS),Windows_NT)
 	mkdir -p icons
 	declare -A icons=($(ICONS)); for i in "$${!icons[@]}"; do convert $(ICON)[$$i] icons/$${icons[$$i]}.png; done
+endif
 
