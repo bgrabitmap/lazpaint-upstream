@@ -92,7 +92,7 @@ ifeq ($(UNAME),Linux)
 	$(REMOVEDIR) $(DOC_DIR)
 endif
 
-distclean: clean clean_configure clean_icons
+distclean: clean clean_configure
 clean: clean_bgrabitmap clean_bgracontrols clean_lazpaint
 
 clean_configure:
@@ -122,7 +122,7 @@ clean_lazpaint:
 	$(REMOVEDIR) "lazpaint/backup"
 	$(REMOVEDIR) "lazpaint/test_embedded/backup"
 
-compile: lazdir bgrabitmap bgracontrols lazpaint icons
+compile: lazdir bgrabitmap bgracontrols lazpaint
 force:
 	echo lazbuild or fpc will determine what to recompile
 
