@@ -1,5 +1,7 @@
 @echo off
 echo For help type: configure /?
+set defaultfpc=fpc
+set wantedfpc=%defaultfpc%
 set wantedlazdir=
 
 :nextparam
@@ -14,6 +16,11 @@ if "%param:~0,9%" == "--lazdir=" (
 ) else if "%param%" == "--lazdir" (
 	set wantedlazdir=%~2
 	shift
+) else if "%param:~0,9%" == "--fpcbin=" (
+	set wantedfpc=%param:~9%
+) else if "%param%" == "--fpcbin" (
+	set wantedfpc=%~2
+	shift
 ) else (
 	echo Error: unknown option %param%
 	exit /b 1
@@ -23,6 +30,7 @@ shift
 goto nextparam
 :endparam
 
+if exist fpcbin del fpcbin
 <nul set /p ".=%wantedlazdir%" >lazdir
 if "%wantedlazdir%" == "" (
 	echo Using lazbuild
@@ -39,7 +47,8 @@ if "%wantedlazdir%" == "" (
 	) else if not exist "%wantedlazdir%\lcl\" (
 		echo Warning: it does not seem to be the directory of Lazarus!
 	)
-	fpc -h > NUL 2> NUL
+	<nul set /p ".=%wantedfpc%" >fpcbin
+	%wantedfpc% -h > NUL 2> NUL
 	if errorlevel 1 (
 		echo Error: FPC needs to be in the PATH
 		exit /b 1

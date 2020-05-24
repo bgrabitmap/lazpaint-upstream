@@ -2,6 +2,8 @@
 echo For help type: ./configure --help
 args=("$@")
 haserror=false
+defaultfpc=fpc
+wantedfpc=$defaultfpc
 defaultprefix=/usr/local
 wantedprefix=$defaultprefix
 if [ -f "debian/CONFIGURE_DEFAULT_LAZDIR" ]; then
@@ -22,11 +24,17 @@ do
 		echo "    --lazdir=BASE_DIRECTORY_OF_LAZARUS"
 		echo "        Specifies to compile with FPC using the specified Lazarus sources."
 		echo "        Otherwise lazbuild will be used."
+		echo ""
+		echo "    --fpcbin=FPC_BINARY"
+		echo "        Specifies the command to call Free Pascal Compiler."
+		echo "        Default is \"$defaultfpc\""
 		exit 0
 	elif [ "${param:0:9}" == "--prefix=" ]; then
 		wantedprefix=${param:9}
 	elif [ "${param:0:9}" == "--lazdir=" ]; then
 		wantedlazdir=${param:9}
+	elif [ "${param:0:9}" == "--fpcbin=" ]; then
+		wantedfpc=${param:9}
 	else
 		echo "Warning: unknown option $param"
 	fi
@@ -37,6 +45,7 @@ if [ "$wantedlazdir" == "" ]; then
 	echo "Using lazbuild"
 	rm -f lazdir
 	touch lazdir
+	rm -f fpcbin
 else
 	echo "Using FPC with Lazarus source: $wantedlazdir"
 	if [ ! -d "$wantedlazdir" ]; then
@@ -46,6 +55,8 @@ else
 		echo "Warning: it does not seem to be the directory of Lazarus!"
 	fi
 	echo $wantedlazdir >lazdir
+	rm -f fpcbin
+	echo $wantedfpc >fpcbin
 fi
 if [ "$haserror" = true ]; then
 	exit 1

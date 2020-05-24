@@ -21,6 +21,7 @@ else
 endif
 
 lazdir := $(shell $(ECHOFILE) lazdir)
+fpcbin = $(shell $(ECHOFILE) fpcbin)
 
 ifeq ($(UNAME),Linux)
   prefix := $(shell $(ECHOFILE) prefix)
@@ -97,6 +98,7 @@ clean: clean_bgrabitmap clean_bgracontrols clean_lazpaint
 clean_configure:
 	$(REMOVE) "prefix"
 	$(REMOVE) "lazdir"
+	$(REMOVE) "fpcbin"
 	$(REMOVE) "debian/CONFIGURE_DEFAULT_LAZDIR"
 
 clean_icons:
@@ -140,7 +142,7 @@ ifeq "$(lazdir)" ""
 else
 	$(RUN)makeres
 	$(CREATEDIR) "lazpaint/release/lib"
-	cd lazpaint $(THEN) fpc -orelease/lazpaint -Fu./buttons -Fi./buttons -Fu./image -Fi./image -Fu./cursors -Fi./cursors -Fu./buttons -Fi./buttons -Fu./* -Fi./* -Fu../bgracontrols -Fi../bgracontrols -Fu../bgrabitmap -Fi../bgrabitmap $(LAZARUSDIRECTORIES) -MObjFPC -Scgi -Cg -OoREGVAR -Xs -XX -l -vewnhibq -O3 -CX -vi -FUrelease/lib/ -dLCL -d$(INTERFACE) lazpaint.lpr
+	cd lazpaint $(THEN) $(fpcbin) -orelease/lazpaint -Fu./buttons -Fi./buttons -Fu./image -Fi./image -Fu./cursors -Fi./cursors -Fu./buttons -Fi./buttons -Fu./* -Fi./* -Fu../bgracontrols -Fi../bgracontrols -Fu../bgrabitmap -Fi../bgrabitmap $(LAZARUSDIRECTORIES) -MObjFPC -Scgi -Cg -OoREGVAR -Xs -XX -l -vewnhibq -O3 -CX -vi -FUrelease/lib/ -dLCL -d$(INTERFACE) lazpaint.lpr
 endif
 
 icons:
