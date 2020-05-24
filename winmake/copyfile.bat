@@ -6,7 +6,7 @@ set FILENAME=%1
 set FILENAME=%FILENAME:/=\%
 set DESTINATION=%2
 set DESTINATION=%DESTINATION:/=\%
-copy /y %FILENAME% %DESTINATION%
+copy /y "%FILENAME%" "%DESTINATION%"
 exit /b 0
 
 :argument

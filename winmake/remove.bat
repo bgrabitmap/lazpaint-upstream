@@ -3,7 +3,7 @@ if "%~1" == "" goto argument
 setlocal
 set FILENAME=%1
 set FILENAME=%FILENAME:/=\%
-if exist %FILENAME% del /f /q %FILENAME%
+if exist "%FILENAME%" del /f /q "%FILENAME%"
 exit /b 0
 
 :argument
