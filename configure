@@ -4,7 +4,11 @@ args=("$@")
 haserror=false
 defaultprefix=/usr/local
 wantedprefix=$defaultprefix
-wantedlazdir=
+if [ -f "debian/CONFIGURE_DEFAULT_LAZDIR" ]; then
+	wantedlazdir=$(cat debian/CONFIGURE_DEFAULT_LAZDIR)
+else
+	wantedlazdir=$CONFIGURE_DEFAULT_LAZDIR
+fi
 for param in "${args[@]}"
 do
 	if [ "$param" == "-h" ] || [ "$param" == "--help" ]; then
@@ -24,8 +28,7 @@ do
 	elif [ "${param:0:9}" == "--lazdir=" ]; then
 		wantedlazdir=${param:9}
 	else
-		echo "Error: unknown option $param"
-		haserror=true
+		echo "Warning: unknown option $param"
 	fi
 done
 echo "Prefix set to $wantedprefix"
@@ -48,4 +51,5 @@ if [ "$haserror" = true ]; then
 	exit 1
 else
 	echo "You can now type: make"
+	exit 0
 fi

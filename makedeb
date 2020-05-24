@@ -1,0 +1,11 @@
+#!/bin/bash
+if [ "$1" == "" ]; then
+	echo "Creates the Debian package"
+	echo ""
+	echo "Usage: ./makedeb LAZARUS_SOURCE_DIRECTORY"
+	exit 0
+fi
+echo $1 >debian/CONFIGURE_DEFAULT_LAZDIR
+debuild -us -uc
+rm debian/CONFIGURE_DEFAULT_LAZDIR
+

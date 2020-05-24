@@ -97,6 +97,7 @@ clean: clean_bgrabitmap clean_bgracontrols clean_lazpaint
 clean_configure:
 	$(REMOVE) "prefix"
 	$(REMOVE) "lazdir"
+	$(REMOVE) "debian/CONFIGURE_DEFAULT_LAZDIR"
 
 clean_icons:
 	$(REMOVEDIR) "icons"
