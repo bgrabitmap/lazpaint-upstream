@@ -2,9 +2,9 @@
 if "%~1" == "" goto argument
 if "%~2" == "" goto argument
 setlocal
-set FILENAME=%1
+set FILENAME=%~1
 set FILENAME=%FILENAME:/=\%
-set DESTINATION=%2
+set DESTINATION=%~2
 set DESTINATION=%DESTINATION:/=\%
 copy /y "%FILENAME%" "%DESTINATION%"
 exit /b 0
