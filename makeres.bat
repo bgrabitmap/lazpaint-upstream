@@ -1,4 +1,5 @@
 @echo off
+REM creating resource, only necessary when compiling with FPC
 windres lazpaint\lazpaint.rc lazpaint\lazpaint.res --preprocessor=type
 if not exist "lazpaint\lazpaint.res" goto error
 exit /b 0
