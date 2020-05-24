@@ -64,3 +64,7 @@ echo.
 echo     --lazdir=BASE_DIRECTORY_OF_LAZARUS
 echo         Specifies to compile with FPC using the specified Lazarus sources.
 echo         Otherwise lazbuild will be used.
+echo.
+echo     --fpcbin=FPC_BINARY
+echo         Specifies the command to call Free Pascal Compiler.
+echo         Default is %defaultfpc%
