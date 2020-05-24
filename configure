@@ -1,19 +1,51 @@
 #!/bin/bash
+echo For help type: ./configure --help
 args=("$@")
+haserror=false
 defaultprefix=/usr/local
 wantedprefix=$defaultprefix
+wantedlazdir=
 for param in "${args[@]}"
 do
 	if [ "$param" == "-h" ] || [ "$param" == "--help" ]; then
-		echo "Usage: ./configure --prefix=PREFIX"
-		echo "by default prefix is $defaultprefix" 
+		echo "Usage: ./configure [OPTIONS]"
+		echo ""
+		echo "    --prefix=PREFIX"
+		echo "        Specifies the install prefix."
+		echo "        By default prefix is \"$defaultprefix\"" 
+		echo "        For packages use \"/usr\""
+		echo ""
+		echo "    --lazdir=BASE_DIRECTORY_OF_LAZARUS"
+		echo "        Specifies to compile with FPC using the specified Lazarus sources."
+		echo "        Otherwise lazbuild will be used."
 		exit 0
 	elif [ "${param:0:9}" == "--prefix=" ]; then
 		wantedprefix=${param:9}
+	elif [ "${param:0:9}" == "--lazdir=" ]; then
+		wantedlazdir=${param:9}
 	else
-		echo "Unknown option: $param"
+		echo "Error: unknown option $param"
+		haserror=true
 	fi
 done
 echo "Prefix set to $wantedprefix"
 echo $wantedprefix >prefix
-
+if [ "$wantedlazdir" == "" ]; then
+	echo "Using lazbuild"
+	rm -f lazdir
+	touch lazdir
+else
+	echo "Using FPC with Lazarus source: $wantedlazdir"
+	if [ ! -d "$wantedlazdir" ]; then
+		echo "Error: directory not found!"
+		haserror=true
+	elif [ ! -d "$wantedlazdir/lcl" ]; then
+		echo "Warning: it does not seem to be the directory of Lazarus!"
+	fi
+	echo $wantedlazdir >lazdir
+fi
+if [ "$haserror" = true ]; then
+	exit 1
+else
+	echo "You can now type: make"
+fi

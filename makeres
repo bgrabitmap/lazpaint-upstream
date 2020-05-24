@@ -1,0 +1,29 @@
+#!/bin/bash
+#creating resource, only necessary when compiling with FPC
+lazpaintrc="lazpaint/lazpaint.rc"
+lazpaintres="lazpaint/lazpaint.res"
+if [ ! -f "$lazpaintres" ]; then
+	if [ "$(which windres)" != "" ]; then
+		windres=windres
+	elif [ "$(which i686-w64-mingw32-windres)" != "" ]; then
+		windres=i686-w64-mingw32-windres
+	elif [ "$(which x86_64-w64-mingw32-windres)" != "" ]; then
+		windres=x86_64-w64-mingw32-windres
+	else
+		echo windres is necessary and is going to be installed.
+		sudo apt-get install binutils-mingw-w64-i686
+		if [ "$(which i686-w64-mingw32-windres)" != "" ]; then
+			windres=i686-w64-mingw32-windres
+		else
+			echo windres is missing. Did you cancel the installation?
+			exit 1
+		fi
+	fi
+	echo "Generating $lazpaintres..."
+	$($windres $lazpaintrc $lazpaintres --preprocessor cat)
+	if [ ! -f "$lazpaintres" ]; then
+		echo "Failed to generate $lazpaintres"
+		exit 1
+	fi
+fi
+
