@@ -135,7 +135,7 @@ begin
    ColorCircle.bmp := nil;
    ColorCircle.bmpMaxlight := nil;
 
-   FormBackgroundColor := ColorToBGRA(ColorToRGB({$IFDEF DARWIN}clWindow{$ELSE}clBtnFace{$ENDIF}));
+   FormBackgroundColor := ColorToBGRA(ColorToRGB(clForm));
    FormTextColor := ColorToBGRA(ColorToRGB(clWindowText));
 
    If (LazPaintInstance = nil) or (LazPaintInstance.BlackAndWhite) then

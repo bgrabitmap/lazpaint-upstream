@@ -146,7 +146,7 @@ var bmp: TBGRABitmap;
 begin
     if wind = 0 then exit;
     bmp := TBGRABitmap.Create(PaintBox_Wind.Width,PaintBox_Wind.Height);
-    bmp.Fill(ColorToRGB(clBtnFace));
+    bmp.Fill(ColorToRGB(clForm));
     c := ColorToBGRA(ColorToRGB(clWindowText));
     if wind < 0 then angle := 180 else angle := 0;
     t := PaintBox_Wind.Width/2*abs(wind);
