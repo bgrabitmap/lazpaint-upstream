@@ -10,14 +10,9 @@ if [ ! -f "$lazpaintres" ]; then
 	elif [ "$(which x86_64-w64-mingw32-windres)" != "" ]; then
 		windres=x86_64-w64-mingw32-windres
 	else
-		echo windres is necessary and is going to be installed.
-		sudo apt-get install binutils-mingw-w64-i686
-		if [ "$(which i686-w64-mingw32-windres)" != "" ]; then
-			windres=i686-w64-mingw32-windres
-		else
-			echo windres is missing. Did you cancel the installation?
-			exit 1
-		fi
+		echo "windres is necessary. Please install it with:"
+		echo "  apt-get install binutils-mingw-w64-i686"
+		exit 1
 	fi
 	echo "Generating $lazpaintres..."
 	$($windres $lazpaintrc $lazpaintres --preprocessor cat)
