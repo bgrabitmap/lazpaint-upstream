@@ -99,7 +99,6 @@ clean_configure:
 	$(REMOVE) "prefix"
 	$(REMOVE) "lazdir"
 	$(REMOVE) "fpcbin"
-	$(REMOVE) "debian/CONFIGURE_DEFAULT_LAZDIR"
 
 clean_icons:
 	$(REMOVEDIR) "icons"
