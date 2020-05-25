@@ -69,8 +69,8 @@ ifeq ($(UNAME),Linux)
 	gzip -9 -n -c "$(SOURCE_DEBIAN_DIR)/man/man1/lazpaint.1" >"$(SHARE_DIR)/man/man1/lazpaint.1.gz"
 	chmod 0644 "$(SHARE_DIR)/man/man1/lazpaint.1.gz"
 	install -d "$(DOC_DIR)"
-	gzip -9 -n -c "$(SOURCE_DEBIAN_DIR)/changelog" >"$(DOC_DIR)/changelog.gz"
-	chmod 0644 "$(DOC_DIR)/changelog.gz"
+	gzip -9 -n -c "$(SOURCE_DEBIAN_DIR)/changelog" >"$(DOC_DIR)/changelog.Debian.gz"
+	chmod 0644 "$(DOC_DIR)/changelog.Debian.gz"
 	install --mode=0644 "$(SOURCE_DEBIAN_DIR)/copyright" "$(DOC_DIR)/copyright"
 	install --mode=0644 "$(SOURCE_BIN_DIR)/readme.txt" "$(DOC_DIR)/README"
 endif
