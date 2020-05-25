@@ -18,6 +18,8 @@ else
 	exit 1
 fi
 
+#replace dependency lazarus-project => fpc
+sed -i 's/lazarus-project (>= [0-9.]*), //' debian/control
 echo $1 >debian/CONFIGURE_DEFAULT_LAZDIR
 debuild -us -uc
 rm debian/CONFIGURE_DEFAULT_LAZDIR
