@@ -106,7 +106,7 @@ function ShowSaveOptionDialog(AInstance: TLazPaintCustomInstance; AOutputFilenam
 implementation
 
 uses UGraph, FPWriteJPEG, UResourceStrings, lazutf8classes, FPWriteBMP, BMPcomn,
-  UMySLV, BGRAWriteBmpMioMap, BGRADithering;
+  UMySLV, BGRAWriteBmpMioMap, BGRADithering, UScaleDPI;
 
 function ShowSaveOptionDialog(AInstance: TLazPaintCustomInstance; AOutputFilenameUTF8: string): boolean;
 var f: TFSaveOption;
@@ -141,6 +141,7 @@ end;
 
 procedure TFSaveOption.FormCreate(Sender: TObject);
 begin
+  ScaleDPI(self, OriginalDPI);
   FImageFormat:= ifUnknown;
   UpdateQualityTextBox;
   FFormTitle:= Caption;

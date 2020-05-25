@@ -995,6 +995,7 @@ begin
   MainMenu1.Images := LazPaintInstance.Icons[DoScaleX(20,OriginalDPI)];
   Layout.Menu.SetToolbarImages(LazPaintInstance.Icons[DoScaleY(16, OriginalDPI)]);
   Layout.Menu.Apply;
+  UpdateTextureIcon;
 
   Image := LazPaintInstance.Image;
   FImageActions := TImageActions.Create(LazPaintInstance);

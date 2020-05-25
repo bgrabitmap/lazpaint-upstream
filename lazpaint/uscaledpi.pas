@@ -104,6 +104,7 @@ begin
     {$ENDIF}
   end;
 
+  {$if FPC_FULLVERSION<030001}
   if Control is TToolBar then begin
     ToolBarControl:=TToolBar(Control);
     with ToolBarControl do begin
@@ -111,6 +112,7 @@ begin
       ButtonHeight:=DoScaleY(ButtonHeight,FromDPI,ToDPI_Y);
     end;
   end;
+  {$endif}
 
   if Control is TWinControl then begin
     WinControl:=TWinControl(Control);

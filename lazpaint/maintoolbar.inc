@@ -169,7 +169,6 @@ begin
   LabelAutosize(Label_Brush);
   LabelAutosize(Label_Spacing);
   Image_SwapColors.Hint := Image_SwapColors.Hint + ' (X)';
-  NoTextureIcon;
 
   Tool_CurveModeAuto.Hint := Tool_CurveModeAuto.Hint + ' (A)';
   Tool_CurveModeAngle.Hint := Tool_CurveModeAngle.Hint + ' (X)';

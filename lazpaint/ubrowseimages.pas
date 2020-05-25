@@ -269,6 +269,11 @@ begin
 
   ImageSizeCaption := Label_Size.Caption;
   Label_Size.Caption := '';
+  Label_Size.Font.Height := -round((ListBox_RecentDirs.Top-Label_Size.Top)/1.4);
+  ComboBox_FileExtension.Font.Height := Label_Size.Font.Height;
+  Edit_Filename.Font.Height := Label_Size.Font.Height;
+  DirectoryEdit1.Font.Height := Label_Size.Font.Height;
+
   BGRAPaintNet.RegisterPaintNetFormat;
   BGRAOpenRaster.RegisterOpenRasterFormat;
 
