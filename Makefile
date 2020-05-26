@@ -36,7 +36,8 @@ ifeq ($(UNAME),Linux)
   PO_FILES:=$(shell find "$(SOURCE_BIN_DIR)/i18n" -maxdepth 1 -type f -name *.po -printf "\"%f\" ")
   MODEL_FILES:=$(shell find "$(SOURCE_BIN_DIR)/models" -maxdepth 1 -type f -printf "\"%f\" ")
   ICON:=lazpaint/lazpaint.ico
-  ICONS:=$(shell identify $(ICON) | awk -F '[[]|[]] | ' '{ printf "[%s]=%s ", $$2, $$4 }')
+  ICONS=$(shell identify $(ICON) | awk -F '[[]|[]] | ' '{ printf "[%s]=%s ", $$2, $$4 }')
+  EXTRACTED_ICONS=$(shell find "icons" -maxdepth 1 -type f -name *x*.png -exec basename {} .png ';')
   INTERFACE:=LCLgtk2
   LAZARUSDIRECTORIES:="-Fu$(lazdir)/*" "-Fi$(lazdir)/*" "-Fu$(lazdir)/components/printers/unix" "-Fi$(lazdir)/components/printers/unix" "-Fu$(lazdir)/packager/registration" "-Fi$(lazdir)/packager/registration" "-Fu$(lazdir)/components/*" "-Fi$(lazdir)/components/*" "-Fu$(lazdir)/lcl/forms" "-Fi$(lazdir)/lcl/forms" "-Fu$(lazdir)/lcl/widgetset" "-Fi$(lazdir)/lcl/widgetset" "-Fu$(lazdir)/interfaces/*" "-Fi$(lazdir)/interfaces/*" "-Fu$(lazdir)/lcl/nonwin32" "-Fi$(lazdir)/lcl/nonwin32" "-Fu$(lazdir)/lcl/interfaces/gtk2" "-Fi$(lazdir)/lcl/interfaces/gtk2" "-Fu$(lazdir)/lcl/components/*" "-Fi$(lazdir)/lcl/components/*" "-Fu$(lazdir)/lcl/include" "-Fi$(lazdir)/lcl/include" "-Fu$(lazdir)/lcl" "-Fi$(lazdir)/lcl"
 endif
@@ -64,7 +65,7 @@ ifeq ($(UNAME),Linux)
 	for f in $(MODEL_FILES); do install -D --mode=0644 "$(SOURCE_BIN_DIR)/models/$$f" "${RESOURCE_DIR}/models/$$f"; done
 	install -D "$(SOURCE_DEBIAN_DIR)/applications/lazpaint.desktop" "$(SHARE_DIR)/applications/lazpaint.desktop"
 	install -D "$(SOURCE_DEBIAN_DIR)/pixmaps/lazpaint.png" "$(SHARE_DIR)/pixmaps/lazpaint.png"
-	declare -A icons=($(ICONS)); for s in "$${icons[@]}"; do install -D --mode=0644 icons/$$s.png $(ICON_DIR)/$$s/apps/lazpaint.png; done
+	for s in $(EXTRACTED_ICONS); do install -D --mode=0644 icons/$$s.png $(ICON_DIR)/$$s/apps/lazpaint.png; done
 	install -d "$(SHARE_DIR)/man/man1"
 	gzip -9 -n -c "$(SOURCE_DEBIAN_DIR)/man/man1/lazpaint.1" >"$(SHARE_DIR)/man/man1/lazpaint.1.gz"
 	chmod 0644 "$(SHARE_DIR)/man/man1/lazpaint.1.gz"
@@ -86,7 +87,7 @@ ifeq ($(UNAME),Linux)
 	$(REMOVE) $(BIN_DIR)/lazpaint
 	$(REMOVEDIR) $(RESOURCE_DIR)
 	$(REMOVE) "$(SHARE_DIR)/applications/lazpaint.desktop"
-	declare -A icons=($(ICONS)); for s in "$${icons[@]}"; do $(REMOVE) $(ICON_DIR)/$$s/apps/lazpaint.png; done
+	for s in $(EXTRACTED_ICONS); do $(REMOVE) $(ICON_DIR)/$$s/apps/lazpaint.png; done
 	$(REMOVE) "$(SHARE_DIR)/pixmaps/lazpaint.png"
 	$(REMOVE) "$(SHARE_DIR)/man/man1/lazpaint.1.gz"
 	$(REMOVEDIR) $(DOC_DIR)
