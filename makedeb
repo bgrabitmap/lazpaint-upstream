@@ -6,19 +6,7 @@ if [ "$1" == "" ]; then
 	exit 0
 fi
 
-if [ "$(which windres)" != "" ]; then
-	windres=windres
-elif [ "$(which i686-w64-mingw32-windres)" != "" ]; then
-	windres=i686-w64-mingw32-windres
-elif [ "$(which x86_64-w64-mingw32-windres)" != "" ]; then
-	windres=x86_64-w64-mingw32-windres
-else
-	echo "windres is necessary. Please install it with:"
-	echo "  apt-get install binutils-mingw-w64-i686"
-	exit 1
-fi
-
-#replace dependency lazarus-project => fpc
+#remove dependency to lazarus-project
 sed -i 's/lazarus-project (>= [0-9.]*), //' debian/control
 echo $1 >debian/CONFIGURE_DEFAULT_LAZDIR
 debuild -us -uc

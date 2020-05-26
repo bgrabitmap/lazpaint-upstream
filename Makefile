@@ -139,7 +139,7 @@ lazpaint: force lazpaint/lazpaint.lpi
 ifeq "$(lazdir)" ""
 	lazbuild lazpaint/lazpaint.lpi
 else
-	$(RUN)makeres
+	$(COPY) "lazpaint/resources/lazpaint.res" "lazpaint/lazpaint.res"
 	$(CREATEDIR) "lazpaint/release/lib"
 	cd lazpaint $(THEN) $(fpcbin) -orelease/lazpaint -Fu./buttons -Fi./buttons -Fu./image -Fi./image -Fu./cursors -Fi./cursors -Fu./buttons -Fi./buttons -Fu./* -Fi./* -Fu../bgracontrols -Fi../bgracontrols -Fu../bgrabitmap -Fi../bgrabitmap $(LAZARUSDIRECTORIES) -MObjFPC -Scgi -Cg -OoREGVAR -Xs -XX -l -vewnhibq -O3 -CX -vi -FUrelease/lib/ -dLCL -d$(INTERFACE) lazpaint.lpr
 endif
