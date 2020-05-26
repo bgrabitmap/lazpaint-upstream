@@ -61,6 +61,15 @@ fi
 if [ "$haserror" = true ]; then
 	exit 1
 else
-	echo "You can now type: make"
+	if [ "$(which make)" != "" ]; then
+		echo "You can now type: make"
+	else
+		if [ "$(which gmake)" != "" ]; then
+			echo "You can now type: gmake"
+		else
+			echo "Neither make nor gmake found"
+			exit 1
+		fi
+	fi
 	exit 0
 fi
