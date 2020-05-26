@@ -9,6 +9,8 @@
       <UseXPManifest Value="True"/>
       <XPManifest>
         <DpiAware Value="True"/>
+        <TextName Value="LazPaint"/>
+        <TextDesc Value="Image editor"/>
       </XPManifest>
       <Icon Value="0"/>
     </General>
