@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 echo For help type: ./configure --help
 args=("$@")
 haserror=false
