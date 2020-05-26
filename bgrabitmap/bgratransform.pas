@@ -23,8 +23,8 @@ type
   public
     TopLeft, TopRight,
     BottomLeft: TPointF;
-    class function EmptyBox: TAffineBox;
-    class function AffineBox(ATopLeft, ATopRight, ABottomLeft: TPointF): TAffineBox;
+    class function EmptyBox: TAffineBox; {$if FPC_FULLVERSION>=030100}static;{$endif}
+    class function AffineBox(ATopLeft, ATopRight, ABottomLeft: TPointF): TAffineBox; {$if FPC_FULLVERSION>=030100}static;{$endif}
     property BottomRight: TPointF read GetBottomRight;
     property IsEmpty: boolean read GetIsEmpty;
     property AsPolygon: ArrayOfTPointF read GetAsPolygon;
