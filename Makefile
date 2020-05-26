@@ -9,8 +9,12 @@ ifeq ($(OS),Windows_NT)     # true for Windows_NT or later
   THEN := &
   RUN :=
 else
-  SHELL := /bin/bash
   UNAME := $(shell uname)
+  ifeq ($(UNAME),FreeBSD)
+    SHELL := /usr/local/bin/bash
+  else
+    SHELL := /bin/bash
+  endif
   COPY := cp
   REMOVE := rm -f
   REMOVEDIR := rm -rf
