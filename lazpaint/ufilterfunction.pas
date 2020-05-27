@@ -57,7 +57,7 @@ type
     FExprChanged: boolean;
     FComputing: boolean;
     FComputedImage: TBGRABitmap;
-    FComputedLines: integer;
+    FComputedY: integer;
     FFilterConnector: TFilterConnector;
     FInitializing: boolean;
     procedure UpdateExpr(AExpr: TFPExpressionParser; AEdit: TEdit;
@@ -273,7 +273,7 @@ var PrevDate: TDateTime;
   x,y,xcount: integer;
   pdest,psrc: PBGRAPixel;
   RedVars,GreenVars,BlueVars,AlphaVars,HueVars,SaturationVars,LightnessVars: TExprVariables;
-  prevComputedLines: integer;
+  prevComputedY: integer;
   values: TExprValues;
   gsba,rgbMode: boolean;
   srcHslaValue,hslaValue: THSLAPixel;
@@ -285,12 +285,12 @@ begin
     if FComputedImage = nil then
     begin
       FComputedImage := TBGRABitmap.Create(FFilterConnector.BackupLayer.Width,FFilterConnector.BackupLayer.Height);
-      FComputedLines := FFilterConnector.WorkArea.Top;
+      FComputedY := FFilterConnector.WorkArea.Top;
       FFilterConnector.RestoreBackup;
     end;
     gsba := CheckBox_GSBA.Checked;
     PrevDate := Now;
-    prevComputedLines:= FComputedLines;
+    prevComputedY:= FComputedY;
     try
       rgbMode := PageControl_Color.ActivePage = TabSheet_RGB;
       hslUsed := false;
@@ -307,9 +307,9 @@ begin
         PrepareXY(FLightnessExpr,LightnessVars,'lightness');
       end;
       PrepareXY(FAlphaExpr,AlphaVars,'alpha');
-      while FComputedLines < FFilterConnector.WorkArea.Bottom do
+      while FComputedY < FFilterConnector.WorkArea.Bottom do
       begin
-        y := FComputedLines;
+        y := FComputedY;
         psrc := FFilterConnector.BackupLayer.ScanLine[y]+FFilterConnector.WorkArea.Left;
         pdest := FComputedImage.ScanLine[y]+FFilterConnector.WorkArea.Left;
         xcount := FFilterConnector.WorkArea.Right - FFilterConnector.WorkArea.Left;
@@ -431,7 +431,7 @@ begin
             //nothing
           end;
         end;
-        Inc(FComputedLines);
+        Inc(FComputedY);
         if Now-PrevDate > TimeGrain then break;
       end;
       Timer1.Interval := 5;
@@ -442,8 +442,8 @@ begin
 
       end;
     end;
-    FFilterConnector.PutImage(FComputedImage, rect(0,prevComputedLines,FComputedImage.Width,FComputedLines), True,False);
-    if FComputedLines = FComputedImage.Height then
+    FFilterConnector.PutImage(FComputedImage, rect(0,prevComputedY,FComputedImage.Width,FComputedY), True,False);
+    if FComputedY = FFilterConnector.WorkArea.Bottom then
     begin
       FreeAndNil(FComputedImage);
       FComputing := false;
@@ -482,7 +482,6 @@ begin
   if not FAlphaError and not FGreenError and not FBlueError and not FRedError then
   begin
     FComputing := True;
-    FComputedLines := 0;
     Timer1.Interval := 200;
     Timer1.Enabled := True;
   end;
