@@ -4,12 +4,15 @@ args=("$@")
 haserror=false
 defaultfpc=fpc
 wantedfpc=$defaultfpc
+if [ -f "debian/CONFIGURE_DEFAULT_FPCBIN" ]; then
+	wantedfpc=$(cat debian/CONFIGURE_DEFAULT_FPCBIN)
+fi
 defaultprefix=/usr/local
 wantedprefix=$defaultprefix
 if [ -f "debian/CONFIGURE_DEFAULT_LAZDIR" ]; then
 	wantedlazdir=$(cat debian/CONFIGURE_DEFAULT_LAZDIR)
 else
-	wantedlazdir=$CONFIGURE_DEFAULT_LAZDIR
+	wantedlazdir=
 fi
 for param in "${args[@]}"
 do
@@ -39,7 +42,7 @@ do
 		echo "Warning: unknown option $param"
 	fi
 done
-echo "Prefix set to $wantedprefix"
+echo "Prefix set to: $wantedprefix"
 echo $wantedprefix >prefix
 if [ "$wantedlazdir" == "" ]; then
 	echo "Using lazbuild"
@@ -55,6 +58,7 @@ else
 		echo "Warning: it does not seem to be the directory of Lazarus!"
 	fi
 	echo $wantedlazdir >lazdir
+	echo "Compiler set to: $wantedfpc"
 	rm -f fpcbin
 	echo $wantedfpc >fpcbin
 fi
