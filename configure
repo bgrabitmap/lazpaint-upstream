@@ -61,15 +61,10 @@ fi
 if [ "$haserror" = true ]; then
 	exit 1
 else
-	if [ "$(which make)" != "" ]; then
-		echo "You can now type: make"
+	if [ "$(uname)" == "FreeBSD" ]; then
+		echo "You can now type: gmake"
 	else
-		if [ "$(which gmake)" != "" ]; then
-			echo "You can now type: gmake"
-		else
-			echo "Neither make nor gmake found"
-			exit 1
-		fi
+		echo "You can now type: make"
 	fi
 	exit 0
 fi
