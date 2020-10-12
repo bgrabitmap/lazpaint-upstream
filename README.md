@@ -2,6 +2,8 @@
 Repository containing all files necessary to build LazPaint.
 
 ## Create package with Debuild
+Important: installing the lcl package may interfere with your installation of Lazarus. Before that, please uninstall Lazarus if it wasn't installed using synaptic. After that remove the configuration folder ".lazarus" in the home folder. If you want to use your current installation of Lazarus, see other sections below.
+
 To create the Debian package, retrieve the content of the repository in a subdirectory inside a directory dedicated to upstreams. Rename the directory as lazpaint-### where ### is the version number. Compress this folder into a file in the upstream directory in tar.gz format and rename it to lazpaint-###.orig.tar.gaz. Then from the subdirectory, run the following commands:
 - apt install build-essential devscripts debhelper
 - apt install lcl
