@@ -10,7 +10,7 @@ if [ "$1" == "" ]; then
 fi
 
 #remove dependency to lazarus-project
-sed -i 's/lazarus-project (>= [0-9.]*), //' debian/control
+sed -i 's/lcl (>= [0-9.]*), //' debian/control
 echo $1 >debian/CONFIGURE_DEFAULT_LAZDIR
 if [ "$2" == "" ]; then
 	rm debian/CONFIGURE_DEFAULT_FPCBIN
