@@ -1,11 +1,6 @@
-lazpaint (6.4.1-1) unstable; urgency=low
+lazpaint (6.4.1-1) unstable; urgency=medium
 
-  * added brush tool and clone tool
-  * added palette toolbar
-  * docking of toolbox
-  * choice of quality when saving PNG/JPG/BMP files
-  * rain rendering
-  * improved 3d object importation (texture, vertex normals)
+  * Initial release. (Closes: #960742)
 
- -- circular <circular@operamail.com>  Sat, 4 Jul 2015 10:29:00 +0100
+ -- circular <circular@operamail.com>  Wed, 14 Oct 2020 17:49:00 +0100
 
