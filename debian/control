@@ -2,9 +2,9 @@ Source: lazpaint
 Section: graphics
 Priority: optional
 Maintainer: circular <circular@operamail.com>
-Build-Depends: lcl (>= 1.8.6), debhelper (>= 9)
+Build-Depends: lcl, debhelper-compat (= 12)
 Rules-Requires-Root: no
-Standards-Version: 4.1.4
+Standards-Version: 4.5.0
 Homepage: https://wiki.freepascal.org/LazPaint
 Vcs-Git: https://github.com/bgrabitmap/lazpaint-upstream.git
 Vcs-Browser: https://github.com/bgrabitmap/lazpaint-upstream
