@@ -7,6 +7,14 @@ Files: *
 Copyright: 2011-2019 circular <circular@operamail.com>
 License: GPL-3+
 
+Files: bgracontrols/*
+Copyright: Copyright (C) 2012 Krzysztof Dibowski dibowski at interia.pl
+License: LGPL-2+
+
+Files: bgrabitmap/bgrareadtga.pas bgrabitmap/bgrareadbmp.pas
+Copyright: Copyright (c) 2003 by Mazen NEIFER of the Free Pascal development team
+License: LGPL-3
+
 License: GPL-3+
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -25,4 +33,41 @@ License: GPL-3+
  On Debian systems, the full text of the GNU General Public
  License version 3 can be found in the file
  '/usr/share/common-licenses/GPL-3'.
+
+License: LGPL-2+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published
+ by the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version. 
+ .
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ GNU Lesser General Public License for more details.
+ .
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program; if not, write to the Free Software Foundation,
+ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ .
+ On Debian systems, the full text of the GNU Lesser General Public
+ License version 2 can be found in the file
+ '/usr/share/common-licenses/LGPL-2'.
+
+License: LGPL-3
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published
+ by the Free Software Foundation; either version 3 of the License
+ .
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ GNU Lesser General Public License for more details.
+ .
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program; if not, write to the Free Software Foundation,
+ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ .
+ On Debian systems, the full text of the GNU Lesser General Public
+ License version 3 can be found in the file
+ '/usr/share/common-licenses/LGPL-3'.
 
