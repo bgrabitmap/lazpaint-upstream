@@ -126,7 +126,7 @@ clean_lazpaint:
 	$(REMOVEDIR) "lazpaint/backup"
 	$(REMOVEDIR) "lazpaint/test_embedded/backup"
 
-compile: lazdir bgrabitmap bgracontrols lazpaint
+compile: lazdir lazpaint
 force:
 	echo lazbuild or fpc will determine what to recompile
 
@@ -135,12 +135,12 @@ ifeq "$(lazdir)" ""
 	lazbuild bgrabitmap/bgrabitmappack.lpk
 endif
 
-bgracontrols: force bgracontrols/bgracontrols.lpk
+bgracontrols: force bgrabitmap bgracontrols/bgracontrols.lpk
 ifeq "$(lazdir)" ""
 	lazbuild bgracontrols/bgracontrols.lpk
 endif
 
-lazpaint: force lazpaint/lazpaint.lpi
+lazpaint: force bgracontrols lazpaint/lazpaint.lpi
 ifeq "$(lazdir)" ""
 	lazbuild lazpaint/lazpaint.lpi
 else
