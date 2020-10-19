@@ -1,0 +1,8 @@
+#!/bin/bash
+make distclean
+dirname=${PWD##*/}
+archive=${dirname/-/_}.orig.tar.gz
+cd ..
+tar --exclude-vcs -zcvf ${archive} ./${dirname}
+cd "$dirname"
+
