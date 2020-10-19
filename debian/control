@@ -2,7 +2,7 @@ Source: lazpaint
 Section: graphics
 Priority: optional
 Maintainer: Johann ELSASS <circular@operamail.com>
-Uploaders: Alex Myczko <myczko@phys.ethz.ch>
+Uploaders: Gürkan Myczko <gurkan@phys.ethz.ch>
 Build-Depends: fpc, lcl, debhelper-compat (= 12)
 Rules-Requires-Root: no
 Standards-Version: 4.5.0
@@ -14,8 +14,8 @@ Package: lazpaint
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Description: Image editor with raster and vector layers
- Can read layered files (lzp, ora, pdn), multi-images (gif, ico), 
- flat files (bmp, jpeg, pcx, png, psd, tga, tiff, xpm, xwd), 
+ Can read layered files (lzp, ora, pdn), multi-images (gif, ico),
+ flat files (bmp, jpeg, pcx, png, psd, tga, tiff, xpm, xwd),
  vectorial (svg), 3D (obj).
  Has drawing tools, phong shading, curve adjustments,
  filters and render some textures.
