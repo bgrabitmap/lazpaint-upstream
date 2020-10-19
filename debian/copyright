@@ -1,14 +1,14 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: lazpaint
-Upstream-Contact: Johann Elsass <circular@operamail.com>
+Upstream-Contact: Johann ELSASS <circular@operamail.com>
 Source: https://github.com/bgrabitmap/lazpaint/releases
 
 Files: *
-Copyright: 2011-2019 Johann Elsass <circular@operamail.com>
+Copyright: 2011-2019 Johann ELSASS <circular@operamail.com>
 License: GPL-3+
 
 Files: debian/*
-Copyright: 2011-2020 Johann Elsass <circular@operamail.com>
+Copyright: 2011-2020 Johann ELSASS <circular@operamail.com>
 License: GPL-3+
 
 Files: bgracontrols/*
