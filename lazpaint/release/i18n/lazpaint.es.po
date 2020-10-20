@@ -2890,8 +2890,8 @@ msgstr "Fijo"
 msgid "Folder"
 msgstr "Carpeta"
 
-#: uresourcestrings.rsfollowingerrorsoccured
-msgid "Following errors occured:"
+#: uresourcestrings.rsfollowingerrorsoccurred
+msgid "Following errors occurred:"
 msgstr "Estos errors han occurido:"
 
 #: uresourcestrings.rsfunctionnotdefined

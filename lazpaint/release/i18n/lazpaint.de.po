@@ -2905,8 +2905,8 @@ msgstr "Festplatte"
 msgid "Folder"
 msgstr "Ordner"
 
-#: uresourcestrings.rsfollowingerrorsoccured
-msgid "Following errors occured:"
+#: uresourcestrings.rsfollowingerrorsoccurred
+msgid "Following errors occurred:"
 msgstr "Folgende Fehler traten auf:"
 
 #: uresourcestrings.rsfunctionnotdefined

@@ -2888,8 +2888,8 @@ msgstr ""
 msgid "Folder"
 msgstr "Mape"
 
-#: uresourcestrings.rsfollowingerrorsoccured
-msgid "Following errors occured:"
+#: uresourcestrings.rsfollowingerrorsoccurred
+msgid "Following errors occurred:"
 msgstr "Kļūda:"
 
 #: uresourcestrings.rsfunctionnotdefined

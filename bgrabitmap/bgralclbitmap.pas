@@ -287,7 +287,7 @@ var
 begin
   if (ARawImage.Description.Width <> cardinal(ADestination.Width)) or
     (ARawImage.Description.Height <> cardinal(ADestination.Height)) then
-    raise Exception.Create('Bitmap size is inconsistant');
+    raise Exception.Create('Bitmap size is inconsistent');
 
   if (ADestination.Height=0) or (ADestination.Width=0) then
   begin
@@ -506,7 +506,7 @@ begin
   ADataSize      := (AWidth * 3 + ALineEndMargin) * AHeight;
 
   if integer(RawImage.Description.BytesPerLine) <> AWidth * 3 + ALineEndMargin then
-    raise FPImageException.Create('Line size is inconsistant');
+    raise FPImageException.Create('Line size is inconsistent');
 
   PSource   := AData;
   GetMem({%H-}TempData, ADataSize);

@@ -2890,8 +2890,8 @@ msgstr ""
 msgid "Folder"
 msgstr ""
 
-#: uresourcestrings.rsfollowingerrorsoccured
-msgid "Following errors occured:"
+#: uresourcestrings.rsfollowingerrorsoccurred
+msgid "Following errors occurred:"
 msgstr ""
 
 #: uresourcestrings.rsfunctionnotdefined
