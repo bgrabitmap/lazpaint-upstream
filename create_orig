@@ -1,11 +1,12 @@
 #!/bin/bash
-read -p "Create orig.tar.gz file (y/n)?" -n 1 -r
+dirname=${PWD##*/}
+archive=${dirname/-/_}.orig.tar.gz
+read -p "Create \"../${archive}\" file (y/n)?" -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
     make distclean
-    dirname=${PWD##*/}
-    archive=${dirname/-/_}.orig.tar.gz
+
     cd ..
     tar --exclude-vcs -zcvf ${archive} ./${dirname}
     cd "$dirname"
