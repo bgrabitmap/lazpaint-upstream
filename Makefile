@@ -37,11 +37,13 @@ ifeq ($(UNAME),Linux)
   ICON_DIR=$(SHARE_DIR)/icons/hicolor
   SOURCE_BIN_DIR=lazpaint/release
   SOURCE_DEBIAN_DIR=debian
+  SOURCE_DEBIAN_UPSTREAM=debian-upstream
   PO_FILES:=$(shell find "$(SOURCE_BIN_DIR)/i18n" -maxdepth 1 -type f -name *.po -printf "\"%f\" ")
   MODEL_FILES:=$(shell find "$(SOURCE_BIN_DIR)/models" -maxdepth 1 -type f -printf "\"%f\" ")
   ICON:=lazpaint/lazpaint.ico
   ICONS=$(shell identify $(ICON) | awk -F '[[]|[]] | ' '{ printf "[%s]=%s ", $$2, $$4 }')
-  EXTRACTED_ICONS=$(shell find "icons" -maxdepth 1 -type f -name *x*.png -exec basename {} .png ';')
+  EXTRACTED_ICONS_DIR=icons
+  EXTRACTED_ICONS=$(shell find "${EXTRACTED_ICONS_DIR}" -maxdepth 1 -type f -name *x*.png -exec basename {} .png ';')
   INTERFACE:=LCLgtk2
   LAZARUSDIRECTORIES:="-Fu$(lazdir)/*" "-Fi$(lazdir)/*" "-Fu$(lazdir)/components/printers/unix" "-Fi$(lazdir)/components/printers/unix" "-Fu$(lazdir)/packager/registration" "-Fi$(lazdir)/packager/registration" "-Fu$(lazdir)/components/*" "-Fi$(lazdir)/components/*" "-Fu$(lazdir)/lcl/forms" "-Fi$(lazdir)/lcl/forms" "-Fu$(lazdir)/lcl/widgetset" "-Fi$(lazdir)/lcl/widgetset" "-Fu$(lazdir)/interfaces/*" "-Fi$(lazdir)/interfaces/*" "-Fu$(lazdir)/lcl/nonwin32" "-Fi$(lazdir)/lcl/nonwin32" "-Fu$(lazdir)/lcl/interfaces/gtk2" "-Fi$(lazdir)/lcl/interfaces/gtk2" "-Fu$(lazdir)/lcl/components/*" "-Fi$(lazdir)/lcl/components/*" "-Fu$(lazdir)/lcl/include" "-Fi$(lazdir)/lcl/include" "-Fu$(lazdir)/lcl" "-Fi$(lazdir)/lcl"
 endif
@@ -67,11 +69,11 @@ ifeq ($(UNAME),Linux)
 	install -D "$(SOURCE_BIN_DIR)/lazpaint" "$(BIN_DIR)/lazpaint"
 	for f in $(PO_FILES); do install -D --mode=0644 "$(SOURCE_BIN_DIR)/i18n/$$f" "${RESOURCE_DIR}/i18n/$$f"; done
 	for f in $(MODEL_FILES); do install -D --mode=0644 "$(SOURCE_BIN_DIR)/models/$$f" "${RESOURCE_DIR}/models/$$f"; done
-	install -D "$(SOURCE_DEBIAN_DIR)/applications/lazpaint.desktop" "$(SHARE_DIR)/applications/lazpaint.desktop"
-	install -D "$(SOURCE_DEBIAN_DIR)/pixmaps/lazpaint.png" "$(SHARE_DIR)/pixmaps/lazpaint.png"
-	for s in $(EXTRACTED_ICONS); do install -D --mode=0644 icons/$$s.png $(ICON_DIR)/$$s/apps/lazpaint.png; done
+	install -D "${SOURCE_DEBIAN_UPSTREAM}/applications/lazpaint.desktop" "$(SHARE_DIR)/applications/lazpaint.desktop"
+	install -D "${EXTRACTED_ICONS_DIR}/48x48.png" "$(SHARE_DIR)/pixmaps/lazpaint.png"
+	for s in $(EXTRACTED_ICONS); do install -D --mode=0644 "${EXTRACTED_ICONS_DIR}/$$s.png" "$(ICON_DIR)/$$s/apps/lazpaint.png"; done
 	install -d "$(SHARE_DIR)/man/man1"
-	gzip -9 -n -c "$(SOURCE_DEBIAN_DIR)/man/man1/lazpaint.1" >"$(SHARE_DIR)/man/man1/lazpaint.1.gz"
+	gzip -9 -n -c "${SOURCE_DEBIAN_UPSTREAM}/man/man1/lazpaint.1" >"$(SHARE_DIR)/man/man1/lazpaint.1.gz"
 	chmod 0644 "$(SHARE_DIR)/man/man1/lazpaint.1.gz"
 	install -d "$(DOC_DIR)"
 	gzip -9 -n -c "$(SOURCE_DEBIAN_DIR)/changelog" >"$(DOC_DIR)/changelog.Debian.gz"
