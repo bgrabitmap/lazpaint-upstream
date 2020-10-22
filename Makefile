@@ -1,3 +1,5 @@
+BUILDMODE := Release
+
 ifeq ($(OS),Windows_NT)     # true for Windows_NT or later
   SHELL := C:/Windows/System32/cmd.exe /c
   UNAME := Windows
@@ -132,19 +134,9 @@ compile: lazdir lazpaint
 force:
 	echo lazbuild or fpc will determine what to recompile
 
-bgrabitmap: force bgrabitmap/bgrabitmappack.lpk
-ifeq "$(lazdir)" ""
-	lazbuild bgrabitmap/bgrabitmappack.lpk
-endif
-
-bgracontrols: force bgrabitmap bgracontrols/bgracontrols.lpk
-ifeq "$(lazdir)" ""
-	lazbuild bgracontrols/bgracontrols.lpk
-endif
-
 lazpaint: force bgracontrols lazpaint/lazpaint.lpi
 ifeq "$(lazdir)" ""
-	lazbuild lazpaint/lazpaint.lpi
+	lazbuild --build-mode=$(BUILDMODE) bgrabitmap/bgrabitmappack.lpk bgracontrols/bgracontrols.lpk lazpaint/lazpaint.lpi
 else
 	$(COPY) "lazpaint/resources/lazpaint.res" "lazpaint/lazpaint.res"
 	$(CREATEDIR) "lazpaint/release/lib"
