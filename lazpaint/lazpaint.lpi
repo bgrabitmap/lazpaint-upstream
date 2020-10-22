@@ -25,7 +25,7 @@
       <CharSet Value="04B0"/>
       <StringTable CompanyName="http://sourceforge.net/projects/lazpaint/" ProductName="LazPaint" InternalName="lazpaint" OriginalFilename="lazpaint.exe"/>
     </VersionInfo>
-    <BuildModes Count="4" Active="Release">
+    <BuildModes Count="6" Active="Release">
       <Item1 Name="Debug" Default="True"/>
       <Item2 Name="Release">
         <CompilerOptions>
@@ -145,6 +145,79 @@
           </Linking>
         </CompilerOptions>
       </Item4>
+      <Item5 Name="Debug Qt5">
+        <MacroValues Count="1">
+          <Macro1 Name="LCLWidgetType" Value="qt5"/>
+        </MacroValues>
+        <CompilerOptions>
+          <Version Value="11"/>
+          <PathDelim Value="\"/>
+          <SearchPaths>
+            <IncludeFiles Value="$(ProjOutDir)"/>
+            <UnitOutputDirectory Value="debug\$(TargetCPU)-$(TargetOS)"/>
+          </SearchPaths>
+          <CodeGeneration>
+            <Optimizations>
+              <OptimizationLevel Value="0"/>
+            </Optimizations>
+          </CodeGeneration>
+          <Linking>
+            <Debugging>
+              <DebugInfoType Value="dsStabs"/>
+              <UseHeaptrc Value="True"/>
+            </Debugging>
+            <Options>
+              <Win32>
+                <GraphicApplication Value="True"/>
+              </Win32>
+            </Options>
+          </Linking>
+        </CompilerOptions>
+      </Item5>
+      <Item6 Name="Release Qt5">
+        <MacroValues Count="1">
+          <Macro1 Name="LCLWidgetType" Value="qt5"/>
+        </MacroValues>
+        <CompilerOptions>
+          <Version Value="11"/>
+          <PathDelim Value="\"/>
+          <Target>
+            <Filename Value="release\lazpaint"/>
+          </Target>
+          <SearchPaths>
+            <IncludeFiles Value="$(ProjOutDir)"/>
+            <OtherUnitFiles Value="buttons"/>
+            <UnitOutputDirectory Value="release\lib\$(TargetCPU)-$(TargetOS)"/>
+          </SearchPaths>
+          <Parsing>
+            <SyntaxOptions>
+              <UseAnsiStrings Value="False"/>
+            </SyntaxOptions>
+          </Parsing>
+          <CodeGeneration>
+            <Optimizations>
+              <OptimizationLevel Value="3"/>
+              <VariablesInRegisters Value="True"/>
+            </Optimizations>
+          </CodeGeneration>
+          <Linking>
+            <Debugging>
+              <GenerateDebugInfo Value="False"/>
+              <UseLineInfoUnit Value="False"/>
+              <StripSymbols Value="True"/>
+            </Debugging>
+            <LinkSmart Value="True"/>
+            <Options>
+              <Win32>
+                <GraphicApplication Value="True"/>
+              </Win32>
+            </Options>
+          </Linking>
+        </CompilerOptions>
+      </Item6>
+      <SharedMatrixOptions Count="1">
+        <Item1 ID="123471315308" Modes="Debug Qt5,Release Qt5" Type="IDEMacro" MacroName="LCLWidgetType" Value="qt5"/>
+      </SharedMatrixOptions>
     </BuildModes>
     <PublishOptions>
       <Version Value="2"/>
@@ -433,7 +506,7 @@
         <Filename Value="uconfig.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="UConfig"/>
-        <EditorIndex Value="9"/>
+        <EditorIndex Value="8"/>
         <TopLine Value="261"/>
         <CursorPos X="22" Y="275"/>
         <UsageCount Value="202"/>
@@ -466,7 +539,7 @@
         <Filename Value="lazpaintinstance.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="LazpaintInstance"/>
-        <EditorIndex Value="10"/>
+        <EditorIndex Value="9"/>
         <TopLine Value="840"/>
         <CursorPos X="9" Y="856"/>
         <UsageCount Value="200"/>
@@ -533,7 +606,7 @@
         <Filename Value="uscaledpi.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="UScaleDPI"/>
-        <EditorIndex Value="6"/>
+        <EditorIndex Value="5"/>
         <TopLine Value="87"/>
         <CursorPos X="32" Y="100"/>
         <UsageCount Value="221"/>
@@ -737,8 +810,8 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="UTranslation"/>
         <IsVisibleTab Value="True"/>
-        <EditorIndex Value="8"/>
-        <TopLine Value="85"/>
+        <EditorIndex Value="7"/>
+        <TopLine Value="94"/>
         <CursorPos X="11" Y="107"/>
         <UsageCount Value="201"/>
         <Loaded Value="True"/>
@@ -770,7 +843,7 @@
         <Filename Value="umenu.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="UMenu"/>
-        <EditorIndex Value="3"/>
+        <EditorIndex Value="2"/>
         <TopLine Value="181"/>
         <CursorPos X="12" Y="195"/>
         <UsageCount Value="201"/>
@@ -864,7 +937,7 @@
         <ComponentName Value="FBrowseImages"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="7"/>
+        <EditorIndex Value="6"/>
         <TopLine Value="787"/>
         <CursorPos X="47" Y="796"/>
         <UsageCount Value="201"/>
@@ -1128,7 +1201,7 @@
       <Unit119>
         <Filename Value="maintoolbar.inc"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="5"/>
+        <EditorIndex Value="4"/>
         <TopLine Value="1166"/>
         <CursorPos X="8" Y="1171"/>
         <UsageCount Value="202"/>
@@ -1757,7 +1830,7 @@
       </Unit212>
       <Unit213>
         <Filename Value="lazpaintmainform.lfm"/>
-        <EditorIndex Value="4"/>
+        <EditorIndex Value="3"/>
         <TopLine Value="400"/>
         <CursorPos X="41" Y="416"/>
         <UsageCount Value="11"/>
@@ -1775,11 +1848,10 @@
       <Unit215>
         <Filename Value="..\..\..\..\..\usr\share\lazarus\2.0.8\lcl\controls.pp"/>
         <UnitName Value="Controls"/>
-        <EditorIndex Value="2"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="2384"/>
         <CursorPos X="3" Y="2396"/>
         <UsageCount Value="11"/>
-        <Loaded Value="True"/>
       </Unit215>
       <Unit216>
         <Filename Value="ubrowseimages.lfm"/>
