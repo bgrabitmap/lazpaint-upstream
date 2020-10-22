@@ -1375,7 +1375,10 @@ begin
       FSaveImage.DefaultExtension := '.png';
     FSaveImage.InitialDirectory:= FSaveInitialDir;
     if FSaveImage.ShowModal = mrOK then
+    begin
+      result := srOk;
       DoSaveAs(FSaveImage.FileName)
+    end
     else
       result := srCancelledByUser;
   end else
@@ -1385,6 +1388,7 @@ begin
     SavePictureDialog1.InitialDir:= FSaveInitialDir;
     if SavePictureDialog1.Execute then
     begin
+      result := srOk;
       DoSaveAs(SavePictureDialog1.FileName);
     end else
       result := srCancelledByUser;
