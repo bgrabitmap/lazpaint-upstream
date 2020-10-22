@@ -175,6 +175,9 @@ begin
   Visible := false;
   movingItemStart := false;
   Panel_WindowTitle.Caption := ' '+self.Caption;
+  {$IFDEF LINUX}
+  BorderStyle := bsSizeable;
+  {$ENDIF}
 end;
 
 procedure TFLayerStack.FormDeactivate(Sender: TObject);
@@ -638,17 +641,27 @@ begin
   FCompletelyResizeable:=AValue;
   if AValue then
   begin
+    {$IFDEF LINUX}
+    BorderStyle := bsSizeable;
+    {$ELSE}
     BorderStyle := bsSizeToolWin;
+    {$ENDIF}
     BGRALayerStack.Align := alNone;
     Panel_WindowTitle.Visible := false;
     BGRALayerStack.Align := alClient;
   end else
+  {$IFDEF LINUX}
+  begin
+    BorderStyle := bsDialog;
+  end;
+  {$ELSE}
   begin
     BorderStyle := bsNone;
     BGRALayerStack.Align := alNone;
     Panel_WindowTitle.Visible := true;
     BGRALayerStack.Align := alClient;
   end;
+  {$ENDIF}
 end;
 
 procedure TFLayerStack.UpdateImage;
