@@ -61,7 +61,7 @@ uses
 		  {$IFDEF LCLgtk2}
 		BGRAGtkBitmap,
 		  {$ELSE}
-			{$IFDEF LCLqt}
+			{$IF defined(LCLqt) or defined(LCLqt5)}
 		BGRAQtBitmap,
 			{$ELSE}
 		BGRALCLBitmap,
@@ -89,7 +89,7 @@ type
           {$IFDEF LCLgtk2}
         TBGRABitmap = TBGRAGtkBitmap;
           {$ELSE}
-            {$IFDEF LCLqt}
+            {$IF defined(LCLqt) or defined(LCLqt5)}
         TBGRABitmap = TBGRAQtBitmap;
             {$ELSE}
         TBGRABitmap = TBGRALCLBitmap;

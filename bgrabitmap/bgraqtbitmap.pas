@@ -53,7 +53,7 @@ implementation
 
 uses LCLType,
   LCLIntf, IntfGraphics,
-  qtobjects, qt4,
+  qtobjects, {$ifdef LCLqt5}qt5{$else}qt4{$endif},
   FPImage;
 
 procedure TBGRAQtBitmap.SlowDrawTransparent(ABitmap: TBGRACustomBitmap;
@@ -101,13 +101,19 @@ var
   RawImage: TRawImage;
   BitmapHandle, MaskHandle: HBitmap;
   CreateSuccess: boolean;
+  copyRedShift: Byte;
 begin
   if (AHeight = 0) or (AWidth = 0) then
     exit;
 
   RawImage.Init;
   if TBGRAPixel_RGBAOrder then
-    RawImage.Description.Init_BPP32_R8G8B8_BIO_TTB(AWidth, AHeight)
+  begin
+    RawImage.Description.Init_BPP32_B8G8R8_BIO_TTB(AWidth, AHeight);
+    copyRedShift := RawImage.Description.RedShift;
+    RawImage.Description.RedShift:= RawImage.Description.BlueShift;
+    RawImage.Description.BlueShift:= copyRedShift;
+  end
   else
     RawImage.Description.Init_BPP32_B8G8R8_BIO_TTB(AWidth, AHeight);
   RawImage.Description.LineOrder := ALineOrder;
