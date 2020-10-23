@@ -16,8 +16,9 @@ order13=0
 order14=0
 order15=0
 order16=0
+order17=0
 [projectoptions]
-findinfiledialog=54
+findinfiledialog=68
  [findinfileadialogfo.subdirs]
  value=1
  [findinfileadialogfo.incurrentfile]
@@ -33,21 +34,35 @@ findinfiledialog=54
  [findinfileadialogfo.casesensitive]
  value=0
  [findinfileadialogfo.mask]
- value="*.pas" "*.pp" "*.inc"
- history=1
+ value="*.pas" "*.pp" "*.inc" "*.*"
+ history=2
+  "*.pas" "*.pp" "*.inc" "*.*"
   "*.pas" "*.pp" "*.inc"
  [findinfileadialogfo.dir]
+ filenamescust=0
  filecolwidth=174
  x=0
  y=0
  cx=0
  cy=0
+ panel=0
+ noicon=0
+ compact=0
+ showhidden=0
+ colnamewidth=0
+ colsizewidth=0
+ colextwidth=0
+ coldatewidth=0
+ splitterplaces=0
+ splitterlateral=0
  filehistory=0
  filefilterindex=0
  filefilter="*.pas" "*.pp" "*.inc"
  [findinfileadialogfo.findtext]
- value=SysToUTF8
- history=16
+ value=tofront
+ history=18
+  tofront
+  bsDialog
   SysToUTF8
   {$I 
   {$I
@@ -70,6 +85,8 @@ findinfiledialog=54
  y=238
  cx=339
  cy=308
+ 
+ 
 finddialog=8
  [finddialogfo.selectedonly]
  value=0
@@ -86,33 +103,33 @@ options=114
   70
   70
  [projectoptionsfo.twidgetgrid3]
- propcolwidthref=673
+ propcolwidthref=737
  sortdescend0=0
  sortdescend1=0
  sortdescend2=0
  sortdescend3=0
- width4=119
+ width4=130
  sortdescend4=0
- width5=234
+ width5=256
  sortdescend5=0
- width6=275
+ width6=301
  sortdescend6=0
- width7=47
+ width7=51
  sortdescend7=0
  width8=1
  sortdescend8=0
- width9=275
+ width9=301
  sortdescend9=0
  [projectoptionsfo.twidgetgrid4]
- propcolwidthref=508
+ propcolwidthref=572
  width0=96
  sortdescend0=0
  sortdescend1=0
  width2=73
  sortdescend2=0
- width3=244
+ width3=275
  sortdescend3=0
- width4=254
+ width4=287
  sortdescend4=0
  sorted=0
  col=-1073741823
@@ -122,10 +139,10 @@ options=114
  firsttab=0
  index=0
  [projectoptionsfo.fontaliasgrid]
- propcolwidthref=354
+ propcolwidthref=418
  width0=98
  sortdescend0=0
- width1=343
+ width1=407
  sortdescend1=0
  width2=50
  sortdescend2=0
@@ -139,11 +156,11 @@ options=114
  sortdescend6=0
  [projectoptionsfo.macrosplitter]
  x=0
- y=158
+ y=116
  xprop=1
- yprop=0.23851851851852
+ yprop=0.23847695390782
  [projectoptionsfo.macrogrid]
- propcolwidthref=446
+ propcolwidthref=510
  sortdescend0=0
  sortdescend1=0
  sortdescend2=0
@@ -156,7 +173,7 @@ options=114
  sortdescend9=0
  width10=146
  sortdescend10=0
- width11=430
+ width11=494
  sortdescend11=0
  [projectoptionsfo.comment_1]
  value=
@@ -166,16 +183,16 @@ options=114
  value=
  [projectoptionsfo.makegroupbox]
  firsttab=0
- index=3
+ index=2
  [projectoptionsfo.exceptionsgrid]
- propcolwidthref=664
+ propcolwidthref=728
  width0=47
  sortdescend0=0
- width1=658
+ width1=722
  sortdescend1=0
  [projectoptionsfo.ttabwidget1]
  firsttab=0
- index=1
+ index=2
  [projectoptionsfo.filefiltergrid]
  propcolwidthref=734
  width0=112
@@ -187,13 +204,13 @@ options=114
  index=1
  [projectoptionsfo.setting_tab]
  firsttab=0
- index=1
+ index=2
  [projectoptionsfo]
  stackedunder=
- x=190
- y=44
- cx=724
- cy=734
+ x=349
+ y=127
+ cx=788
+ cy=558
 settings=8
  [settings_form]
  x=447
@@ -208,7 +225,7 @@ targetfile=${PROJECTNAME}${EXEEXT}
 messageoutputfile=
 makecommand=${COMPILER}
 makedir=
-unitdirs=22
+unitdirs=26
  ./buttons
  ./image
  ./cursors
@@ -225,8 +242,12 @@ unitdirs=22
  ${lcldir}/lcl/widgetset
  ${lcldir}/interfaces/*
  ${lcldir}/lcl/nonwin32
+ ${lcldir}/components/printers/win32
+ ${lcldir}/components/printers/unix
+ ${lcldir}/components/printers/qt
+ ${lcldir}/lcl/interfaces/qt5
+ ${lcldir}/lcl/interfaces/gt
  ${lcldir}/lcl/interfaces/gtk2
- ${lcldir}/lcl/interfaces/qt
  ${lcldir}/lcl/interfaces/win32
  ${lcldir}/lcl/components/*
  ${lcldir}/lcl/include
@@ -235,33 +256,34 @@ unitpref=-Fu
 incpref=-Fi
 libpref=-Fl
 objpref=-Fo
-targpref=-orelease/
-befcommand=0
+targpref=-o
+befcommand=1
+ cd units
 aftcommand=0
 makeoptions=11
   -MObjFPC -Scgi -Cg -OoREGVAR -Xs -XX -l -vewnhibq
- -gl
  -ghl
  -B
  -VD
- -O-
- -O3 -XX -CX -Xs
+ -O2 -XX -CX -Xs
  -vi
  -FUunits/
  -dLCL -dLCLgtk2
+ -dLCL -dLCLqt
+ -dLCL -dLCLqt5
  -dLCL -dLCLwin32
 makeoptpurpose=11
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+ Define Object Pascal
+ Debug infos
+ Re-build all
+ Verbosity 1
+ Optimizations
+ Verbosity 2
+ Output of units
+ Use GTK2 widget
+ Use Qt widget
+ Use Qt5 widget
+ Use win32 widget
 compilerused=29
  ${COMPILER} (Default)
  Pascal 1
@@ -392,7 +414,7 @@ forcezorder=0
 stripmessageesc=0
 copymessages=0
 closemessages=0
-enablepurpose=0
+enablepurpose=1
 enablesource=1
 checkmethods=1
 colorerror=-1610612717
@@ -472,18 +494,19 @@ settingsautosave=0
 modulenames=0
 moduletypes=0
 modulefiles=0
-befcommandon=0
+befcommandon=1
+ 4095
 makeoptionson=11
  63
- 6
  0
- 54
+ 50
+ 0
+ 61
  4095
- 2
- 57
  4095
- 63
- 4047
+ 3851
+ 0
+ 4
  48
 compilerusedon=29
  4039
@@ -557,7 +580,7 @@ project_time=
 project_date=23:54:23 19/05/2020
 project_comment=
 aftcommandon=0
-unitdirson=22
+unitdirson=26
  987135
  987135
  987135
@@ -574,8 +597,12 @@ unitdirson=22
  987135
  987135
  987087
+ 983088
  987087
+ 983044
+ 987076
  983040
+ 987083
  983088
  987135
  987135
@@ -792,7 +819,6 @@ files=
  a=0,8228,6,Text Files
  )
 [componentstore]
-filename=
 [components]
 [selecteditpage]
 colwidth=100
@@ -807,27 +833,23 @@ envvarons=0
 [edit]
 hintwidth=0
 hintheight=0
-finddtext=ugeometricbrush.lrs
-findhistory=0
+finddtext=tofront
+findhistory=1
+ tofront
 findoptions=1
-editpos=1
- 11,8
-bookmarks0=0
-sourcefiles=1
- ${PROJECTDIR}/lazpaint.lpr
-relpaths=1
- lazpaint.lpr
-ismoduletexts=1
- 0
+editpos=0
+sourcefiles=0
+relpaths=0
+ismoduletexts=0
 modules=0
 moduleoptions=0
 visiblemodules=0
 nomenumodules=0
 [sourcefo.files_tab]
 firsttab=0
-index=0
+index=-1
 [layout]
-windowlayout=530
+windowlayout=563
  [mainfo.basedock]
  splitdir=2
  useroptions=268450944
@@ -842,7 +864,7 @@ windowlayout=530
  ncx=0
  ncy=0
  x=58
- y=186
+ y=147
  cx=1224
  cy=621
  rcx=0
@@ -961,7 +983,7 @@ windowlayout=530
  x=0
  y=0
  cx=205
- cy=550
+ cy=526
  rcx=0
  rcy=0
  [projecttreefo.grid]
@@ -1051,10 +1073,10 @@ windowlayout=530
  [breakpointsfo.bkptson]
  value=1
  [objectinspectorfo.grid]
- propcolwidthref=480
- width0=213
+ propcolwidthref=547
+ width0=243
  sortdescend0=0
- width1=261
+ width1=298
  sortdescend1=0
  [symbolfo]
  splitdir=0
@@ -1147,9 +1169,9 @@ windowlayout=530
  ncx=0
  ncy=0
  x=0
- y=617
- cx=1428
- cy=114
+ y=581
+ cx=1348
+ cy=108
  rcx=0
  rcy=0
  [componentstorefo]
@@ -1181,34 +1203,67 @@ windowlayout=530
  width3=185
  sortdescend3=0
  [componentstorefo.storefiledialog]
+ filenamescust=0
  filenames=0
  filecolwidth=0
  x=0
  y=0
  cx=0
  cy=0
+ panel=0
+ noicon=0
+ compact=0
+ showhidden=0
+ colnamewidth=0
+ colsizewidth=0
+ colextwidth=0
+ coldatewidth=0
+ splitterplaces=0
+ splitterlateral=0
  lastdir=
  filehistory=0
  filefilterindex=0
  filefilter=
  [componentstorefo.groupfiledialog]
+ filenamescust=0
  filenames=0
  filecolwidth=0
  x=0
  y=0
  cx=0
  cy=0
+ panel=0
+ noicon=0
+ compact=0
+ showhidden=0
+ colnamewidth=0
+ colsizewidth=0
+ colextwidth=0
+ coldatewidth=0
+ splitterplaces=0
+ splitterlateral=0
  lastdir=
  filehistory=0
  filefilterindex=0
  filefilter=
  [componentstorefo.compfiledialog]
+ filenamescust=0
  filenames=0
  filecolwidth=0
  x=0
  y=0
  cx=0
  cy=0
+ panel=0
+ noicon=0
+ compact=0
+ showhidden=0
+ colnamewidth=0
+ colsizewidth=0
+ colextwidth=0
+ coldatewidth=0
+ splitterplaces=0
+ splitterlateral=0
  lastdir=
  filehistory=0
  filefilterindex=0
@@ -1246,8 +1301,8 @@ windowlayout=530
  ncy=0
  x=0
  y=0
- cx=1428
- cy=61
+ cx=1348
+ cy=49
  rcx=0
  rcy=0
  [debuggerfo.basedock]
@@ -1258,12 +1313,12 @@ windowlayout=530
  mdistate=0
  nx=0
  ny=0
- ncx=1428
- ncy=66
+ ncx=1333
+ ncy=34
  x=0
  y=0
- cx=1428
- cy=66
+ cx=1333
+ cy=32
  rcx=0
  rcy=0
  [debuggerfo.edit_options]
@@ -1289,13 +1344,13 @@ windowlayout=530
  ncy=0
  x=208
  y=0
- cx=1220
- cy=550
+ cx=1140
+ cy=526
  rcx=0
  rcy=0
  [sourcefo.files_tab]
  firsttab=0
- index=0
+ index=-1
  [confideufo.fontname]
  value=stf_default
  [confideufo.usedefaulteditoroptions]
@@ -1331,9 +1386,9 @@ windowlayout=530
  ncx=0
  ncy=0
  x=0
- y=64
- cx=1428
- cy=550
+ y=52
+ cx=1348
+ cy=526
  rcx=0
  rcy=0
 [targetconsole]
