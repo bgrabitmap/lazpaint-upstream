@@ -11,5 +11,12 @@ then
     tar --exclude-vcs -zcvf ${archive} ./${dirname}
     cd "$dirname"
     echo "Done creating ../${archive}"
+    echo
+    read -p "Launch \"debuild -us -uc\" on the package now (y/n)?" -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]
+    then
+    	debuild -us -uc
+    fi
 fi
 
