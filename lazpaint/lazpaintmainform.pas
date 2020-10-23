@@ -1122,7 +1122,11 @@ begin
   if LazPaintInstance.TopMostHasFocus then
   begin
     if LazPaintInstance.TopMostOkToUnfocus then
-      SafeSetFocus(self)
+    begin
+      {$IF not (defined(LINUX) and defined(LCLqt5))}
+      SafeSetFocus(self);
+      {$endif}
+    end
     else
       exit;
   end;
