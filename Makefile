@@ -1,4 +1,4 @@
-BUILDMODE := Release
+BUILDMODE ?= Release
 
 ifeq ($(OS),Windows_NT)     # true for Windows_NT or later
   SHELL := C:/Windows/System32/cmd.exe /c
