@@ -97,6 +97,9 @@ procedure TFChooseColor.FormCreate(Sender: TObject);
 begin
    {$IFDEF LINUX}
    BorderStyle:= bsDialog;
+     {$IFDEF LCLQt5}
+     FormStyle := fsNormal;
+     {$ENDIF}
    {$ENDIF}
    ClientHeight := DoScaleY(160,OriginalDPI,TFChooseColor_CustomDPI);
    ScaleDPI(Self,OriginalDPI,TFChooseColor_CustomDPI);

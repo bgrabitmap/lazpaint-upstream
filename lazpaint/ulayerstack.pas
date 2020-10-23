@@ -177,6 +177,9 @@ begin
   Panel_WindowTitle.Caption := ' '+self.Caption;
   {$IFDEF LINUX}
   BorderStyle := bsSizeable;
+    {$IFDEF LCLQt5}
+    FormStyle := fsNormal;
+    {$ENDIF}
   {$ENDIF}
 end;
 

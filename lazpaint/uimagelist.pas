@@ -255,6 +255,12 @@ end;
 
 procedure TFImageList.FormCreate(Sender: TObject);
 begin
+  {$IFDEF LINUX}
+  BorderStyle:= bsSizeable;
+    {$IFDEF LCLqt5}
+    FormStyle := fsNormal;
+    {$endif}
+  {$ENDIF}
   WidthNormal:=500;
   HeightNormal:=360;
   WidthMinimal:=340;
@@ -588,7 +594,7 @@ begin
   if (Result = false) and (Verbose= True) then QuestionDlg (rsInformation, rsThereAreNoCheckedItems, mtInformation, [mrOk, rsOkay],'');
 end;
 
-function TFImageList.SaveModified: Boolean;
+function TFImageList.SaveModified: boolean;
 begin
   Result:=True;
   if LazPaintInstance.Image.IsFileModified=True then

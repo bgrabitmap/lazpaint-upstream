@@ -1408,7 +1408,9 @@ begin
       SetWindowTopLeftCorner(FLayerStack, xDest,yDest);
       SetWindowFullHeight(FLayerStack, h);
       yDest += GetWindowFullHeight(FLayerStack)-WindowOutermostBorderHeight;
-      FLayerStack.FormStyle := fsNormal;
+      {$IF not (defined(LINUX) and defined(LCLqt5))}
+      LayerStack.FormStyle := fsNormal;
+      {$ENDIF}
     end;
 
     if ChooseColorVisible then
@@ -1417,7 +1419,9 @@ begin
         SetWindowFullWidth(FLayerStack, GetWindowFullWidth(FChooseColor));
       SetWindowTopLeftCorner(FChooseColor, xDest,yDest);
       yDest += GetWindowFullHeight(FChooseColor)-WindowOutermostBorderHeight;
+      {$IF not (defined(LINUX) and defined(LCLqt5))}
       FChooseColor.FormStyle := fsNormal;
+      {$ENDIF}
     end;
 
     FPrevDockArea := r;
@@ -1426,9 +1430,13 @@ begin
     if LayerWindowVisible then
     begin
       FLayerStack.CompletelyResizeable := true;
+      {$IF not (defined(LINUX) and defined(LCLqt5))}
       FLayerStack.FormStyle := fsStayOnTop;
+      {$ENDIF}
     end;
+    {$IF not (defined(LINUX) and defined(LCLqt5))}
     if FChooseColor <> nil then FChooseColor.FormStyle := fsStayOnTop;
+    {$ENDIF}
   end;
 end;
 

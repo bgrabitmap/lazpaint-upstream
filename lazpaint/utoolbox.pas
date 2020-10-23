@@ -83,6 +83,9 @@ procedure TFToolbox.FormCreate(Sender: TObject);
 begin
   {$IFDEF LINUX}
   BorderStyle:= bsDialog;
+    {$IFDEF LCLqt5}
+    FormStyle := fsNormal;
+    {$endif}
   {$ENDIF}
 end;
 
