@@ -618,7 +618,18 @@ end;
 function TLazPaintInstance.GetLayerWindowVisible: boolean;
 begin
   if FLayerStack <> nil then
-    result := FLayerStack.Visible
+  begin
+    result := FLayerStack.Visible;
+    {$if defined(LINUX) and defined(LCLqt5)}
+    If result and (FMain <> nil) then
+    begin
+      if FMain.Visible and
+         FMain.BoundsRect.Contains(FLayerStack.BoundsRect) and
+         FMain.Active then
+         result := false;
+    end;
+    {$endif}
+  end
   else
     result := false;
 end;
@@ -626,7 +637,13 @@ end;
 procedure TLazPaintInstance.SetLayerWindowVisible(AValue: boolean);
 begin
   if FLayerStack <> nil then
-    FLayerStack.Visible := AValue;
+  begin
+    {$if defined(LINUX) and defined(LCLqt5)}
+    if AValue and FLayerStack.Visible then
+      FLayerStack.BringToFront else
+    {$endif}
+      FLayerStack.Visible := AValue;
+  end;
 end;
 
 procedure TLazPaintInstance.OnFunctionException(AFunctionName: string;
@@ -694,7 +711,18 @@ end;
 function TLazPaintInstance.GetImageListWindowVisible: boolean;
 begin
   if FImageList <> nil then
-    Result:= FImageList.Visible
+  begin
+    Result:= FImageList.Visible;
+    {$if defined(LINUX) and defined(LCLqt5)}
+    If result and (FMain <> nil) then
+    begin
+      if FMain.Visible and
+         FMain.BoundsRect.Contains(FImageList.BoundsRect) and
+         FMain.Active then
+         result := false;
+    end;
+    {$endif}
+  end
   else
     Result := false;
 end;
@@ -724,7 +752,13 @@ end;
 procedure TLazPaintInstance.SetImageListWindowVisible(const AValue: boolean);
 begin
   if FImageList <> nil then
-    FImageList.Visible := AValue;
+  begin
+    {$if defined(LINUX) and defined(LCLqt5)}
+    if AValue and FImageList.Visible then
+      FImageList.BringToFront else
+    {$endif}
+      FImageList.Visible := AValue;
+  end;
 end;
 
 function TLazPaintInstance.GetChooseColorHeight: integer;
