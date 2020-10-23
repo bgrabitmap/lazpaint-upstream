@@ -1409,7 +1409,7 @@ begin
       SetWindowFullHeight(FLayerStack, h);
       yDest += GetWindowFullHeight(FLayerStack)-WindowOutermostBorderHeight;
       {$IF not (defined(LINUX) and defined(LCLqt5))}
-      LayerStack.FormStyle := fsNormal;
+      FLayerStack.FormStyle := fsNormal;
       {$ENDIF}
     end;
 
