@@ -13,7 +13,7 @@ Vcs-Browser: https://github.com/bgrabitmap/lazpaint-upstream
 Package: lazpaint
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}
-Description: Image editor with raster and vector layers
+Description: Image editor with raster layers
  Can read layered files (lzp, ora, pdn), multi-images (gif, ico),
  flat files (bmp, jpeg, pcx, png, psd, tga, tiff, xpm, xwd),
  vectorial (svg), 3D (obj).
