@@ -37,7 +37,7 @@
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
             <OtherUnitFiles Value="buttons"/>
-            <UnitOutputDirectory Value="release\lib\$(TargetCPU)-$(TargetOS)"/>
+            <UnitOutputDirectory Value="release\lib\$(TargetCPU)-$(TargetOS)-$(LCLWidgetType)\$(FPCVer)"/>
           </SearchPaths>
           <Parsing>
             <SyntaxOptions>

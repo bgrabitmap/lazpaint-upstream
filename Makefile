@@ -1,4 +1,6 @@
-BUILDMODE ?= Release
+# On Linux, TARGET can be Gtk2 or Qt5 (default)
+# On FreeBSD, TARGET can be Gtk2 (default) or Qt5
+# On Windows, TARGET can be Win32 (default) or Qt5
 
 ifeq ($(OS),Windows_NT)     # true for Windows_NT or later
   SHELL := C:/Windows/System32/cmd.exe /c
@@ -30,6 +32,7 @@ lazdir := $(shell $(ECHOFILE) lazdir)
 fpcbin = $(shell $(ECHOFILE) fpcbin)
 
 ifeq ($(UNAME),Linux)
+  TARGET ?= Qt5
   prefix := $(shell $(ECHOFILE) prefix)
   USER_DIR = $(DESTDIR)$(prefix)
   BIN_DIR = $(USER_DIR)/bin
@@ -51,13 +54,28 @@ ifeq ($(UNAME),Linux)
 endif
 
 ifeq ($(UNAME),FreeBSD)
-  INTERFACE:=LCLgtk2
+  TARGET ?= Gtk2
   LAZARUSDIRECTORIES:="-Fu$(lazdir)/*" "-Fi$(lazdir)/*" "-Fu$(lazdir)/components/printers/unix" "-Fi$(lazdir)/components/printers/unix" "-Fu$(lazdir)/packager/registration" "-Fi$(lazdir)/packager/registration" "-Fu$(lazdir)/components/*" "-Fi$(lazdir)/components/*" "-Fu$(lazdir)/lcl/forms" "-Fi$(lazdir)/lcl/forms" "-Fu$(lazdir)/lcl/widgetset" "-Fi$(lazdir)/lcl/widgetset" "-Fu$(lazdir)/interfaces/*" "-Fi$(lazdir)/interfaces/*" "-Fu$(lazdir)/lcl/nonwin32" "-Fi$(lazdir)/lcl/nonwin32" "-Fu$(lazdir)/lcl/interfaces/gtk2" "-Fi$(lazdir)/lcl/interfaces/gtk2" "-Fu$(lazdir)/lcl/components/*" "-Fi$(lazdir)/lcl/components/*" "-Fu$(lazdir)/lcl/include" "-Fi$(lazdir)/lcl/include" "-Fu$(lazdir)/lcl" "-Fi$(lazdir)/lcl"
 endif
 
 ifeq ($(UNAME),Windows)
-  INTERFACE:=LCLwin32
+  TARGET ?= Win32
   LAZARUSDIRECTORIES:="-Fu$(lazdir)/*" "-Fi$(lazdir)/*" "-Fu$(lazdir)/components/printers/win32" "-Fi$(lazdir)/components/printers/win32" "-Fu$(lazdir)/packager/registration" "-Fi$(lazdir)/packager/registration" "-Fu$(lazdir)/components/*" "-Fi$(lazdir)/components/*" "-Fu$(lazdir)/lcl/forms" "-Fi$(lazdir)/lcl/forms" "-Fu$(lazdir)/lcl/widgetset" "-Fi$(lazdir)/lcl/widgetset" "-Fu$(lazdir)/interfaces/*" "-Fi$(lazdir)/interfaces/*" "-Fu$(lazdir)/lcl/interfaces/win32" "-Fi$(lazdir)/lcl/interfaces/win32" "-Fu$(lazdir)/lcl/components/*" "-Fi$(lazdir)/lcl/components/*" "-Fu$(lazdir)/lcl/include" "-Fi$(lazdir)/lcl/include" "-Fu$(lazdir)/lcl" "-Fi$(lazdir)/lcl"
+endif
+
+# determine buildmode/interface
+BUILDMODE:=Release  
+ifeq ($(TARGET),Win32)
+  INTERFACE:=LCLwin32
+endif
+
+ifeq ($(TARGET),Gtk2)
+  INTERFACE:=LCLgtk2
+endif
+
+ifeq ($(TARGET),Qt5)
+  INTERFACE:=LCLqt5
+  BUILDMODE:=ReleaseQt5
 endif
 
 all: compile
