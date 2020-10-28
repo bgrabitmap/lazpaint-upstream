@@ -8,7 +8,7 @@ then
     make distclean
 
     cd ..
-    tar --exclude='./debian' --exclude-vcs -zcvf ${archive} ./${dirname}
+    tar --exclude=./${dirname}/debian --exclude-vcs -zcvf ${archive} ./${dirname}
     cd "$dirname"
     echo "Done creating ../${archive}"
     echo
