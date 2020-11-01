@@ -43,7 +43,7 @@ ifeq ($(UNAME),Linux)
   BIN_DIR = $(USER_DIR)/bin
   SHARE_DIR=$(USER_DIR)/share
   RESOURCE_DIR=$(SHARE_DIR)/lazpaint
-  DOC_DIR=$(SHARE_DIR)/doc/lazpaint
+  DOC_DIR=$(SHARE_DIR)/doc/$(package)
   ICON_DIR=$(SHARE_DIR)/icons/hicolor
   SOURCE_BIN_DIR=lazpaint/release
   SOURCE_DEBIAN_DIR=debian
