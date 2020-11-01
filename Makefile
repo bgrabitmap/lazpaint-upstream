@@ -1,4 +1,4 @@
-# On Linux, TARGET can be Gtk2 or Qt5 (default)
+# On Linux, TARGET can be Gtk2 (default) or Qt5
 # On FreeBSD, TARGET can be Gtk2 (default) or Qt5
 # On Windows, TARGET can be Win32 (default) or Qt5
 
@@ -33,7 +33,7 @@ fpcbin := $(shell $(ECHOFILE) fpcbin)
 package := lazpaint
 
 ifeq ($(UNAME),Linux)
-  TARGET ?= Qt5
+  TARGET ?= Gtk2
   prefix := $(shell $(ECHOFILE) prefix)
   ifeq ($(MULTIBIN),1)
     package := lazpaint-$(shell echo $(TARGET) | tr A-Z a-z)
