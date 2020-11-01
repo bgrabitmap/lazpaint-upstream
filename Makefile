@@ -29,11 +29,16 @@ else
 endif
 
 lazdir := $(shell $(ECHOFILE) lazdir)
-fpcbin = $(shell $(ECHOFILE) fpcbin)
+fpcbin := $(shell $(ECHOFILE) fpcbin)
+package := lazpaint
 
 ifeq ($(UNAME),Linux)
   TARGET ?= Qt5
   prefix := $(shell $(ECHOFILE) prefix)
+  ifeq ($(MULTIBIN),1)
+    package := lazpaint-$(shell echo $(TARGET) | tr A-Z a-z)
+    prefix := /../$(package)$(prefix)
+  endif
   USER_DIR = $(DESTDIR)$(prefix)
   BIN_DIR = $(USER_DIR)/bin
   SHARE_DIR=$(USER_DIR)/share
@@ -49,7 +54,6 @@ ifeq ($(UNAME),Linux)
   ICONS=$(shell identify $(ICON) | awk -F '[[]|[]] | ' '{ printf "[%s]=%s ", $$2, $$4 }')
   EXTRACTED_ICONS_DIR=icons
   EXTRACTED_ICONS=$(shell find "${EXTRACTED_ICONS_DIR}" -maxdepth 1 -type f -name *x*.png -exec basename {} .png ';')
-  INTERFACE:=LCLgtk2
   LAZARUSDIRECTORIES:="-Fu$(lazdir)/*" "-Fi$(lazdir)/*" "-Fu$(lazdir)/components/printers/unix" "-Fi$(lazdir)/components/printers/unix" "-Fu$(lazdir)/packager/registration" "-Fi$(lazdir)/packager/registration" "-Fu$(lazdir)/components/*" "-Fi$(lazdir)/components/*" "-Fu$(lazdir)/lcl/forms" "-Fi$(lazdir)/lcl/forms" "-Fu$(lazdir)/lcl/widgetset" "-Fi$(lazdir)/lcl/widgetset" "-Fu$(lazdir)/interfaces/*" "-Fi$(lazdir)/interfaces/*" "-Fu$(lazdir)/lcl/nonwin32" "-Fi$(lazdir)/lcl/nonwin32" "-Fu$(lazdir)/lcl/interfaces/gtk2" "-Fi$(lazdir)/lcl/interfaces/gtk2" "-Fu$(lazdir)/lcl/components/*" "-Fi$(lazdir)/lcl/components/*" "-Fu$(lazdir)/lcl/include" "-Fi$(lazdir)/lcl/include" "-Fu$(lazdir)/lcl" "-Fi$(lazdir)/lcl"
 endif
 
@@ -64,17 +68,9 @@ ifeq ($(UNAME),Windows)
 endif
 
 # determine buildmode/interface
-BUILDMODE:=Release  
-ifeq ($(TARGET),Win32)
-  INTERFACE:=LCLwin32
-endif
-
-ifeq ($(TARGET),Gtk2)
-  INTERFACE:=LCLgtk2
-endif
-
+BUILDMODE:=Release
+INTERFACE:=LCL$(shell echo $(TARGET) | tr A-Z a-z)
 ifeq ($(TARGET),Qt5)
-  INTERFACE:=LCLqt5
   BUILDMODE:=ReleaseQt5
 endif
 
@@ -86,14 +82,14 @@ ifeq ($(UNAME),Windows)
 endif
 
 ifeq ($(UNAME),Linux)
-	install -D "$(SOURCE_BIN_DIR)/lazpaint" "$(BIN_DIR)/lazpaint"
-	for f in $(PO_FILES); do install -D --mode=0644 "$(SOURCE_BIN_DIR)/i18n/$$f" "${RESOURCE_DIR}/i18n/$$f"; done
+	install -D "$(SOURCE_BIN_DIR)/$(package)" "$(BIN_DIR)/lazpaint"
+	for f in $(PO_FILES); do install -D --mode=0644 "$(SOURCE_BIN_DIR)/i18n/$$f" "$(RESOURCE_DIR)/i18n/$$f"; done
 	for f in $(MODEL_FILES); do install -D --mode=0644 "$(SOURCE_BIN_DIR)/models/$$f" "${RESOURCE_DIR}/models/$$f"; done
-	install -D "${SOURCE_DEBIAN_UPSTREAM}/applications/lazpaint.desktop" "$(SHARE_DIR)/applications/lazpaint.desktop"
-	install -D "${EXTRACTED_ICONS_DIR}/48x48.png" "$(SHARE_DIR)/pixmaps/lazpaint.png"
-	for s in $(EXTRACTED_ICONS); do install -D --mode=0644 "${EXTRACTED_ICONS_DIR}/$$s.png" "$(ICON_DIR)/$$s/apps/lazpaint.png"; done
+	install -D "$(SOURCE_DEBIAN_UPSTREAM)/applications/lazpaint.desktop" "$(SHARE_DIR)/applications/lazpaint.desktop"
+	install -D "$(EXTRACTED_ICONS_DIR)/48x48.png" "$(SHARE_DIR)/pixmaps/lazpaint.png"
+	for s in $(EXTRACTED_ICONS); do install -D --mode=0644 "$(EXTRACTED_ICONS_DIR)/$$s.png" "$(ICON_DIR)/$$s/apps/lazpaint.png"; done
 	install -d "$(SHARE_DIR)/man/man1"
-	gzip -9 -n -c "${SOURCE_DEBIAN_UPSTREAM}/man/man1/lazpaint.1" >"$(SHARE_DIR)/man/man1/lazpaint.1.gz"
+	gzip -9 -n -c "$(SOURCE_DEBIAN_UPSTREAM)/man/man1/lazpaint.1" >"$(SHARE_DIR)/man/man1/lazpaint.1.gz"
 	chmod 0644 "$(SHARE_DIR)/man/man1/lazpaint.1.gz"
 	install -d "$(DOC_DIR)"
 	gzip -9 -n -c "$(SOURCE_DEBIAN_DIR)/changelog" >"$(DOC_DIR)/changelog.Debian.gz"
@@ -142,9 +138,12 @@ clean_lazpaint:
 	$(REMOVEDIR) "lazpaint/debug"
 	$(REMOVEDIR) "lazpaint/release/lib"
 	$(REMOVE) "lazpaint/lazpaint.res"
-	$(REMOVE) "lazpaint/release/lazpaint"
+ifeq ($(UNAME),Windows)
 	$(REMOVE) "lazpaint/release/lazpaint32.exe"
 	$(REMOVE) "lazpaint/release/lazpaint_x64.exe"
+else
+	$(REMOVE) "lazpaint/release/$(package)"
+endif
 	$(REMOVEDIR) "lazpaint/backup"
 	$(REMOVEDIR) "lazpaint/test_embedded/backup"
 
@@ -159,6 +158,9 @@ else
 	$(COPY) "lazpaint/resources/lazpaint.res" "lazpaint/lazpaint.res"
 	$(CREATEDIR) "lazpaint/release/lib"
 	cd lazpaint $(THEN) $(fpcbin) -orelease/lazpaint -Fu./buttons -Fi./buttons -Fu./image -Fi./image -Fu./cursors -Fi./cursors -Fu./buttons -Fi./buttons -Fu./* -Fi./* -Fu../bgracontrols -Fi../bgracontrols -Fu../bgrabitmap -Fi../bgrabitmap $(LAZARUSDIRECTORIES) -MObjFPC -Scgi -Cg -OoREGVAR -Xs -XX -l -vewnhibq -O3 -CX -vi -FUrelease/lib/ -dLCL -d$(INTERFACE) lazpaint.lpr
+endif
+ifeq ($(MULTIBIN),1)
+	mv "$(SOURCE_BIN_DIR)/lazpaint" "$(SOURCE_BIN_DIR)/$(package)"
 endif
 
 icons:
