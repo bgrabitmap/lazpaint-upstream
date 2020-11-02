@@ -14,7 +14,7 @@ Package: lazpaint-gtk2
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Conflicts: lazpaint, lazpaint-gtk3, lazpaint-qt4, lazpaint-qt5
-Description: Image editor with raster layers
+Description: Image editor with raster layers (gtk2)
  Can read layered files (lzp, ora, pdn), multi-images (gif, ico),
  flat files (bmp, jpeg, pcx, png, psd, tga, tiff, xpm, xwd),
  vectorial (svg), 3D (obj).
@@ -26,7 +26,7 @@ Package: lazpaint-qt5
 Conflicts: lazpaint, lazpaint-gtk2, lazpaint-gtk3, lazpaint-qt4
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}
-Description: Image editor with raster layers
+Description: Image editor with raster layers (qt5)
  Can read layered files (lzp, ora, pdn), multi-images (gif, ico),
  flat files (bmp, jpeg, pcx, png, psd, tga, tiff, xpm, xwd),
  vectorial (svg), 3D (obj).
