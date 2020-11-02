@@ -652,6 +652,9 @@ end;
 procedure TFMain.Shape_PenColorMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
+  {$if defined(linux) and defined(LCLqt5)}
+  LazPaintInstance.ChooseColorVisible := true;
+  {$endif}
   if LazPaintInstance.ChooseColorVisible and (Button = mbLeft) then
     LazPaintInstance.ChooseColorTarget := ctForeColor
   else
@@ -685,6 +688,9 @@ end;
 procedure TFMain.Shape_BackColorMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
+  {$if defined(linux) and defined(LCLqt5)}
+  LazPaintInstance.ChooseColorVisible := true;
+  {$endif}
   if LazPaintInstance.ChooseColorVisible and (Button = mbLeft) then
     LazPaintInstance.ChooseColorTarget := ctBackColor
   else
