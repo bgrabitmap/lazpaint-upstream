@@ -142,7 +142,9 @@ ifeq ($(UNAME),Windows)
 	$(REMOVE) "lazpaint/release/lazpaint32.exe"
 	$(REMOVE) "lazpaint/release/lazpaint_x64.exe"
 else
-	$(REMOVE) "lazpaint/release/$(package)"
+	$(REMOVE) "lazpaint/release/lazpaint"
+	$(REMOVE) "lazpaint/release/lazpaint-gtk2"
+	$(REMOVE) "lazpaint/release/lazpaint-qt5"
 endif
 	$(REMOVEDIR) "lazpaint/backup"
 	$(REMOVEDIR) "lazpaint/test_embedded/backup"
