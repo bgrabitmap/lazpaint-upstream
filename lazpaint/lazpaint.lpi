@@ -25,7 +25,7 @@
       <CharSet Value="04B0"/>
       <StringTable CompanyName="http://sourceforge.net/projects/lazpaint/" ProductName="LazPaint" InternalName="lazpaint" OriginalFilename="lazpaint.exe"/>
     </VersionInfo>
-    <BuildModes Count="6" Active="Release">
+    <BuildModes Count="8" Active="Release">
       <Item1 Name="Debug" Default="True"/>
       <Item2 Name="Release">
         <CompilerOptions>
@@ -213,10 +213,91 @@
               </Win32>
             </Options>
           </Linking>
+          <Other>
+            <CustomOptions Value="-Cg
+-k-pie
+-k-znow"/>
+          </Other>
         </CompilerOptions>
       </Item6>
-      <SharedMatrixOptions Count="1">
+      <Item7 Name="DebugGtk2">
+        <MacroValues Count="1">
+          <Macro2 Name="LCLWidgetType" Value="gtk2"/>
+        </MacroValues>
+        <CompilerOptions>
+          <Version Value="11"/>
+          <PathDelim Value="\"/>
+          <SearchPaths>
+            <IncludeFiles Value="$(ProjOutDir)"/>
+            <UnitOutputDirectory Value="debug\$(TargetCPU)-$(TargetOS)"/>
+          </SearchPaths>
+          <CodeGeneration>
+            <Optimizations>
+              <OptimizationLevel Value="0"/>
+            </Optimizations>
+          </CodeGeneration>
+          <Linking>
+            <Debugging>
+              <DebugInfoType Value="dsStabs"/>
+              <UseHeaptrc Value="True"/>
+            </Debugging>
+            <Options>
+              <Win32>
+                <GraphicApplication Value="True"/>
+              </Win32>
+            </Options>
+          </Linking>
+        </CompilerOptions>
+      </Item7>
+      <Item8 Name="ReleaseGtk2">
+        <MacroValues Count="1">
+          <Macro2 Name="LCLWidgetType" Value="gtk2"/>
+        </MacroValues>
+        <CompilerOptions>
+          <Version Value="11"/>
+          <PathDelim Value="\"/>
+          <Target>
+            <Filename Value="release\lazpaint"/>
+          </Target>
+          <SearchPaths>
+            <IncludeFiles Value="$(ProjOutDir)"/>
+            <OtherUnitFiles Value="buttons"/>
+            <UnitOutputDirectory Value="release\lib\$(TargetCPU)-$(TargetOS)-$(LCLWidgetType)\$(FPCVer)"/>
+          </SearchPaths>
+          <Parsing>
+            <SyntaxOptions>
+              <UseAnsiStrings Value="False"/>
+            </SyntaxOptions>
+          </Parsing>
+          <CodeGeneration>
+            <Optimizations>
+              <OptimizationLevel Value="3"/>
+              <VariablesInRegisters Value="True"/>
+            </Optimizations>
+          </CodeGeneration>
+          <Linking>
+            <Debugging>
+              <GenerateDebugInfo Value="False"/>
+              <UseLineInfoUnit Value="False"/>
+              <StripSymbols Value="True"/>
+            </Debugging>
+            <LinkSmart Value="True"/>
+            <Options>
+              <Win32>
+                <GraphicApplication Value="True"/>
+              </Win32>
+            </Options>
+          </Linking>
+          <Other>
+            <CustomOptions Value="-Cg
+-k-pie
+-k-znow"/>
+          </Other>
+        </CompilerOptions>
+      </Item8>
+      <SharedMatrixOptions Count="2">
         <Item1 ID="123471315308" Modes="DebugQt5,ReleaseQt5" Type="IDEMacro" MacroName="LCLWidgetType" Value="qt5"/>
+        <Item2 ID="656077549881" Modes="ReleaseGtk2,DebugGtk2" Type="IDEMacro" MacroName="LCLWidgetType" Value="gtk2"/>
       </SharedMatrixOptions>
     </BuildModes>
     <PublishOptions>
@@ -811,8 +892,8 @@
         <UnitName Value="UTranslation"/>
         <IsVisibleTab Value="True"/>
         <EditorIndex Value="7"/>
-        <TopLine Value="94"/>
-        <CursorPos X="11" Y="107"/>
+        <TopLine Value="63"/>
+        <CursorPos X="13" Y="66"/>
         <UsageCount Value="201"/>
         <Loaded Value="True"/>
       </Unit63>

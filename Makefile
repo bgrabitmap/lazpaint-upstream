@@ -70,8 +70,8 @@ endif
 # determine buildmode/interface
 BUILDMODE:=Release
 INTERFACE:=LCL$(shell echo $(TARGET) | tr A-Z a-z)
-ifeq ($(TARGET),Qt5)
-  BUILDMODE:=ReleaseQt5
+ifneq ($(TARGET),Win32)
+  BUILDMODE:=Release$(TARGET)
 endif
 
 all: compile
