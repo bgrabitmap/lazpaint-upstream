@@ -1,3 +1,10 @@
+lazpaint (6.4.1-2) unstable; urgency=medium
+
+  * Copyright: add link exception in description
+  * Copyright: add entry for bgrabitmap folder
+
+ -- Johann ELSASS <circular@operamail.com>  Sun, 29 Nov 2020 09:22:00 +0100
+
 lazpaint (6.4.1-1) unstable; urgency=medium
 
   * Initial release. (Closes: #972503)
