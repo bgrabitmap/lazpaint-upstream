@@ -14,13 +14,13 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 	dh $@ --no-parallel
 	
 override_dh_auto_build:
-	dh_auto_build --no-parallel -- MULTIBIN=1 TARGET=Gtk2
-	dh_auto_build --no-parallel -- MULTIBIN=1 TARGET=Qt5
+	dh_auto_build --no-parallel -- MULTIBIN=1 TARGET=Gtk2 FOREIGN_LPK=1
+	dh_auto_build --no-parallel -- MULTIBIN=1 TARGET=Qt5 FOREIGN_LPK=1
 
 override_dh_auto_install:
-	dh_auto_install --no-parallel -- MULTIBIN=1 TARGET=Gtk2
-	dh_auto_install --no-parallel -- MULTIBIN=1 TARGET=Qt5
+	dh_auto_install --no-parallel -- MULTIBIN=1 TARGET=Gtk2 FOREIGN_LPK=1
+	dh_auto_install --no-parallel -- MULTIBIN=1 TARGET=Qt5 FOREIGN_LPK=1
 
 override_dh_auto_clean:
-	dh_auto_clean --no-parallel -- MULTIBIN=1 TARGET=Gtk2
-	dh_auto_clean --no-parallel -- MULTIBIN=1 TARGET=Qt5
+	dh_auto_clean --no-parallel -- MULTIBIN=1 TARGET=Gtk2 FOREIGN_LPK=1
+	dh_auto_clean --no-parallel -- MULTIBIN=1 TARGET=Qt5 FOREIGN_LPK=1

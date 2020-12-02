@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-linking-exception
 {
   Part of BGRA Controls. Made by third party.
   For detailed information see readme.txt
@@ -5,49 +6,30 @@
   Site: https://sourceforge.net/p/bgra-controls/
   Wiki: http://wiki.lazarus.freepascal.org/BGRAControls
   Forum: http://forum.lazarus.freepascal.org/index.php/board,46.0.html
-
-  This library is free software; you can redistribute it and/or modify it
-  under the terms of the GNU Library General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or (at your
-  option) any later version with the following modification:
-
-  As a special exception, the copyright holders of this library give you
-  permission to link this library with independent modules to produce an
-  executable, regardless of the license terms of these independent modules,and
-  to copy and distribute the resulting executable under terms of your choice,
-  provided that you also meet, for each linked independent module, the terms
-  and conditions of the license of that module. An independent module is a
-  module which is not derived from or based on this library. If you modify
-  this library, you may extend this exception to your version of the library,
-  but you are not obligated to do so. If you do not wish to do so, delete this
-  exception statement from your version.
-
-  This program is distributed in the hope that it will be useful, but WITHOUT
-  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
-  for more details.
-
-  You should have received a copy of the GNU Library General Public License
-  along with this library; if not, write to the Free Software Foundation,
-  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 }
+{******************************* CONTRIBUTOR(S) ******************************
+- Edivando S. Santos Brasil | mailedivando@gmail.com
+  (Compatibility with delphi VCL 11/2018)
 
+***************************** END CONTRIBUTOR(S) *****************************}
 unit DTAnalogClock;
 
-{$mode objfpc}{$H+}
+{$I bgracontrols.inc}
 
 interface
 
 uses
-  Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, ExtCtrls,
-  BGRABitmap, BGRABitmapTypes, BGRAGradients, DTAnalogCommon;
+  Classes, SysUtils, {$IFDEF FPC}LResources,{$ENDIF}
+  Forms, Controls, Graphics, Dialogs, ExtCtrls,
+  {$IFNDEF FPC}Types, BGRAGraphics, GraphType, FPImage, {$ENDIF}
+  BCBaseCtrls, BGRABitmap, BGRABitmapTypes, BGRAGradients;
 
 type
   TClockStyle = (stlBlue, stlGreen, stlWhite);
 
   { TDTCustomAnalogClock }
 
-  TDTCustomAnalogClock = class(TGraphicControl)
+  TDTCustomAnalogClock = class(TBGRAGraphicCtrl)
   private
     FClockStyle: TClockStyle;
     FBitmap: TBGRABitmap;
@@ -57,9 +39,9 @@ type
     FTimer: TTimer;
     FResized: boolean;
     procedure SetClockStyle(AValue: TClockStyle);
-    procedure SetEnabled(AValue: boolean);
     { Private declarations }
   protected
+    procedure SetEnabled(AValue: boolean); override;
     { Protected declarations }
     procedure Paint; override;
     procedure DrawClock; virtual;
@@ -67,8 +49,8 @@ type
     procedure DrawMovingParts; virtual;
     procedure SwitchTimer;
 
-    procedure TimerEvent(Sender: TObject);
-    procedure ResizeEvent(Sender: TObject);
+    procedure TimerEvent({%H-}Sender: TObject);
+    procedure ResizeEvent({%H-}Sender: TObject);
   public
     { Public declarations }
     constructor Create(AOwner: TComponent); override;
@@ -89,7 +71,7 @@ type
     property Enabled;
   end;
 
-procedure Register;
+{$IFDEF FPC}procedure Register;{$ENDIF}
 
 implementation
 
@@ -99,7 +81,7 @@ constructor TDTCustomAnalogClock.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
 
-  OnResize := @ResizeEvent;
+  OnResize := ResizeEvent;
 
   Width := 128;
   Height := 128;
@@ -117,7 +99,7 @@ begin
   FTimer := TTimer.Create(Self);
   FTimer.Interval := 1000;
   FTimer.Enabled := FEnabled;
-  FTimer.OnTimer := @TimerEvent;
+  FTimer.OnTimer := TimerEvent;
 
 end;
 
@@ -140,7 +122,6 @@ end;
 procedure TDTCustomAnalogClock.DrawClockFace;
 var
   img: TBGRABitmap;
-  txt: TBGRACustomBitmap;
   A: integer;
   w, h, r, Xo, Yo, X, Y, Xt, Yt: integer;
   phong: TPhongShading;
@@ -312,11 +293,13 @@ begin
   Refresh;
 end;
 
+{$IFDEF FPC}
 procedure Register;
 begin
-  {$I icons\dtanalogclock_icon.lrs}
+  //{$I icons\dtanalogclock_icon.lrs}
   RegisterComponents('BGRA Controls', [TDTAnalogClock]);
 end;
+{$ENDIF}
 
 
 end.

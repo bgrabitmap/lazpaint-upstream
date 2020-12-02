@@ -1,0 +1,461 @@
+object FNewImage: TFNewImage
+  Left = 378
+  Height = 243
+  Top = 180
+  Width = 307
+  BorderIcons = [biSystemMenu]
+  BorderStyle = bsDialog
+  Caption = 'New image'
+  ClientHeight = 243
+  ClientWidth = 307
+  Font.Height = -12
+  OnCreate = FormCreate
+  OnShow = FormShow
+  Position = poOwnerFormCenter
+  LCLVersion = '2.0.10.0'
+  object Label_Width: TLabel
+    Left = 16
+    Height = 15
+    Top = 20
+    Width = 38
+    Caption = 'Width :'
+    ParentColor = False
+  end
+  object Label_Height: TLabel
+    Left = 16
+    Height = 15
+    Top = 47
+    Width = 42
+    Caption = 'Height :'
+    ParentColor = False
+  end
+  object Button_OK: TButton
+    Left = 88
+    Height = 22
+    Top = 208
+    Width = 59
+    Caption = 'OK'
+    Default = True
+    OnClick = Button_OKClick
+    TabOrder = 5
+  end
+  object Button_Cancel: TButton
+    Left = 152
+    Height = 22
+    Top = 208
+    Width = 73
+    Cancel = True
+    Caption = 'Cancel'
+    ModalResult = 2
+    TabOrder = 6
+  end
+  object SpinEdit_Width: TSpinEdit
+    Left = 80
+    Height = 23
+    Top = 17
+    Width = 79
+    Increment = 10
+    MaxValue = 10000
+    MinValue = 1
+    OnChange = SpinEdit_WidthChange
+    TabOrder = 0
+    Value = 1
+  end
+  object SpinEdit_Height: TSpinEdit
+    Left = 80
+    Height = 23
+    Top = 44
+    Width = 79
+    Increment = 10
+    MaxValue = 10000
+    MinValue = 1
+    OnChange = SpinEdit_HeightChange
+    TabOrder = 1
+    Value = 1
+  end
+  object vsPreview: TBGRAVirtualScreen
+    Left = 168
+    Height = 128
+    Top = 8
+    Width = 134
+    OnRedraw = vsPreviewRedraw
+    Alignment = taLeftJustify
+    ClientHeight = 128
+    ClientWidth = 134
+    Color = clForm
+    ParentColor = False
+    TabOrder = 4
+    object ToolBar_Rotate: TToolBar
+      Left = 51
+      Height = 22
+      Top = 49
+      Width = 24
+      Align = alNone
+      AutoSize = True
+      Color = clForm
+      EdgeBorders = []
+      Images = FMain.ImageList16
+      ParentColor = False
+      TabOrder = 0
+      object ToolButton_Rotate: TToolButton
+        Left = 1
+        Top = 0
+        ImageIndex = 43
+        OnClick = ToolButton_RotateClick
+      end
+    end
+  end
+  object Label_Height1: TLabel
+    Left = 16
+    Height = 15
+    Top = 106
+    Width = 33
+    Caption = 'Ratio :'
+    ParentColor = False
+  end
+  object ComboBox_Ratio: TComboBox
+    Left = 80
+    Height = 23
+    Top = 103
+    Width = 63
+    ItemHeight = 15
+    Items.Strings = (
+      ''
+      '1:1'
+      '6:5'
+      '5:4'
+      '4:3'
+      '11:8'
+      '1.414:1'
+      '1.43:1'
+      '3:2'
+      '8:5'
+      '1.618:1'
+      '5:3'
+      '16:9'
+      '2:1'
+    )
+    MaxLength = 12
+    OnChange = ComboBox_RatioChange
+    OnEnter = ComboBox_RatioEnter
+    OnExit = ComboBox_RatioExit
+    TabOrder = 3
+  end
+  object BGRAShape1: TBGRAShape
+    Cursor = crHandPoint
+    Left = 16
+    Height = 23
+    Top = 144
+    Width = 23
+    Angle = 45
+    BorderOpacity = 180
+    BorderColor = clBlack
+    BorderGradient.StartColor = clWhite
+    BorderGradient.EndColor = clBlack
+    BorderGradient.GradientType = gtLinear
+    BorderGradient.Point2XPercent = 100
+    BorderGradient.Point2YPercent = 100
+    FillColor = clBlack
+    FillOpacity = 255
+    FillGradient.StartColor = clWhite
+    FillGradient.EndColor = clBlack
+    FillGradient.GradientType = gtLinear
+    FillGradient.Point2YPercent = 100
+    Caption = 'BGRAShape1'
+    RoundRadius = 5
+    OnClick = BGRAShapeClick
+  end
+  object BGRAShape2: TBGRAShape
+    Cursor = crHandPoint
+    Left = 44
+    Height = 23
+    Top = 144
+    Width = 23
+    Angle = 45
+    BorderOpacity = 180
+    BorderColor = clBlack
+    BorderGradient.StartColor = clWhite
+    BorderGradient.EndColor = clBlack
+    BorderGradient.GradientType = gtLinear
+    BorderGradient.Point2XPercent = 100
+    BorderGradient.Point2YPercent = 100
+    FillColor = clBlue
+    FillOpacity = 255
+    FillGradient.StartColor = clWhite
+    FillGradient.EndColor = clBlack
+    FillGradient.GradientType = gtLinear
+    FillGradient.Point2YPercent = 100
+    Caption = 'BGRAShape2'
+    RoundRadius = 5
+    OnClick = BGRAShapeClick
+  end
+  object BGRAShape3: TBGRAShape
+    Cursor = crHandPoint
+    Left = 72
+    Height = 23
+    Top = 144
+    Width = 23
+    Angle = 45
+    BorderOpacity = 180
+    BorderColor = clBlack
+    BorderGradient.StartColor = clWhite
+    BorderGradient.EndColor = clBlack
+    BorderGradient.GradientType = gtLinear
+    BorderGradient.Point2XPercent = 100
+    BorderGradient.Point2YPercent = 100
+    FillColor = clRed
+    FillOpacity = 255
+    FillGradient.StartColor = clWhite
+    FillGradient.EndColor = clBlack
+    FillGradient.GradientType = gtLinear
+    FillGradient.Point2YPercent = 100
+    Caption = 'BGRAShape3'
+    RoundRadius = 5
+    OnClick = BGRAShapeClick
+  end
+  object BGRAShape4: TBGRAShape
+    Cursor = crHandPoint
+    Left = 100
+    Height = 23
+    Top = 144
+    Width = 23
+    Angle = 45
+    BorderOpacity = 180
+    BorderColor = clBlack
+    BorderGradient.StartColor = clWhite
+    BorderGradient.EndColor = clBlack
+    BorderGradient.GradientType = gtLinear
+    BorderGradient.Point2XPercent = 100
+    BorderGradient.Point2YPercent = 100
+    FillColor = clLime
+    FillOpacity = 255
+    FillGradient.StartColor = clWhite
+    FillGradient.EndColor = clBlack
+    FillGradient.GradientType = gtLinear
+    FillGradient.Point2YPercent = 100
+    Caption = 'BGRAShape4'
+    RoundRadius = 5
+    OnClick = BGRAShapeClick
+  end
+  object BGRAShape5: TBGRAShape
+    Cursor = crHandPoint
+    Left = 128
+    Height = 23
+    Top = 144
+    Width = 23
+    Angle = 45
+    BorderOpacity = 180
+    BorderColor = clBlack
+    BorderGradient.StartColor = clWhite
+    BorderGradient.EndColor = clBlack
+    BorderGradient.GradientType = gtLinear
+    BorderGradient.Point2XPercent = 100
+    BorderGradient.Point2YPercent = 100
+    FillColor = clFuchsia
+    FillOpacity = 255
+    FillGradient.StartColor = clWhite
+    FillGradient.EndColor = clBlack
+    FillGradient.GradientType = gtLinear
+    FillGradient.Point2YPercent = 100
+    Caption = 'BGRAShape5'
+    RoundRadius = 5
+    OnClick = BGRAShapeClick
+  end
+  object BGRAShape6: TBGRAShape
+    Cursor = crHandPoint
+    Left = 156
+    Height = 23
+    Top = 144
+    Width = 23
+    Angle = 45
+    BorderOpacity = 180
+    BorderColor = clBlack
+    BorderGradient.StartColor = clWhite
+    BorderGradient.EndColor = clBlack
+    BorderGradient.GradientType = gtLinear
+    BorderGradient.Point2XPercent = 100
+    BorderGradient.Point2YPercent = 100
+    FillColor = clAqua
+    FillOpacity = 255
+    FillGradient.StartColor = clWhite
+    FillGradient.EndColor = clBlack
+    FillGradient.GradientType = gtLinear
+    FillGradient.Point2YPercent = 100
+    Caption = 'BGRAShape6'
+    RoundRadius = 5
+    OnClick = BGRAShapeClick
+  end
+  object BGRAShape7: TBGRAShape
+    Cursor = crHandPoint
+    Left = 185
+    Height = 23
+    Top = 144
+    Width = 23
+    Angle = 45
+    BorderOpacity = 180
+    BorderColor = clBlack
+    BorderGradient.StartColor = clWhite
+    BorderGradient.EndColor = clBlack
+    BorderGradient.GradientType = gtLinear
+    BorderGradient.Point2XPercent = 100
+    BorderGradient.Point2YPercent = 100
+    FillColor = clYellow
+    FillOpacity = 255
+    FillGradient.StartColor = clWhite
+    FillGradient.EndColor = clBlack
+    FillGradient.GradientType = gtLinear
+    FillGradient.Point2YPercent = 100
+    Caption = 'BGRAShape7'
+    RoundRadius = 5
+    OnClick = BGRAShapeClick
+  end
+  object BGRAShape8: TBGRAShape
+    Cursor = crHandPoint
+    Left = 214
+    Height = 23
+    Top = 144
+    Width = 23
+    Angle = 45
+    BorderOpacity = 180
+    BorderColor = clBlack
+    BorderGradient.StartColor = clWhite
+    BorderGradient.EndColor = clBlack
+    BorderGradient.GradientType = gtLinear
+    BorderGradient.Point2XPercent = 100
+    BorderGradient.Point2YPercent = 100
+    FillColor = 11796479
+    FillOpacity = 255
+    FillGradient.StartColor = clWhite
+    FillGradient.EndColor = clBlack
+    FillGradient.GradientType = gtLinear
+    FillGradient.Point2YPercent = 100
+    Caption = 'BGRAShape8'
+    RoundRadius = 5
+    OnClick = BGRAShapeClick
+  end
+  object BGRAShape9: TBGRAShape
+    Cursor = crHandPoint
+    Left = 243
+    Height = 23
+    Top = 144
+    Width = 23
+    Angle = 45
+    BorderOpacity = 180
+    BorderColor = clBlack
+    BorderGradient.StartColor = clWhite
+    BorderGradient.EndColor = clBlack
+    BorderGradient.GradientType = gtLinear
+    BorderGradient.Point2XPercent = 100
+    BorderGradient.Point2YPercent = 100
+    FillColor = clWhite
+    FillOpacity = 255
+    FillGradient.StartColor = clWhite
+    FillGradient.EndColor = clBlack
+    FillGradient.GradientType = gtLinear
+    FillGradient.Point2YPercent = 100
+    Caption = 'BGRAShape9'
+    RoundRadius = 5
+    OnClick = BGRAShapeClick
+  end
+  object Image1: TImage
+    Left = 272
+    Height = 23
+    Top = 144
+    Width = 23
+    Picture.Data = {
+      1754506F727461626C654E6574776F726B477261706869636A00000089504E47
+      0D0A1A0A0000000D4948445200000018000000180803000000D7A9CDCA000000
+      06504C5445DCDCDCFFFFFFE0A2D7F00000001F49444154789C63608002462860
+      40074344025D00CE1F6212031A88D49300002E67010179F5ED31000000004945
+      4E44AE426082
+    }
+    Stretch = True
+  end
+  object BGRAShape10: TBGRAShape
+    Cursor = crHandPoint
+    Left = 272
+    Height = 23
+    Top = 144
+    Width = 23
+    Angle = 45
+    BorderOpacity = 180
+    BorderColor = clBlack
+    BorderGradient.StartColor = clWhite
+    BorderGradient.EndColor = clBlack
+    BorderGradient.GradientType = gtLinear
+    BorderGradient.Point2XPercent = 100
+    BorderGradient.Point2YPercent = 100
+    FillColor = clWhite
+    FillOpacity = 0
+    FillGradient.StartColor = clWhite
+    FillGradient.EndColor = clBlack
+    FillGradient.GradientType = gtLinear
+    FillGradient.Point2YPercent = 100
+    Caption = 'BGRAShape10'
+    RoundRadius = 5
+    OnClick = BGRAShapeClick
+  end
+  object Label_MemoryRequired: TLabel
+    Left = 16
+    Height = 15
+    Top = 176
+    Width = 98
+    Caption = 'Memory required :'
+    ParentColor = False
+  end
+  object Label_MemoryRequiredValue: TLabel
+    Left = 123
+    Height = 1
+    Top = 176
+    Width = 1
+    ParentColor = False
+  end
+  object Label_BitDepth: TLabel
+    Left = 16
+    Height = 15
+    Top = 75
+    Width = 54
+    Caption = 'Bit depth :'
+    ParentColor = False
+  end
+  object ComboBox_BitDepth: TComboBox
+    Left = 80
+    Height = 23
+    Top = 72
+    Width = 63
+    ItemHeight = 15
+    ItemIndex = 5
+    Items.Strings = (
+      '1'
+      '2'
+      '4'
+      '8'
+      '24'
+      '32'
+    )
+    MaxLength = 12
+    OnChange = ComboBox_BitDepthChange
+    Style = csDropDownList
+    TabOrder = 2
+    Text = '32'
+  end
+  object ToolBar_Ratio: TToolBar
+    Left = 143
+    Height = 22
+    Top = 103
+    Width = 24
+    Align = alNone
+    AutoSize = True
+    Caption = 'ToolBar_Ratio'
+    EdgeBorders = []
+    Images = FMain.ImageList16
+    TabOrder = 7
+    object ToolButton_ClearRatio: TToolButton
+      Left = 1
+      Top = 0
+      Caption = 'ToolButton_ClearRatio'
+      ImageIndex = 39
+      OnClick = ToolButton_ClearRatioClick
+    end
+  end
+end

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 unit UToolbox;
 
 {$mode objfpc}{$H+}
@@ -20,18 +21,25 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
   private
+    FDarkTheme: boolean;
+    FLazPaintInstance: TLazPaintCustomInstance;
+    procedure SetDarkTheme(AValue: boolean);
     { private declarations }
     procedure SetImages(AToolBar: TToolBar; AImages: TImageList);
+    procedure SetLazPaintInstance(AValue: TLazPaintCustomInstance);
+    procedure ThemeChanged(Sender: TObject);
   public
+    destructor Destroy; override;
     { public declarations }
-    LazPaintInstance: TLazPaintCustomInstance;
     procedure AddButton(AToolBar: TToolBar; AAction: TBasicAction);
     procedure SetImages(AImages: TImageList);
+    property LazPaintInstance: TLazPaintCustomInstance read FLazPaintInstance write SetLazPaintInstance;
+    property DarkTheme: boolean read FDarkTheme write SetDarkTheme;
   end; 
 
 implementation
 
-uses math;
+uses math, UDarkTheme;
 
 { TFToolbox }
 
@@ -39,6 +47,17 @@ procedure TFToolbox.FormShow(Sender: TObject);
 begin
   Position := poDesigned;
   self.EnsureVisible(False);
+end;
+
+procedure TFToolbox.SetDarkTheme(AValue: boolean);
+begin
+  if FDarkTheme=AValue then Exit;
+  FDarkTheme:=AValue;
+  DarkThemeInstance.Apply(ToolBar1, AValue);
+  DarkThemeInstance.Apply(ToolBar2, AValue);
+  DarkThemeInstance.Apply(ToolBar3, AValue);
+  DarkThemeInstance.Apply(ToolBar4, AValue);
+  Color := DarkThemeInstance.GetColorButtonFace(AValue);
 end;
 
 procedure TFToolbox.AddButton(AToolBar: TToolBar; AAction: TBasicAction);
@@ -79,14 +98,32 @@ begin
   AToolBar.Width := AToolBar.ButtonWidth*AToolBar.ButtonCount+4;
 end;
 
+procedure TFToolbox.SetLazPaintInstance(AValue: TLazPaintCustomInstance);
+begin
+  if FLazPaintInstance=AValue then Exit;
+  if Assigned(FLazPaintInstance) then
+    FLazPaintInstance.RegisterThemeListener(@ThemeChanged, false);
+  FLazPaintInstance:=AValue;
+  if Assigned(FLazPaintInstance) then
+    FLazPaintInstance.RegisterThemeListener(@ThemeChanged, true);
+end;
+
+procedure TFToolbox.ThemeChanged(Sender: TObject);
+begin
+  DarkTheme := LazPaintInstance.DarkTheme;
+end;
+
+destructor TFToolbox.Destroy;
+begin
+  if Assigned(FLazPaintInstance) then
+    FLazPaintInstance.RegisterThemeListener(@ThemeChanged, false);
+  inherited Destroy;
+end;
+
 procedure TFToolbox.FormCreate(Sender: TObject);
 begin
-  {$IFDEF LINUX}
-  BorderStyle:= bsDialog;
-    {$IFDEF LCLqt5}
-    FormStyle := fsNormal;
-    {$endif}
-  {$ENDIF}
+  BorderStyle := ToolWindowFixedSize;
+  FormStyle := ToolWindowStyle;
 end;
 
 {$R *.lfm}

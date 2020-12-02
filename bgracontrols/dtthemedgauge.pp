@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-linking-exception
 {
   Part of BGRA Controls. Made by third party.
   For detailed information see readme.txt
@@ -5,31 +6,6 @@
   Site: https://sourceforge.net/p/bgra-controls/
   Wiki: http://wiki.lazarus.freepascal.org/BGRAControls
   Forum: http://forum.lazarus.freepascal.org/index.php/board,46.0.html
-
-  This library is free software; you can redistribute it and/or modify it
-  under the terms of the GNU Library General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or (at your
-  option) any later version with the following modification:
-
-  As a special exception, the copyright holders of this library give you
-  permission to link this library with independent modules to produce an
-  executable, regardless of the license terms of these independent modules,and
-  to copy and distribute the resulting executable under terms of your choice,
-  provided that you also meet, for each linked independent module, the terms
-  and conditions of the license of that module. An independent module is a
-  module which is not derived from or based on this library. If you modify
-  this library, you may extend this exception to your version of the library,
-  but you are not obligated to do so. If you do not wish to do so, delete this
-  exception statement from your version.
-
-  This program is distributed in the hope that it will be useful, but WITHOUT
-  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
-  for more details.
-
-  You should have received a copy of the GNU Library General Public License
-  along with this library; if not, write to the Free Software Foundation,
-  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 }
 
 unit dtthemedgauge;
@@ -40,7 +16,7 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, DTAnalogCommon,
-  BGRABitmap, BGRABitmapTypes, DTAnalogClock;
+  BGRABitmap, BGRABitmapTypes;
 
 type
 
@@ -95,7 +71,7 @@ implementation
 
 procedure Register;
 begin
-  {$I icons\dtthemedgauge_icon.lrs}
+  //{$I icons\dtthemedgauge_icon.lrs}
   RegisterComponents('BGRA Controls', [TDTThemedGauge]);
 end;
 
@@ -144,7 +120,7 @@ begin
 
   FPointerSettings := TDTPointerSettings.Create;
   FPointerSettings.OnChange := @DoChange;
-  FPointerSettings.Color := BGRAToColor(BGRA(255, 81, 81));
+  FPointerSettings.Color := BGRA(255, 81, 81);
 
   FPointerCapSettings := TDTPointerCapSettings.Create;
   FPointerCapSettings.OnChange := @DoChange;
@@ -209,7 +185,7 @@ begin
       Xt := Origin.CenterPoint.x - Round((r - ScaleSettings.LengthSubTick) * cos((j + i * 270 / n) * Pi / 180));
       Yt := Origin.CenterPoint.y - Round((r - ScaleSettings.LengthSubTick) * sin((j + i * 270 / n) * Pi / 180));
 
-      FScaleBitmap.DrawLineAntialias(x, y, xt, yt, ColorToBGRA(ScaleSettings.TickColor), ScaleSettings.ThicknessSubTick);
+      FScaleBitmap.DrawLineAntialias(x, y, xt, yt, ScaleSettings.TickColor, ScaleSettings.ThicknessSubTick);
 
     end;
   end;
@@ -234,7 +210,7 @@ begin
       Xt := Origin.CenterPoint.x - Round((r - ScaleSettings.LengthMainTick) * cos((j + i * 270 / n) * Pi / 180));
       Yt := Origin.CenterPoint.y - Round((r - ScaleSettings.LengthMainTick) * sin((j + i * 270 / n) * Pi / 180));
 
-      FScaleBitmap.DrawLineAntialias(x, y, xt, yt, ColorToBGRA(ScaleSettings.TickColor), ScaleSettings.ThicknessMainTick);
+      FScaleBitmap.DrawLineAntialias(x, y, xt, yt, ScaleSettings.TickColor, ScaleSettings.ThicknessMainTick);
 
       if ScaleSettings.EnableScaleText then
       begin
@@ -242,7 +218,7 @@ begin
         Xt := Origin.CenterPoint.x - Round(ScaleSettings.TextRadius * cos((j + i * 270 / n) * Pi / 180));
         Yt := Origin.CenterPoint.y - Round(ScaleSettings.TextRadius * sin((j + i * 270 / n) * Pi / 180));
 
-        FScaleBitmap.TextOut(Xt, Yt - (FScaleBitmap.FontHeight / 1.7), IntToStr(i * ScaleSettings.Maximum div ScaleSettings.MainTickCount), ColorToBGRA(ScaleSettings.TextColor), taCenter);
+        FScaleBitmap.TextOut(Xt, Yt - (FScaleBitmap.FontHeight / 1.7), IntToStr(i * ScaleSettings.Maximum div ScaleSettings.MainTickCount), ScaleSettings.TextColor, taCenter);
       end;
     end;
   end;
@@ -251,7 +227,7 @@ end;
 procedure TDTCustomThemedGauge.DrawPointer;
 var
   Origin: TDTOrigin;
-  r, i, n, x, y, xt, yt: integer;
+  {%H-}r, x, y: integer;
   j: single;
 begin
 
@@ -264,10 +240,10 @@ begin
   X := origin.CenterPoint.x - Round(PointerSettings.Length * cos((j + Position * 270 / ScaleSettings.Maximum) * Pi / 180));
   Y := origin.CenterPoint.y - Round(PointerSettings.Length * sin((j + Position * 270 / ScaleSettings.Maximum) * Pi / 180));
 
-  FPointerBitmap.DrawLineAntialias(origin.CenterPoint.y, origin.CenterPoint.y, x, y, ColorToBGRA(PointerSettings.Color), PointerSettings.Thickness);
+  FPointerBitmap.DrawLineAntialias(origin.CenterPoint.y, origin.CenterPoint.y, x, y, PointerSettings.Color, PointerSettings.Thickness);
 
   // Draw cap over needle
-  FPointerBitmap.EllipseAntialias(origin.CenterPoint.x, origin.CenterPoint.y, PointerCapSettings.Radius, PointerCapSettings.Radius, ColorToBGRA(PointerCapSettings.EdgeColor), 2, ColorToBGRA(PointerCapSettings.FillColor));
+  FPointerBitmap.EllipseAntialias(origin.CenterPoint.x, origin.CenterPoint.y, PointerCapSettings.Radius, PointerCapSettings.Radius, PointerCapSettings.EdgeColor, 2, ColorToBGRA(PointerCapSettings.FillColor));
 end;
 
 end.

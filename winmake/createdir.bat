@@ -10,5 +10,3 @@ exit /b 0
 echo Creates a directory if it doesn't exist.
 echo Usage: createdir [DIRNAME]
 exit /b 1
-
-

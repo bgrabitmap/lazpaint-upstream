@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-linking-exception
 unit BGRAOpenGL3D;
 
 {$mode objfpc}{$H+}
@@ -6,7 +7,7 @@ interface
 
 uses BGRABitmapTypes,
   BGRASceneTypes, BGRASSE,
-  Classes, BGRAMatrix3D,
+  BGRAClasses, BGRAMatrix3D,
   BGRACanvasGL,
   BGRAScene3D,
   BGRAOpenGLType,
@@ -89,8 +90,8 @@ type
   TUniformVariable = object
   private
     FProgram: TBGLShader3D;
-    FVariable: DWord;
-    procedure Init(AProgram: TBGLShader3D; AVariable: DWord);
+    FVariable: LongWord;
+    procedure Init(AProgram: TBGLShader3D; AVariable: LongWord);
   end;
 
   { TUniformVariableSingle }
@@ -148,39 +149,50 @@ type
     property Value: TPoint read FValue write SetValue;
   end;
 
+  { TUniformVariableMatrix4D }
+
+  TUniformVariableMatrix4D = object(TUniformVariable)
+  private
+    FValue: TMatrix4D;
+    procedure SetValue(const AValue: TMatrix4D);
+  public
+    procedure Update;
+    property Value: TMatrix4D read FValue write SetValue;
+  end;
+
   { TAttributeVariableSingle }
 
   TAttributeVariableSingle = object(TAttributeVariable)
   protected
-    procedure Init(AProgram: TObject; AAttribute: DWord);
+    procedure Init(AProgram: TObject; AAttribute: LongWord);
   end;
 
   { TAttributeVariablePointF }
 
   TAttributeVariablePointF = object(TAttributeVariable)
   protected
-    procedure Init(AProgram: TObject; AAttribute: DWord);
+    procedure Init(AProgram: TObject; AAttribute: LongWord);
   end;
 
   { TAttributeVariablePoint3D }
 
   TAttributeVariablePoint3D = object(TAttributeVariable)
   protected
-    procedure Init(AProgram: TObject; AAttribute: DWord);
+    procedure Init(AProgram: TObject; AAttribute: LongWord);
   end;
 
   { TAttributeVariableInteger }
 
   TAttributeVariableInteger = object(TAttributeVariable)
   protected
-    procedure Init(AProgram: TObject; AAttribute: DWord);
+    procedure Init(AProgram: TObject; AAttribute: LongWord);
   end;
 
   { TAttributeVariablePoint }
 
   TAttributeVariablePoint = object(TAttributeVariable)
   protected
-    procedure Init(AProgram: TObject; AAttribute: DWord);
+    procedure Init(AProgram: TObject; AAttribute: LongWord);
   end;
 
   { TBGLShader3D }
@@ -194,32 +206,35 @@ type
     FFragmentShaderSource: string;
     FVertexShader,
     FFragmentShader,
-    FProgram: DWord;
+    FProgram: LongWord;
     function GetUniformVariableSingle(AName: string): TUniformVariableSingle;
     function GetUniformVariablePointF(AName: string): TUniformVariablePointF;
     function GetUniformVariablePoint3D(AName: string): TUniformVariablePoint3D;
     function GetUniformVariableInteger(AName: string): TUniformVariableInteger;
     function GetUniformVariablePoint(AName: string): TUniformVariablePoint;
+    function GetUniformVariableMatrix4D(AName: string): TUniformVariableMatrix4D;
     function GetAttributeVariableInteger(AName: string): TAttributeVariableInteger;
     function GetAttributeVariablePoint(AName: string): TAttributeVariablePoint;
     function GetAttributeVariableSingle(AName: string): TAttributeVariableSingle;
     function GetAttributeVariablePointF(AName: string): TAttributeVariablePointF;
     function GetAttributeVariablePoint3D(AName: string): TAttributeVariablePoint3D;
-    procedure SetUniformSingle(AVariable: DWord; const AValue; ACount: integer);
-    procedure SetUniformInteger(AVariable: DWord; const AValue; ACount: integer);
+    procedure SetUniformSingle(AVariable: LongWord; const AValue; AElementCount: integer; AComponentCount: integer);
+    procedure SetUniformInteger(AVariable: LongWord; const AValue; AElementCount: integer; AComponentCount: integer);
     procedure CheckUsage(AUsing: boolean);
     procedure StartUse; override;
     procedure EndUse; override;
+    property Canvas: TBGLCustomCanvas read FCanvas;
   public
     constructor Create(ACanvas: TBGLCustomCanvas; AVertexShaderSource: string;
         AFragmentShaderSource: string; AVaryingVariables: string = '';
-        AVersion: string = '110');
+        AVersion: string = '120');
     destructor Destroy; override;
     property UniformSingle[AName: string]: TUniformVariableSingle read GetUniformVariableSingle;
     property UniformPointF[AName: string]: TUniformVariablePointF read GetUniformVariablePointF;
     property UniformPoint3D[AName: string]: TUniformVariablePoint3D read GetUniformVariablePoint3D;
     property UniformInteger[AName: string]: TUniformVariableInteger read GetUniformVariableInteger;
     property UniformPoint[AName: string]: TUniformVariablePoint read GetUniformVariablePoint;
+    property UniformMatrix4D[AName: string]: TUniformVariableMatrix4D read GetUniformVariableMatrix4D;
     property AttributeSingle[AName: string]: TAttributeVariableSingle read GetAttributeVariableSingle;
     property AttributePointF[AName: string]: TAttributeVariablePointF read GetAttributeVariablePointF;
     property AttributePoint3D[AName: string]: TAttributeVariablePoint3D read GetAttributeVariablePoint3D;
@@ -246,7 +261,7 @@ type
     FTextureUniform: TUniformVariableInteger;
     procedure StartUse; override;
   public
-    class function GetCodeForTextureColor: string;
+    class function GetCodeForTextureColor: string; static;
     constructor Create(ACanvas: TBGLCustomCanvas; AFragmentShader: string; ATexture: integer = 0);
     property Texture: integer read GetTexture write SetTexture;
   end;
@@ -257,6 +272,20 @@ begin
   result[1,2] := 0;            result[2,2] := AProj.Zoom.Y; result[3,2] := -(AProj.Center.y + 0.5); result[4,2] := 0;
   result[1,3] := 0;            result[2,3] := 0;            result[3,3] := -2/(AFar-ANear);         result[4,3] := -1 - AFar*result[3,3];
   result[1,4] := 0;            result[2,4] := 0;            result[3,4] := -1;                      result[4,4] := 0;
+end;
+
+{ TUniformVariableMatrix4D }
+
+procedure TUniformVariableMatrix4D.SetValue(const AValue: TMatrix4D);
+begin
+  if CompareMem(@AValue, @FValue, sizeof(FValue)) then Exit;
+  FValue:=AValue;
+  if FProgram.IsUsed then Update;
+end;
+
+procedure TUniformVariableMatrix4D.Update;
+begin
+  FProgram.SetUniformSingle(FVariable, FValue, 1, 16);
 end;
 
 { TShaderWithTexture }
@@ -306,35 +335,35 @@ end;
 
 { TAttributeVariablePoint3D }
 
-procedure TAttributeVariablePoint3D.Init(AProgram: TObject; AAttribute: DWord);
+procedure TAttributeVariablePoint3D.Init(AProgram: TObject; AAttribute: LongWord);
 begin
   inherited Init(AProgram,AAttribute,3,True);
 end;
 
 { TAttributeVariablePointF }
 
-procedure TAttributeVariablePointF.Init(AProgram: TObject; AAttribute: DWord);
+procedure TAttributeVariablePointF.Init(AProgram: TObject; AAttribute: LongWord);
 begin
   inherited Init(AProgram,AAttribute,2,True);
 end;
 
 { TAttributeVariableInteger }
 
-procedure TAttributeVariableInteger.Init(AProgram: TObject; AAttribute: DWord);
+procedure TAttributeVariableInteger.Init(AProgram: TObject; AAttribute: LongWord);
 begin
   inherited Init(AProgram,AAttribute,1,False);
 end;
 
 { TAttributeVariablePoint }
 
-procedure TAttributeVariablePoint.Init(AProgram: TObject; AAttribute: DWord);
+procedure TAttributeVariablePoint.Init(AProgram: TObject; AAttribute: LongWord);
 begin
   inherited Init(AProgram,AAttribute,2,False);
 end;
 
 { TAttributeVariableSingle }
 
-procedure TAttributeVariableSingle.Init(AProgram: TObject; AAttribute: DWord);
+procedure TAttributeVariableSingle.Init(AProgram: TObject; AAttribute: LongWord);
 begin
   inherited Init(AProgram,AAttribute,1,True);
 end;
@@ -350,7 +379,7 @@ end;
 
 procedure TUniformVariablePoint.Update;
 begin
-  FProgram.SetUniformInteger(FVariable, FValue, 2);
+  FProgram.SetUniformInteger(FVariable, FValue, 1, 2);
 end;
 
 { TUniformVariableInteger }
@@ -364,7 +393,7 @@ end;
 
 procedure TUniformVariableInteger.Update;
 begin
-  FProgram.SetUniformInteger(FVariable, FValue, 1);
+  FProgram.SetUniformInteger(FVariable, FValue, 1, 1);
 end;
 
 { TUniformVariablePoint3D }
@@ -378,7 +407,7 @@ end;
 
 procedure TUniformVariablePoint3D.Update;
 begin
-  FProgram.SetUniformSingle(FVariable, FValue, 3);
+  FProgram.SetUniformSingle(FVariable, FValue, 1, 3);
 end;
 
 { TUniformVariablePointF }
@@ -392,7 +421,7 @@ end;
 
 procedure TUniformVariablePointF.Update;
 begin
-  FProgram.SetUniformSingle(FVariable, FValue, 2);
+  FProgram.SetUniformSingle(FVariable, FValue, 1, 2);
 end;
 
 { TUniformVariableSingle }
@@ -406,12 +435,12 @@ end;
 
 procedure TUniformVariableSingle.Update;
 begin
-  FProgram.SetUniformSingle(FVariable, FValue, 1);
+  FProgram.SetUniformSingle(FVariable, FValue, 1, 1);
 end;
 
 { TUniformVariable }
 
-procedure TUniformVariable.Init(AProgram: TBGLShader3D; AVariable: DWord);
+procedure TUniformVariable.Init(AProgram: TBGLShader3D; AVariable: LongWord);
 begin
   FProgram := AProgram;
   FVariable := AVariable;
@@ -452,6 +481,14 @@ begin
 end;
 
 function TBGLShader3D.GetUniformVariablePoint(AName: string): TUniformVariablePoint;
+begin
+  {$push}{$hints off}
+  fillchar(result,sizeof(result),0);
+  result.Init(self, FCanvas.Lighting.GetUniformVariable(FProgram, AName));
+  {$pop}
+end;
+
+function TBGLShader3D.GetUniformVariableMatrix4D(AName: string): TUniformVariableMatrix4D;
 begin
   {$push}{$hints off}
   fillchar(result,sizeof(result),0);
@@ -508,16 +545,16 @@ begin
   {$pop}
 end;
 
-procedure TBGLShader3D.SetUniformSingle(AVariable: DWord; const AValue; ACount: integer);
+procedure TBGLShader3D.SetUniformSingle(AVariable: LongWord; const AValue; AElementCount: integer; AComponentCount: integer);
 begin
   CheckUsage(True);
-  FCanvas.Lighting.SetUniformSingle(AVariable, AValue, ACount);
+  FCanvas.Lighting.SetUniformSingle(AVariable, AValue, AElementCount, AComponentCount);
 end;
 
-procedure TBGLShader3D.SetUniformInteger(AVariable: DWord; const AValue; ACount: integer);
+procedure TBGLShader3D.SetUniformInteger(AVariable: LongWord; const AValue; AElementCount: integer; AComponentCount: integer);
 begin
   CheckUsage(True);
-  FCanvas.Lighting.SetUniformInteger(AVariable, AValue, ACount);
+  FCanvas.Lighting.SetUniformInteger(AVariable, AValue, AElementCount, AComponentCount);
 end;
 
 constructor TBGLShader3D.Create(ACanvas: TBGLCustomCanvas;
@@ -526,8 +563,8 @@ constructor TBGLShader3D.Create(ACanvas: TBGLCustomCanvas;
 begin
   FCanvas := ACanvas;
   FLighting := FCanvas.Lighting;
-  FVertexShaderSource:= '#define version ' + AVersion + #10 + AVaryingVariables + #10 + AVertexShaderSource;
-  FFragmentShaderSource:= '#define version ' + AVersion + #10 + AVaryingVariables + #10 + AFragmentShaderSource;
+  FVertexShaderSource:= '#version ' + AVersion + #10 + AVaryingVariables + #10 + AVertexShaderSource;
+  FFragmentShaderSource:= '#version ' + AVersion + #10 + AVaryingVariables + #10 + AFragmentShaderSource;
   FVertexShader := 0;
   FFragmentShader := 0;
   FProgram := 0;
@@ -603,13 +640,13 @@ begin
         v.z := -v.z;
         num := IntToStr(AddDirectionalLight(GetColorF, v));
         str(GetMinIntensity,minInt);
-        FShaderLightingCode +=
+        AppendStr(FShaderLightingCode,
         '  L = gl_LightSource['+num+'].position.xyz; ' +
         '  Idiff += vec3(gl_LightSource['+num+'].diffuse * max(dot(NN,L), '+minInt+') ); ' +
         '  if (gl_FrontMaterial.shininess > 0) { ' +
         '    H = normalize(L + vec3(0,0,1)); ' +
         '    Ispec += gl_LightSource['+num+'].specular * pow(abs(dot(NN,H)), gl_FrontMaterial.shininess*2); ' +
-        '  } ';
+        '  } ');
       end
       else
       begin
@@ -621,7 +658,7 @@ begin
           colorMult := GetColorF * ColorF(int,int,int,1);
           num := IntToStr(AddPointLight(colorMult, v, 0,1));
           str(GetMinIntensity/int,minInt);
-          FShaderLightingCode +=
+          AppendStr(FShaderLightingCode,
         '  L = (gl_LightSource['+num+'].position.xyz - V).xyz; ' +
         '  d = length(L); ' +
         '  L *= 1/d; ' +
@@ -629,13 +666,13 @@ begin
         '  if (gl_FrontMaterial.shininess > 0) { ' +
         '    H = normalize(L + vec3(0,0,1)); ' +
         '    Ispec += gl_LightSource['+num+'].specular  * pow(abs(dot(NN,H))/(d*d), gl_FrontMaterial.shininess*2); ' +
-        '  } ';
+        '  } ');
         end;
       end;
 
     end;
   end;
-  FShaderLightingCode +=
+  AppendStr(FShaderLightingCode,
         '  color = #color# * vec4(Idiff,1) + Ispec; ' +
         '  clampedColor = clamp(color,0,1); ' +
         '  sat = dot( color - clampedColor, vec4(1) ); ' +
@@ -649,7 +686,7 @@ begin
         '    else gl_FragColor = clampedColor; ' +
         '  } ' +
         '  else gl_FragColor = clampedColor; ' +
-        '} ';
+        '} ');
 end;
 
 constructor TBGLLighting3D.Create(ACanvas: TBGLCustomCanvas; AAmbiantLight: TColorF; ALights: TList);
@@ -715,6 +752,7 @@ begin
   result := FCanvas.Height;
 end;
 
+{$PUSH}{$OPTIMIZATION OFF}   //avoid internal error 2012090607
 procedure TBGLRenderer3D.SetProjection(const AValue: TProjection3D);
 begin
   inherited SetProjection(AValue);
@@ -722,6 +760,7 @@ begin
     OrthoProjectionToOpenGL(0,0,FCanvas.Width,FCanvas.Height);
   FCanvas.ProjectionMatrix := FProjectionMatrix;
 end;
+{$POP}
 
 function TBGLRenderer3D.GetHandlesNearClipping: boolean;
 begin
@@ -812,7 +851,7 @@ var
   ColorCenter: TBGRAPixel;
 
   procedure ComputeCenter;
-  var j: NativeInt;
+  var j: Int32or64;
   begin
     with ADescription do
     begin
@@ -820,17 +859,17 @@ var
       NormalCenter3D := Point3D_128_Zero;
       for j := 0 to NbVertices-1 do
       begin
-        PtCenter3D += Positions3D[j];
-        NormalCenter3D += Normals3D[j];
+        PtCenter3D.Offset(Positions3D[j]);
+        NormalCenter3D.Offset(Normals3D[j]);
       end;
-      PtCenter3D *= (1/NbVertices);
+      PtCenter3D.Scale(1/NbVertices);
       Normalize3D_128(NormalCenter3D);
       ColorCenter := MergeBGRA(slice(Colors,NbVertices));
     end;
   end;
 
 var tex: IBGLTexture;
-  i,j: NativeInt;
+  i,j: Int32or64;
 begin
   result := true;
 

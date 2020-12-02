@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-linking-exception
 type
   { TBGRAPart3D }
 
@@ -18,20 +19,20 @@ type
     constructor Create(AObject3D: TBGRAObject3D; AContainer: IBGRAPart3D);
     destructor Destroy; override;
     procedure Clear(ARecursive: boolean);
-    function Add(x,y,z: single): IBGRAVertex3D;
-    function Add(pt: TPoint3D): IBGRAVertex3D;
-    function Add(pt: TPoint3D; normal: TPoint3D): IBGRAVertex3D;
-    function Add(pt: TPoint3D_128): IBGRAVertex3D;
-    function Add(pt: TPoint3D_128; normal: TPoint3D_128): IBGRAVertex3D;
-    function Add(const coords: array of single): arrayOfIBGRAVertex3D;
-    function Add(const pts: array of TPoint3D): arrayOfIBGRAVertex3D;
-    function Add(const pts: array of TPoint3D_128): arrayOfIBGRAVertex3D;
-    procedure Add(const pts: array of IBGRAVertex3D);
-    procedure Add(AVertex: IBGRAVertex3D);
-    function AddNormal(x,y,z: single): IBGRANormal3D;
-    function AddNormal(pt: TPoint3D): IBGRANormal3D;
-    function AddNormal(pt: TPoint3D_128): IBGRANormal3D;
-    procedure AddNormal(ANormal: IBGRANormal3D);
+    function Add(x,y,z: single): IBGRAVertex3D; overload;
+    function Add(pt: TPoint3D): IBGRAVertex3D; overload;
+    function Add(pt: TPoint3D; normal: TPoint3D): IBGRAVertex3D; overload;
+    function Add(pt: TPoint3D_128): IBGRAVertex3D; overload;
+    function Add(pt: TPoint3D_128; normal: TPoint3D_128): IBGRAVertex3D; overload;
+    function Add(const coords: array of single): arrayOfIBGRAVertex3D; overload;
+    function Add(const pts: array of TPoint3D): arrayOfIBGRAVertex3D; overload;
+    function Add(const pts: array of TPoint3D_128): arrayOfIBGRAVertex3D; overload;
+    procedure Add(const pts: array of IBGRAVertex3D); overload;
+    procedure Add(AVertex: IBGRAVertex3D); overload;
+    function AddNormal(x,y,z: single): IBGRANormal3D; overload;
+    function AddNormal(pt: TPoint3D): IBGRANormal3D; overload;
+    function AddNormal(pt: TPoint3D_128): IBGRANormal3D; overload;
+    procedure AddNormal(ANormal: IBGRANormal3D); overload;
     procedure RemoveVertex(Index: integer);
     procedure RemoveNormal(Index: integer);
     function GetBoundingBox: TBox3D;
@@ -49,11 +50,11 @@ type
     procedure SetVertex(AIndex: Integer; AValue: IBGRAVertex3D);
     procedure SetNormal(AIndex: Integer; AValue: IBGRANormal3D);
     procedure ResetTransform;
-    procedure Translate(x,y,z: single; Before: boolean = true);
-    procedure Translate(ofs: TPoint3D; Before: boolean = true);
-    procedure Scale(size: single; Before: boolean = true);
-    procedure Scale(x,y,z: single; Before: boolean = true);
-    procedure Scale(size: TPoint3D; Before: boolean = true);
+    procedure Translate(x,y,z: single; Before: boolean = true); overload;
+    procedure Translate(ofs: TPoint3D; Before: boolean = true); overload;
+    procedure Scale(size: single; Before: boolean = true); overload;
+    procedure Scale(x,y,z: single; Before: boolean = true); overload;
+    procedure Scale(size: TPoint3D; Before: boolean = true); overload;
     procedure RotateXDeg(angle: single; Before: boolean = true);
     procedure RotateYDeg(angle: single; Before: boolean = true);
     procedure RotateZDeg(angle: single; Before: boolean = true);
@@ -413,7 +414,7 @@ var i: integer;
 begin
   result := GetVertexCount;
   for i := 0 to GetPartCount-1 do
-    result += GetPart(i).GetTotalVertexCount;
+    inc(result, GetPart(i).GetTotalVertexCount);
 end;
 
 function TBGRAPart3D.GetTotalNormalCount: integer;
@@ -421,7 +422,7 @@ var i: integer;
 begin
   result := GetNormalCount;
   for i := 0 to GetPartCount-1 do
-    result += GetPart(i).GetTotalNormalCount;
+    inc(result, GetPart(i).GetTotalNormalCount);
 end;
 
 procedure TBGRAPart3D.ResetTransform;
@@ -442,7 +443,7 @@ end;
 procedure TBGRAPart3D.Scale(size: TPoint3D; Before: boolean = true);
 begin
   if Before then
-    FMatrix *= MatrixScale3D(size)
+    FMatrix := FMatrix * MatrixScale3D(size)
   else
     FMatrix := MatrixScale3D(size)*FMatrix;
 end;
@@ -465,7 +466,7 @@ end;
 procedure TBGRAPart3D.RotateXRad(angle: single; Before: boolean = true);
 begin
   if Before then
-    FMatrix *= MatrixRotateX(angle)
+    FMatrix := FMatrix * MatrixRotateX(angle)
   else
     FMatrix := MatrixRotateX(angle) * FMatrix;
 end;
@@ -473,7 +474,7 @@ end;
 procedure TBGRAPart3D.RotateYRad(angle: single; Before: boolean = true);
 begin
   if Before then
-    FMatrix *= MatrixRotateY(angle)
+    FMatrix := FMatrix * MatrixRotateY(angle)
   else
     FMatrix := MatrixRotateY(angle) * FMatrix;
 end;
@@ -481,7 +482,7 @@ end;
 procedure TBGRAPart3D.RotateZRad(angle: single; Before: boolean = true);
 begin
   if Before then
-    FMatrix *= MatrixRotateZ(angle)
+    FMatrix := FMatrix * MatrixRotateZ(angle)
   else
     FMatrix := MatrixRotateZ(angle) * FMatrix;
 end;
@@ -544,7 +545,7 @@ end;
 procedure TBGRAPart3D.Translate(ofs: TPoint3D; Before: boolean = true);
 begin
   if Before then
-    FMatrix *= MatrixTranslation3D(ofs)
+    FMatrix := FMatrix * MatrixTranslation3D(ofs)
   else
     FMatrix := MatrixTranslation3D(ofs)*FMatrix;
 end;

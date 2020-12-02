@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 unit UVolatileScrollBar;
 
 {$mode objfpc}{$H+}
@@ -7,19 +8,32 @@ interface
 uses
   Classes, SysUtils, Forms, BGRABitmap, BGRAGradients;
 
+const
+  OrigVolatileScrollBarSize = 14;
+  OrigVolatileThumbSize = 24;
+  OrigVolatileBorderSize = 3;
+
 var
-  VolatileScrollBarSize : integer = 16;
-  VolatileThumbSize : integer = 24;
-  VolatileBorderSize : integer = 3;
+  VolatileScrollBarSize : integer = OrigVolatileScrollBarSize;
+  VolatileThumbSize : integer = OrigVolatileThumbSize;
+  VolatileBorderSize : integer = OrigVolatileBorderSize;
 
 type
+  TScrollBarKind = Forms.TScrollBarKind;
 
+const
+  sbHorizontal = Forms.sbHorizontal;
+  sbVertical = Forms.sbVertical;
+
+type
   { TVolatileScrollBar }
 
   TVolatileScrollBar = class
   private
     function GetScrollThumbBounds: TRect;
     procedure SetScrollThumbBounds(AValue: TRect);
+  protected
+    class var FInitDPI: boolean;
   protected
     FBounds: TRect;
     FWidth,FHeight: integer;
@@ -29,9 +43,11 @@ type
     FScrollThumbDown: boolean;
     FMouseOrigin: TPoint;
     FScrollThumbBoundsOrigin: TRect;
+    procedure SetPosition(AValue: integer);
   public
     constructor Create(X,Y,AWidth,AHeight: integer; ADirection: TScrollBarKind; APosition, AMinimum, AMaximum: integer);
     destructor Destroy; override;
+    class procedure InitDPI(ACanvasScaleFactor: single);
     function MouseDown(X,Y: integer): boolean;
     function MouseMove(X,Y: integer): boolean;
     function MouseUp({%H-}X,{%H-}Y: integer): boolean;
@@ -40,7 +56,7 @@ type
     property ScrollThumbDown: boolean read FScrollThumbDown;
     property Minimum: integer read FMinimum;
     property Maximum: integer read FMaximum;
-    property Position: integer read FPosition;
+    property Position: integer read FPosition write SetPosition;
   end;
 
 implementation
@@ -67,6 +83,14 @@ begin
     result.right := FBounds.Right;
     result.bottom := result.top+VolatileThumbSize;
   end;
+end;
+
+procedure TVolatileScrollBar.SetPosition(AValue: integer);
+begin
+  if AValue < FMinimum then AValue := FMinimum;
+  if AValue > FMaximum then AValue := FMaximum;
+  if FPosition=AValue then Exit;
+  FPosition:=AValue;
 end;
 
 procedure TVolatileScrollBar.SetScrollThumbBounds(AValue: TRect);
@@ -173,8 +197,14 @@ end;
 
 procedure TVolatileScrollBar.Draw(ADest: TBGRABitmap);
 var lThumb: TRect; h: integer;
+  c: TBGRAPixel;
 begin
-  ADest.FillRect(FBounds,ColorToBGRA(ColorToRGB(clBtnFace),192),dmDrawWithTransparency);
+  if GetLightness(ColorToBGRA(clWindow)) >= 32768 then
+    c := ColorToBGRA(clBlack,48)
+  else
+    c := ColorToBGRA(clWhite,48);
+
+  ADest.FillRect(FBounds,c,dmDrawWithTransparency);
   lThumb := GetScrollThumbBounds;
   if FScrollThumbDown then
     h := -3
@@ -183,10 +213,16 @@ begin
   FPhong.DrawRectangle(ADest,lThumb,VolatileBorderSize,h,ColorToBGRA(ColorToRGB(clBtnFace)),true,[]);
 end;
 
-initialization
-
-  VolatileScrollBarSize := ScaleX(VolatileScrollBarSize, OriginalDPI);
-  VolatileThumbSize := ScaleX(VolatileThumbSize, OriginalDPI);
+class procedure TVolatileScrollBar.InitDPI(ACanvasScaleFactor: single);
+begin
+  if not FInitDPI then
+  begin
+    VolatileScrollBarSize := ScaleX(round(VolatileScrollBarSize * ACanvasScaleFactor), OriginalDPI);
+    VolatileThumbSize := ScaleX(round(VolatileThumbSize * ACanvasScaleFactor), OriginalDPI);
+    VolatileBorderSize := ScaleX(round(VolatileBorderSize * ACanvasScaleFactor), OriginalDPI);
+    FInitDPI := true;
+  end;
+end;
 
 end.
 

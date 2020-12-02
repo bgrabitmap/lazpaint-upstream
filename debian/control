@@ -14,22 +14,22 @@ Package: lazpaint-gtk2
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Conflicts: lazpaint, lazpaint-gtk3, lazpaint-qt4, lazpaint-qt5
-Description: Image editor with raster layers (gtk2)
- Can read layered files (lzp, ora, pdn), multi-images (gif, ico),
- flat files (bmp, jpeg, pcx, png, psd, tga, tiff, xpm, xwd),
- vectorial (svg), 3D (obj).
- Has drawing tools, phong shading, curve adjustments,
- filters and render some textures.
+Description: Image editor with raster and vector layers (gtk2)
+ Can read layered files (lzp, ora, pdn, oXo, flat psd), multi-images (gif,
+ ico, tiff), flat files (bmp, jpeg, pcx, png, tga, webp, xpm, xwd),
+ raw images (dng, cr2, nef, arw...), vectorial (svg), 3D (obj). Has drawing
+ tools, vector shapes, phong shading, curve adjustments, filters, render
+ some textures, Python scripting.
  Uses Gtk2 widgetset.
 
 Package: lazpaint-qt5
 Conflicts: lazpaint, lazpaint-gtk2, lazpaint-gtk3, lazpaint-qt4
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}
-Description: Image editor with raster layers (qt5)
- Can read layered files (lzp, ora, pdn), multi-images (gif, ico),
- flat files (bmp, jpeg, pcx, png, psd, tga, tiff, xpm, xwd),
- vectorial (svg), 3D (obj).
- Has drawing tools, phong shading, curve adjustments,
- filters and render some textures.
+Description: Image editor with raster and  vector layers (qt5)
+ Can read layered files (lzp, ora, pdn, oXo, flat psd), multi-images (gif,
+ ico, tiff), flat files (bmp, jpeg, pcx, png, tga, webp, xpm, xwd),
+ raw images (dng, cr2, nef, arw...), vectorial (svg), 3D (obj). Has drawing
+ tools, vector shapes, phong shading, curve adjustments, filters, render
+ some textures, Python scripting.
  Uses Qt5 widgetset.

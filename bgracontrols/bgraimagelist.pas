@@ -1,48 +1,29 @@
+// SPDX-License-Identifier: LGPL-3.0-linking-exception
 { This component partialy solve problem with no alpha in lazarus GTK.
   It is using BGRABitmap library for drawing icons.
 
-  Copyright (C) 2011 Krzysztof Dibowski dibowski at interia.pl
-
-  This library is free software; you can redistribute it and/or modify it
-  under the terms of the GNU Library General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or (at your
-  option) any later version with the following modification:
-
-  As a special exception, the copyright holders of this library give you
-  permission to link this library with independent modules to produce an
-  executable, regardless of the license terms of these independent modules,and
-  to copy and distribute the resulting executable under terms of your choice,
-  provided that you also meet, for each linked independent module, the terms
-  and conditions of the license of that module. An independent module is a
-  module which is not derived from or based on this library. If you modify
-  this library, you may extend this exception to your version of the library,
-  but you are not obligated to do so. If you do not wish to do so, delete this
-  exception statement from your version.
-
-  This program is distributed in the hope that it will be useful, but WITHOUT
-  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
-  for more details.
-
-  You should have received a copy of the GNU Library General Public License
-  along with this library; if not, write to the Free Software Foundation,
-  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+  originally written in 2011 by Krzysztof Dibowski dibowski at interia.pl
 }
+{******************************* CONTRIBUTOR(S) ******************************
+- Edivando S. Santos Brasil | mailedivando@gmail.com
+  (Compatibility with delphi VCL 11/2018)
+
+***************************** END CONTRIBUTOR(S) *****************************}
 unit BGRAImageList;
 
-{$mode objfpc}{$H+}
+{$I bgracontrols.inc}
 
 interface
 
 uses
-  Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs,
-  GraphType, BGRABitmap, BGRABitmapTypes, ImgList;
+  Classes, SysUtils, {$IFDEF FPC}LResources,{$ENDIF} Forms, Controls, Graphics, Dialogs,
+  GraphType, BGRABitmap, BGRABitmapTypes, {%H-}ImgList;
 
 {$IFDEF LCLgtk}
-  {$DEFINE BGRA_DRAW}
+  { $DEFINE BGRA_DRAW}
 {$ELSE}
   {$IFDEF LCLgtk2}
-    {$if FPC_FULLVERSION<030001}{$DEFINE BGRA_DRAW}{$endif}
+    { $DEFINE BGRA_DRAW}
   {$ENDIF}
 {$ENDIF}
 
@@ -73,15 +54,17 @@ type
     { Published declarations }
   end;
 
-procedure Register;
+{$IFDEF FPC}procedure Register;{$ENDIF}
 
 implementation
 
+{$IFDEF FPC}
 procedure Register;
 begin
-  {$I icons\bgraimagelist_icon.lrs}
+  //{$I icons\bgraimagelist_icon.lrs}
   RegisterComponents('BGRA Controls', [TBGRAImageList]);
 end;
+{$ENDIF}
 
 {$IFDEF BGRA_DRAW}
 { TBGRAImageList }
@@ -115,13 +98,21 @@ begin
   case ADrawEffect of
     gdeDisabled:
     begin
+      {$IFDEF FPC}
       GetBitmap(AIndex, FBmp, gdeNormal);
+      {$ELSE}
+      GetBitmapRaw(AIndex, FBmp, gdeNormal);
+      {$ENDIF}
       FBGRA.Assign(FBmp);
       BGRAReplace(FBGRA, FBGRA.FilterGrayscale);
     end;
     else
     begin
+      {$IFDEF FPC}
       GetBitmap(AIndex, FBmp, ADrawEffect);
+      {$ELSE}
+      GetBitmapRaw(AIndex, FBmp, ADrawEffect);
+      {$ENDIF}
       FBGRA.Assign(FBmp);
     end;
   end;

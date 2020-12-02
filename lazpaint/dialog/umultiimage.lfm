@@ -1,0 +1,57 @@
+object FMultiImage: TFMultiImage
+  Left = 624
+  Height = 345
+  Top = 158
+  Width = 373
+  BorderIcons = [biSystemMenu, biMaximize]
+  Caption = 'Choose image'
+  ClientHeight = 345
+  ClientWidth = 373
+  Font.Height = -12
+  OnCreate = FormCreate
+  Position = poOwnerFormCenter
+  LCLVersion = '1.6.0.4'
+  object ListView1: TListView
+    Left = 8
+    Height = 301
+    Top = 8
+    Width = 357
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    Columns = <>
+    IconOptions.AutoArrange = True
+    LargeImages = ImageList1
+    ReadOnly = True
+    TabOrder = 0
+    ViewStyle = vsIcon
+    OnDblClick = ListView1DblClick
+    OnSelectItem = ListView1SelectItem
+  end
+  object Button_OK: TButton
+    Left = 108
+    Height = 22
+    Top = 315
+    Width = 60
+    Anchors = [akRight, akBottom]
+    Caption = 'OK'
+    Default = True
+    OnClick = Button_OKClick
+    TabOrder = 1
+  end
+  object Button_Cancel: TButton
+    Left = 172
+    Height = 22
+    Top = 315
+    Width = 73
+    Anchors = [akRight, akBottom]
+    Cancel = True
+    Caption = 'Cancel'
+    ModalResult = 2
+    TabOrder = 2
+  end
+  object ImageList1: TImageList
+    Height = 100
+    Width = 100
+    left = 48
+    top = 256
+  end
+end

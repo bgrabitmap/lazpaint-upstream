@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-linking-exception
 unit BGRATransform;
 
 {$mode objfpc}
@@ -7,28 +8,13 @@ interface
 { This unit contains bitmap transformations as classes and the TAffineMatrix record and functions. }
 
 uses
-  Classes, SysUtils, BGRABitmapTypes;
+  BGRAClasses, SysUtils, BGRABitmapTypes;
 
 type
   { Contains an affine matrix, i.e. a matrix to transform linearly and translate TPointF coordinates }
-  TAffineMatrix = array[1..2,1..3] of single;
-
-  { TAffineBox }
-
-  TAffineBox = object
-  private
-    function GetAsPolygon: ArrayOfTPointF;
-    function GetBottomRight: TPointF;
-    function GetIsEmpty: boolean;
-  public
-    TopLeft, TopRight,
-    BottomLeft: TPointF;
-    class function EmptyBox: TAffineBox; {$if FPC_FULLVERSION>=030100}static;{$endif}
-    class function AffineBox(ATopLeft, ATopRight, ABottomLeft: TPointF): TAffineBox; {$if FPC_FULLVERSION>=030100}static;{$endif}
-    property BottomRight: TPointF read GetBottomRight;
-    property IsEmpty: boolean read GetIsEmpty;
-    property AsPolygon: ArrayOfTPointF read GetAsPolygon;
-  end;
+  TAffineMatrix = BGRABitmapTypes.TAffineMatrix;
+  { Contains an affine base and information on the resulting box }
+  TAffineBox = BGRABitmapTypes.TAffineBox;
 
   { TBGRAAffineScannerTransform allow to transform any scanner. To use it,
     create this object with a scanner as parameter, call transformation
@@ -43,11 +29,13 @@ type
   protected
     FScanner: IBGRAScanner;
     FScanAtFunc: TScanAtFunction;
-    FCurX,FCurY: Single;
+    FCur: TPointF;
     FEmptyMatrix: Boolean;
     FMatrix: TAffineMatrix;
     procedure SetMatrix(AMatrix: TAffineMatrix);
     function InternalScanCurrentPixel: TBGRAPixel; virtual;
+    function GetViewMatrix: TAffineMatrix;
+    procedure SetViewMatrix(AValue: TAffineMatrix);
   public
     GlobalOpacity: Byte;
     constructor Create(AScanner: IBGRAScanner);
@@ -60,11 +48,14 @@ type
     procedure Fit(Origin,HAxis,VAxis: TPointF); virtual;
     procedure Scale(sx,sy: single); overload;
     procedure Scale(factor: single); overload;
+    function GetScanCustomColorspace: TColorspaceAny; override;
     procedure ScanMoveTo(X, Y: Integer); override;
     procedure ScanMoveToF(X, Y: single); inline;
     function ScanNextPixel: TBGRAPixel; override;
+    procedure ScanSkipPixels(ACount: integer); override;
     function ScanAt(X, Y: Single): TBGRAPixel; override;
     property Matrix: TAffineMatrix read FMatrix write SetMatrix;
+    property ViewMatrix: TAffineMatrix read GetViewMatrix write SetViewMatrix;
   end;
 
   { If you don't want the bitmap to repeats itself, or want to specify the
@@ -83,8 +74,8 @@ type
     FIncludeEdges: boolean;
     procedure Init(ABitmap: TBGRACustomBitmap; ARepeatImageX: Boolean= false; ARepeatImageY: Boolean= false; AResampleFilter: TResampleFilter = rfLinear; AIncludeEdges: boolean = false);
   public
-    constructor Create(ABitmap: TBGRACustomBitmap; ARepeatImage: Boolean= false; AResampleFilter: TResampleFilter = rfLinear; AIncludeEdges: boolean = false);
-    constructor Create(ABitmap: TBGRACustomBitmap; ARepeatImageX: Boolean; ARepeatImageY: Boolean; AResampleFilter: TResampleFilter = rfLinear; AIncludeEdges: boolean = false);
+    constructor Create(ABitmap: TBGRACustomBitmap; ARepeatImage: Boolean= false; AResampleFilter: TResampleFilter = rfLinear; AIncludeEdges: boolean = false); overload;
+    constructor Create(ABitmap: TBGRACustomBitmap; ARepeatImageX: Boolean; ARepeatImageY: Boolean; AResampleFilter: TResampleFilter = rfLinear; AIncludeEdges: boolean = false); overload;
     destructor Destroy; override;
     function InternalScanCurrentPixel: TBGRAPixel; override;
     procedure ScanPutPixels(pdest: PBGRAPixel; count: integer; mode: TDrawMode); override;
@@ -96,6 +87,7 @@ type
 
   TBGRAQuadLinearScanner = class(TBGRACustomScanner)
   private
+    FPadding: boolean;
     FPoints,FVectors: array[0..3] of TPointF;
     FInvLengths,FDets: array[0..3] of single;
     FCoeffs: array[0..3] of TPointF;
@@ -108,6 +100,7 @@ type
 
     ScanVertV0,ScanVertVStep0,ScanVertDenom0,ScanVertDenomStep0: double;
 
+    FHasC1, FHasC2: boolean;
     FShowC1, FShowC2: boolean;
     FScanFunc: TScanNextPixelFunction;
     FCurXF,FCurYF: single;
@@ -115,11 +108,13 @@ type
     FBufferSize: Int32or64;
     FTextureInterpolation: Boolean;
     function GetCulling: TFaceCulling;
+    function ScanNone: TBGRAPixel;
     function ScanGeneral: TBGRAPixel;
     procedure PrepareScanVert0;
     function ScanVert0: TBGRAPixel;
     procedure PrepareScanPara;
     function ScanPara: TBGRAPixel;
+    procedure GetTexColorAt(u,v: Single; out AColor: TBGRAPixel; out AIsPadding: boolean); inline;
     function GetTexColorAt(u,v: Single; detNeg: boolean): TBGRAPixel; inline;
     procedure ScanMoveToF(X,Y: single); inline;
     procedure SetCulling(AValue: TFaceCulling);
@@ -131,14 +126,16 @@ type
     function IsScanPutPixelsDefined: boolean; override;
     procedure ScanMoveTo(X, Y: Integer); override;
     function ScanNextPixel: TBGRAPixel; override;
+    procedure ScanSkipPixels(ACount: integer); override;
     constructor Create(ASource: IBGRAScanner;
       ASourceMatrix: TAffineMatrix; const APoints: array of TPointF;
-      ATextureInterpolation: boolean = true);
+      ATextureInterpolation: boolean = true); overload;
     constructor Create(ASource: IBGRAScanner;
       const ATexCoords: array of TPointF; const APoints: array of TPointF;
-      ATextureInterpolation: boolean = true);
+      ATextureInterpolation: boolean = true); overload;
     destructor Destroy; override;
     property Culling: TFaceCulling read GetCulling write SetCulling;
+    property Padding: boolean read FPadding write FPadding;
   end;
 
   { TBGRABitmapScanner }
@@ -155,6 +152,7 @@ type
     procedure ScanMoveTo(X, Y: Integer); override;
     function ScanNextPixel: TBGRAPixel; override;
     function ScanAt(X, Y: Single): TBGRAPixel; override;
+    procedure ScanSkipPixels(ACount: integer); override;
   end;
 
   { TBGRAExtendedBorderScanner }
@@ -182,18 +180,23 @@ type
     function ScanAt(X, Y: Single): TBGRAPixel; override;
     function IsScanPutPixelsDefined: boolean; override;
     procedure ScanPutPixels(pdest: PBGRAPixel; count: integer; mode: TDrawMode); override;
+    procedure ScanSkipPixels(ACount: integer); override;
   end;
 
 
 {---------------------- Affine matrix functions -------------------}
 //fill a matrix
-function AffineMatrix(m11,m12,m13,m21,m22,m23: single): TAffineMatrix;
+function AffineMatrix(m11,m12,m13,m21,m22,m23: single): TAffineMatrix; overload;
+function AffineMatrix(AU,AV: TPointF; ATranslation: TPointF): TAffineMatrix; overload;
 
 //matrix multiplication
 operator *(M,N: TAffineMatrix): TAffineMatrix;
+operator =(M,N: TAffineMatrix): boolean;
 
 //matrix multiplication by a vector (apply transformation to that vector)
 operator *(M: TAffineMatrix; V: TPointF): TPointF;
+operator *(M: TAffineMatrix; A: array of TPointF): ArrayOfTPointF;
+operator *(M: TAffineMatrix; ab: TAffineBox): TAffineBox;
 
 //check if matrix is inversible
 function IsAffineMatrixInversible(M: TAffineMatrix): boolean;
@@ -215,9 +218,17 @@ function AffineMatrixTranslation(OfsX,OfsY: Single): TAffineMatrix;
 
 //define a scaling matrix
 function AffineMatrixScale(sx,sy: single): TAffineMatrix;
+function AffineMatrixScaledRotation(ASourceVector, ATargetVector: TPointF): TAffineMatrix;
+function AffineMatrixScaledRotation(ASourcePoint, ATargetPoint, AOrigin: TPointF): TAffineMatrix;
+
+function AffineMatrixSkewXDeg(AngleCW: single): TAffineMatrix;
+function AffineMatrixSkewYDeg(AngleCW: single): TAffineMatrix;
+function AffineMatrixSkewXRad(AngleCCW: single): TAffineMatrix;
+function AffineMatrixSkewYRad(AngleCCW: single): TAffineMatrix;
 
 //define a linear matrix
-function AffineMatrixLinear(v1,v2: TPointF): TAffineMatrix;
+function AffineMatrixLinear(v1,v2: TPointF): TAffineMatrix; overload;
+function AffineMatrixLinear(const AMatrix: TAffineMatrix): TAffineMatrix; overload;
 
 //define a rotation matrix (positive radians are counter-clockwise)
 //(assuming the y-axis is pointing down)
@@ -231,6 +242,7 @@ function AffineMatrixRotationDeg(AngleCW: Single): TAffineMatrix;
 function AffineMatrixIdentity: TAffineMatrix;
 
 function IsAffineMatrixOrthogonal(M: TAffineMatrix): boolean;
+function IsAffineMatrixScaledRotation(M: TAffineMatrix): boolean;
 
 type
   { TBGRATriangleLinearMapping is a scanner that provides
@@ -252,6 +264,7 @@ type
     procedure ScanMoveToF(X,Y: Single);
     function ScanAt(X,Y: Single): TBGRAPixel; override;
     function ScanNextPixel: TBGRAPixel; override;
+    procedure ScanSkipPixels(ACount: integer); override;
   end;
 
 type
@@ -267,12 +280,13 @@ type
     function GetIncludeOppositePlane: boolean;
     procedure SetIncludeOppositePlane(AValue: boolean);
   public
-    constructor Create(texture: IBGRAScanner; texCoord1,texCoord2: TPointF; const quad: array of TPointF);
-    constructor Create(texture: IBGRAScanner; const texCoordsQuad: array of TPointF; const quad: array of TPointF);
+    constructor Create(texture: IBGRAScanner; texCoord1,texCoord2: TPointF; const quad: array of TPointF); overload;
+    constructor Create(texture: IBGRAScanner; const texCoordsQuad: array of TPointF; const quad: array of TPointF); overload;
     destructor Destroy; override;
     procedure ScanMoveTo(X, Y: Integer); override;
     function ScanAt(X, Y: Single): TBGRAPixel; override;
     function ScanNextPixel: TBGRAPixel; override;
+    procedure ScanSkipPixels(ACount: integer); override;
     property IncludeOppositePlane: boolean read GetIncludeOppositePlane write SetIncludeOppositePlane;
   end;
 
@@ -287,9 +301,9 @@ type
     procedure Init;
   public
     constructor Create; overload;
-    constructor Create(x1,y1,x2,y2: single; const quad: array of TPointF);
-    constructor Create(const quad: array of TPointF; x1,y1,x2,y2: single);
-    constructor Create(const srcQuad,destQuad: array of TPointF);
+    constructor Create(x1,y1,x2,y2: single; const quad: array of TPointF); overload;
+    constructor Create(const quad: array of TPointF; x1,y1,x2,y2: single); overload;
+    constructor Create(const srcQuad,destQuad: array of TPointF); overload;
     function MapQuadToQuad(const srcQuad,destQuad: array of TPointF): boolean;
     function MapRectToQuad(x1,y1,x2,y2: single; const quad: array of TPointF): boolean;
     function MapQuadToRect(const quad: array of TPointF; x1,y1,x2,y2: single): boolean;
@@ -304,6 +318,7 @@ type
     function Apply(pt: TPointF): TPointF;
     procedure ScanMoveTo(x,y:single);
     function ScanNext: TPointF;
+    procedure ScanSkip(ACount: integer);
     property OutsideValue: TPointF read FOutsideValue write FOutsideValue;
     property IncludeOppositePlane: boolean read FIncludeOppositePlane write FIncludeOppositePlane;
   end;
@@ -331,9 +346,39 @@ type
     property Exponent: Single read FExponent;
   end;
 
+  { TBGRASphereDeformationScanner }
+
+  TBGRASphereDeformationScanner = Class(TBGRACustomScanner)
+  protected
+    FScanner: IBGRAScanner;
+    FScanAtFunc: TScanAtFunction;
+    FCenter: TPointF;
+    FRadiusX, FRadiusY: Single;
+  public
+    constructor Create(AScanner: IBGRAScanner; ACenter: TPointF; ARadiusX,ARadiusY: single);
+    function ScanAt(X, Y: Single): TBGRAPixel; override;
+    property RadiusX: Single read FRadiusX;
+    property RadiusY: Single read FRadiusY;
+  end;
+
+  { TBGRAVerticalCylinderDeformationScanner }
+
+  TBGRAVerticalCylinderDeformationScanner = Class(TBGRACustomScanner)
+  protected
+    FScanner: IBGRAScanner;
+    FScanAtFunc: TScanAtFunction;
+    FCenterX: single;
+    FRadiusX: Single;
+  public
+    constructor Create(AScanner: IBGRAScanner; ACenterX: single; ARadiusX: single);
+    function ScanAt(X, Y: Single): TBGRAPixel; override;
+    property RadiusX: Single read FRadiusX;
+  end;
+
+
 implementation
 
-uses BGRABlend;
+uses BGRABlend, Math;
 
 function AffineMatrix(m11, m12, m13, m21, m22, m23: single): TAffineMatrix;
 begin
@@ -343,6 +388,12 @@ begin
   result[2,1] := m21;
   result[2,2] := m22;
   result[2,3] := m23;
+end;
+
+function AffineMatrix(AU, AV: TPointF; ATranslation: TPointF): TAffineMatrix;
+begin
+  result:= AffineMatrix(AU.x, AV.x, ATranslation.x,
+                        AU.y, AV.y, ATranslation.y);
 end;
 
 operator *(M, N: TAffineMatrix): TAffineMatrix;
@@ -356,10 +407,43 @@ begin
   result[2,3] := M[2,1]*N[1,3] + M[2,2]*N[2,3] + M[2,3];
 end;
 
+operator=(M, N: TAffineMatrix): boolean;
+begin
+  result := CompareMem(@M,@N,SizeOf(TAffineMatrix));
+end;
+
 operator*(M: TAffineMatrix; V: TPointF): TPointF;
 begin
-  result.X := V.X*M[1,1]+V.Y*M[1,2]+M[1,3];
-  result.Y := V.X*M[2,1]+V.Y*M[2,2]+M[2,3];
+  if isEmptyPointF(V) then
+    result := EmptyPointF
+  else
+  begin
+    result.X := V.X*M[1,1]+V.Y*M[1,2]+M[1,3];
+    result.Y := V.X*M[2,1]+V.Y*M[2,2]+M[2,3];
+  end;
+end;
+
+operator*(M: TAffineMatrix; A: array of TPointF): ArrayOfTPointF;
+var
+  i: Int32or64;
+  ofs: TPointF;
+begin
+  setlength(result, length(A));
+  if IsAffineMatrixTranslation(M) then
+  begin
+    ofs := PointF(M[1,3],M[2,3]);
+    for i := 0 to high(A) do
+      result[i] := A[i]+ofs;
+  end else
+    for i := 0 to high(A) do
+      result[i] := M*A[i];
+end;
+
+operator*(M: TAffineMatrix; ab: TAffineBox): TAffineBox;
+begin
+  result.TopLeft := M*ab.TopLeft;
+  result.TopRight := M*ab.TopRight;
+  result.BottomLeft := M*ab.BottomLeft;
 end;
 
 function IsAffineMatrixInversible(M: TAffineMatrix): boolean;
@@ -369,7 +453,7 @@ end;
 
 function IsAffineMatrixTranslation(M: TAffineMatrix): boolean;
 begin
-  result := (m[1,1]=1) and (m[1,2]=0) and (m[2,1] = 1) and (m[2,2]=0);
+  result := (m[1,1]=1) and (m[1,2]=0) and (m[2,1] = 0) and (m[2,2]=1);
 end;
 
 function IsAffineMatrixScale(M: TAffineMatrix): boolean;
@@ -404,14 +488,73 @@ end;
 
 function AffineMatrixScale(sx, sy: single): TAffineMatrix;
 begin
-  result := AffineMatrix(sx, 0,    0,
-                         0,  sy, 0);
+  result := AffineMatrix(sx, 0,   0,
+                         0,  sy,  0);
+end;
+
+function AffineMatrixScaledRotation(ASourceVector, ATargetVector: TPointF): TAffineMatrix;
+var
+  prevScale, newScale, scale: Single;
+  u1,v1,u2,v2,w: TPointF;
+begin
+  prevScale := VectLen(ASourceVector);
+  newScale := VectLen(ATargetVector);
+  if (prevScale = 0) or (newScale = 0) then
+    result := AffineMatrixIdentity
+  else
+  begin
+    scale := newScale/prevScale;
+    u1 := ASourceVector*(1/prevScale);
+    v1 := PointF(-u1.y,u1.x);
+    w := ATargetVector*(1/newScale);
+    u2 := PointF(w*u1, w*v1);
+    v2 := PointF(-u2.y,u2.x);
+    result := AffineMatrix(scale*u2,scale*v2,PointF(0,0));
+  end;
+end;
+
+function AffineMatrixScaledRotation(ASourcePoint, ATargetPoint, AOrigin: TPointF): TAffineMatrix;
+begin
+  result := AffineMatrixTranslation(AOrigin.x,AOrigin.y)*
+         AffineMatrixScaledRotation(ASourcePoint-AOrigin, ATargetPoint-AOrigin)*
+         AffineMatrixTranslation(-AOrigin.x,-AOrigin.y);
+end;
+
+function AffineMatrixSkewXDeg(AngleCW: single): TAffineMatrix;
+begin
+  result := AffineMatrix(1,tan(AngleCW*Pi/180),0,
+                         0,        1,          0);
+end;
+
+function AffineMatrixSkewYDeg(AngleCW: single): TAffineMatrix;
+begin
+  result := AffineMatrix(1,           0, 0,
+                 tan(AngleCW*Pi/180), 1, 0)
+end;
+
+function AffineMatrixSkewXRad(AngleCCW: single): TAffineMatrix;
+begin
+
+  result := AffineMatrix(1,tan(-AngleCCW),0,
+                         0,      1,       0);
+end;
+
+function AffineMatrixSkewYRad(AngleCCW: single): TAffineMatrix;
+begin
+  result := AffineMatrix(1,          0, 0,
+                    tan(-angleCCW),  1, 0)
 end;
 
 function AffineMatrixLinear(v1,v2: TPointF): TAffineMatrix;
 begin
   result := AffineMatrix(v1.x, v2.x, 0,
                          v1.y, v2.y, 0);
+end;
+
+function AffineMatrixLinear(const AMatrix: TAffineMatrix): TAffineMatrix;
+begin
+  result := AffineMatrix(AMatrix[1,1],AMatrix[1,2],0,
+                         AMatrix[2,1],AMatrix[2,2],0);
 end;
 
 function AffineMatrixRotationRad(AngleCCW: Single): TAffineMatrix;
@@ -437,6 +580,75 @@ begin
   result := PointF(M[1,1],M[2,1])*PointF(M[1,2],M[2,2]) = 0;
 end;
 
+function IsAffineMatrixScaledRotation(M: TAffineMatrix): boolean;
+begin
+  result := IsAffineMatrixOrthogonal(M) and
+           (VectLen(PointF(M[1,1],M[2,1]))=VectLen(PointF(M[1,2],M[2,2])));
+end;
+
+{ TBGRAVerticalCylinderDeformationScanner }
+
+constructor TBGRAVerticalCylinderDeformationScanner.Create(
+  AScanner: IBGRAScanner; ACenterX: single; ARadiusX: single);
+begin
+  FScanner := AScanner;
+  FScanAtFunc := @FScanner.ScanAt;
+  FCenterX := ACenterX;
+  FRadiusX := ARadiusX;
+end;
+
+function TBGRAVerticalCylinderDeformationScanner.ScanAt(X, Y: Single): TBGRAPixel;
+var
+  xn,len,fact: Single;
+begin
+  xn   := (x - FCenterX) / FRadiusX;
+  len := abs(xn);
+  if (len <= 1) then
+  begin
+    if (len > 0) then
+    begin
+      fact := 1 / len * arcsin(len) / (Pi / 2);
+      xn := xn * fact;
+    end;
+    result := FScanAtFunc(xn * FRadiusX + FCenterX, y);
+  end
+  else
+    result := BGRAPixelTransparent;
+end;
+
+{ TBGRASphereDeformationScanner }
+
+constructor TBGRASphereDeformationScanner.Create(AScanner: IBGRAScanner;
+  ACenter: TPointF; ARadiusX, ARadiusY: single);
+begin
+  FScanner := AScanner;
+  FScanAtFunc := @FScanner.ScanAt;
+  FCenter := ACenter;
+  FRadiusX := ARadiusX;
+  FRadiusY := ARadiusY;
+end;
+
+function TBGRASphereDeformationScanner.ScanAt(X, Y: Single): TBGRAPixel;
+var
+  xn, yn, len,fact: Single;
+begin
+  xn   := (x - FCenter.X) / FRadiusX;
+  yn   := (y - FCenter.Y) / FRadiusY;
+  len := sqrt(sqr(xn) + sqr(yn));
+  if (len <= 1) then
+  begin
+    if (len > 0) then
+    begin
+      fact := 1 / len * arcsin(len) / (Pi / 2);
+      xn := xn * fact;
+      yn := yn * fact;
+    end;
+    result := FScanAtFunc(xn * FRadiusX + FCenter.X, yn * FRadiusY + FCenter.Y);
+  end
+  else
+    result := BGRAPixelTransparent;
+end;
+
 { TBGRAExtendedBorderScanner }
 
 constructor TBGRAExtendedBorderScanner.Create(ASource: IBGRAScanner;
@@ -453,40 +665,6 @@ begin
   if x > FBounds.Right-1 then x := FBounds.Right-1;
   if y > FBounds.Bottom-1 then y := FBounds.Bottom-1;
   result := FSource.ScanAt(X,Y);
-end;
-
-{ TAffineBox }
-
-function TAffineBox.GetAsPolygon: ArrayOfTPointF;
-begin
-  result := PointsF([TopLeft,TopRight,BottomRight,BottomLeft]);
-end;
-
-function TAffineBox.GetBottomRight: TPointF;
-begin
-  if IsEmpty then
-    result := EmptyPointF
-  else
-    result := TopRight + (BottomLeft-TopLeft);
-end;
-
-function TAffineBox.GetIsEmpty: boolean;
-begin
-  result := isEmptyPointF(TopRight) or isEmptyPointF(BottomLeft) or isEmptyPointF(TopLeft);
-end;
-
-class function TAffineBox.EmptyBox: TAffineBox;
-begin
-  result.TopLeft := EmptyPointF;
-  result.TopRight := EmptyPointF;
-  result.BottomLeft := EmptyPointF;
-end;
-
-class function TAffineBox.AffineBox(ATopLeft, ATopRight, ABottomLeft: TPointF): TAffineBox;
-begin
-  result.TopLeft := ATopLeft;
-  result.TopRight := ATopRight;
-  result.BottomLeft := ABottomLeft;
 end;
 
 { TBGRAScannerOffset }
@@ -515,7 +693,7 @@ end;
 
 function TBGRAScannerOffset.ScanAt(X, Y: Single): TBGRAPixel;
 begin
-  Result:=FSource.ScanAt(X, Y);
+  Result:=FSource.ScanAt(X - FOffset.X, Y - FOffset.Y);
 end;
 
 function TBGRAScannerOffset.IsScanPutPixelsDefined: boolean;
@@ -527,6 +705,11 @@ procedure TBGRAScannerOffset.ScanPutPixels(pdest: PBGRAPixel; count: integer;
   mode: TDrawMode);
 begin
   FSource.ScanPutPixels(pdest, count, mode);
+end;
+
+procedure TBGRAScannerOffset.ScanSkipPixels(ACount: integer);
+begin
+  FSource.ScanSkipPixels(ACount);
 end;
 
 { TBGRABitmapScanner }
@@ -549,11 +732,7 @@ begin
     exit;
   end;
   Inc(Y,FOrigin.Y);
-  if FRepeatY then
-  begin
-    Y := Y mod FSource.Height;
-    if Y < 0 then Y += FSource.Height;
-  end;
+  if FRepeatY then Y := PositiveMod(Y,FSource.Height);
   if (Y < 0) or (Y >= FSource.Height) then
   begin
     FScanline := nil;
@@ -561,11 +740,7 @@ begin
   end;
   FScanline := FSource.Scanline[Y];
   FCurX := X+FOrigin.X;
-  if FRepeatX then
-  begin
-    FCurX := FCurX mod FSource.Width;
-    if FCurX < 0 then FCurX += FSource.Width;
-  end;
+  if FRepeatX then FCurX := PositiveMod(FCurX, FSource.Width);
 end;
 
 function TBGRABitmapScanner.ScanNextPixel: TBGRAPixel;
@@ -598,6 +773,15 @@ end;
 function TBGRABitmapScanner.ScanAt(X, Y: Single): TBGRAPixel;
 begin
   Result := FSource.GetPixelCycle(X+FOrigin.X,Y+FOrigin.Y,rfLinear,FRepeatX,FRepeatY);
+end;
+
+procedure TBGRABitmapScanner.ScanSkipPixels(ACount: integer);
+begin
+  if FScanLine <> nil then
+  begin
+    inc(FCurX, ACount);
+    if FCurX > FSource.Width then FCurX := PositiveMod(FCurX, FSource.Width);
+  end;
 end;
 
 { TBGRATriangleLinearMapping }
@@ -643,7 +827,12 @@ end;
 function TBGRATriangleLinearMapping.ScanNextPixel: TBGRAPixel;
 begin
   result := FScanAtFunc(FCurTexCoord.X,FCurTexCoord.Y);
-  FCurTexCoord += FStep;
+  FCurTexCoord.Offset(FStep);
+end;
+
+procedure TBGRATriangleLinearMapping.ScanSkipPixels(ACount: integer);
+begin
+  FCurTexCoord.Offset(FStep*ACount);
 end;
 
 { TBGRAAffineScannerTransform }
@@ -667,6 +856,20 @@ begin
   if not FEmptyMatrix and IsAffineMatrixInversible(FMatrix) then
     FMatrix := AffineMatrixInverse(FMatrix) else
       FEmptyMatrix := True;
+end;
+
+function TBGRAAffineScannerTransform.GetViewMatrix: TAffineMatrix;
+begin
+  if FEmptyMatrix then
+    result := AffineMatrixIdentity
+  else
+    result := AffineMatrixInverse(FMatrix);
+end;
+
+procedure TBGRAAffineScannerTransform.SetViewMatrix(AValue: TAffineMatrix);
+begin
+  Matrix := AValue;
+  Invert;
 end;
 
 procedure TBGRAAffineScannerTransform.SetMatrix(AMatrix: TAffineMatrix);
@@ -695,7 +898,7 @@ end;
 
 procedure TBGRAAffineScannerTransform.MultiplyBy(AMatrix: TAffineMatrix);
 begin
-  FMatrix *= AMatrix;
+  FMatrix := FMatrix * AMatrix;
 end;
 
 procedure TBGRAAffineScannerTransform.Fit(Origin, HAxis, VAxis: TPointF);
@@ -722,17 +925,19 @@ begin
   Scale(factor,factor);
 end;
 
+function TBGRAAffineScannerTransform.GetScanCustomColorspace: TColorspaceAny;
+begin
+  Result:= TBGRAPixelColorspace;
+end;
+
 procedure TBGRAAffineScannerTransform.ScanMoveTo(X, Y: Integer);
 begin
   ScanMoveToF(X,Y);
 end;
 
 procedure TBGRAAffineScannerTransform.ScanMoveToF(X, Y: single);
-Var Cur: TPointF;
 begin
-  Cur := FMatrix * PointF(X,Y);
-  FCurX := Cur.X;
-  FCurY := Cur.Y;
+  FCur := FMatrix * PointF(X,Y);
 end;
 
 function TBGRAAffineScannerTransform.InternalScanCurrentPixel: TBGRAPixel;
@@ -742,15 +947,19 @@ begin
     result := BGRAPixelTransparent;
     exit;
   end;
-  result := FScanAtFunc(FCurX,FCurY);
+  result := FScanAtFunc(FCur.X,FCur.Y);
 end;
 
 function TBGRAAffineScannerTransform.ScanNextPixel: TBGRAPixel;
 begin
   result := InternalScanCurrentPixel;
-  FCurX += FMatrix[1,1];
-  FCurY += FMatrix[2,1];
+  FCur.Offset(FMatrix[1,1], FMatrix[2,1]);
   if GlobalOpacity <> 255 then result.alpha := ApplyOpacity(result.alpha,GlobalOpacity);
+end;
+
+procedure TBGRAAffineScannerTransform.ScanSkipPixels(ACount: integer);
+begin
+  FCur.Offset(FMatrix[1,1]*ACount, FMatrix[2,1]*ACount);
 end;
 
 function TBGRAAffineScannerTransform.ScanAt(X, Y: Single): TBGRAPixel;
@@ -764,6 +973,7 @@ end;
 
 function TBGRAQuadLinearScanner.GetTexColorAt(u, v: Single; detNeg: boolean
   ): TBGRAPixel;
+var isPadding: boolean;
 begin
   if detNeg then
   begin
@@ -778,15 +988,16 @@ begin
       result := BGRAPixelTransparent;
       exit;
     end;
-  with (FSourceMatrix * PointF(u,v) + FUVVector*(u*v)) do
-    if FTextureInterpolation then
-      result := FSource.ScanAt(x,y)
-    else
-      result := FSource.ScanAtInteger(System.round(x),System.round(y));
+  GetTexColorAt(u,v,result,isPadding);
 end;
 
 procedure TBGRAQuadLinearScanner.ScanMoveToF(X, Y: single);
 begin
+  if not (FHasC1 and FShowC1) and not (FHasC2 and FShowC2) then
+  begin
+    FScanFunc := @ScanNone;
+    exit;
+  end;
   FCurXF := X;
   FCurYF := Y;
   if (FVectors[0].x = 0) and (FVectors[2].x = 0) then
@@ -812,7 +1023,7 @@ end;
 procedure TBGRAQuadLinearScanner.Init(ASource: IBGRAScanner;
   const APoints: array of TPointF; ATextureInterpolation: boolean);
 var
-  i: NativeInt;
+  i: Int32or64;
   v: TPointF;
   len: single;
 begin
@@ -847,6 +1058,12 @@ begin
   FShowC1 := true;
   FShowC2 := true;
 
+  FHasC1 := false;
+  FHasC2 := false;
+  for i := 0 to 3 do
+    if FDets[i] > 0 then FHasC1 := true
+    else if FDets[i] < 0 then FHasC2 := true;
+
   FBuffer := nil;
   FBufferSize := 0;
 
@@ -862,7 +1079,7 @@ end;
 procedure TBGRAQuadLinearScanner.ScanPutPixels(pdest: PBGRAPixel; count: integer;
   mode: TDrawMode);
 var
-  n: NativeInt;
+  n: Int32or64;
   p: PBGRAPixel;
 begin
   if mode = dmSet then
@@ -899,30 +1116,21 @@ begin
   Result:= FScanFunc();
 end;
 
+procedure TBGRAQuadLinearScanner.ScanSkipPixels(ACount: integer);
+begin
+  ScanMoveToF(FCurXF+ACount,FCurYF);
+end;
+
 function TBGRAQuadLinearScanner.ScanGeneral: TBGRAPixel;
 var u1,u2,v1,v2,x,y: double;
   bb,cc,det,delta,denom: double;
-
-  procedure ReturnC1C2; inline;
-  var c1,c2: TBGRAPixel;
-  begin
-    with (FSourceMatrix * PointF(u1,v1) + FUVVector*(u1*v1)) do
-      if FTextureInterpolation then
-        c1 := FSource.ScanAt(x,y)
-      else
-        c1 := FSource.ScanAtInteger(System.round(x),System.round(y));
-    with (FSourceMatrix * PointF(u2,v2) + FUVVector*(u2*v2)) do
-      if FTextureInterpolation then
-        c2 := FSource.ScanAt(x,y)
-      else
-        c2 := FSource.ScanAtInteger(System.round(x),System.round(y));
-    result := MergeBGRA(c1,c2);
-  end;
-
+  mergeC1,mergeC2: boolean;
+  isPad1,isPad2: boolean;
+  c1,c2: TBGRAPixel;
 begin
   x := FCurXF;
   y := FCurYF;
-  FCurXF += 1;
+  IncF(FCurXF, 1);
   if (Y = FPoints[0].y) and (FVectors[0].y = 0) then
   begin
     if FVectors[0].x = 0 then
@@ -931,11 +1139,8 @@ begin
       exit;
     end;
     u1 := (X - FPoints[0].x)/(FPoints[1].x-FPoints[0].x);
-    if (u1 >= 0) and (u1 <= 1) then
-    begin
-      result := GetTexColorAt(u1,0,FDets[0]<0);
-      exit;
-    end;
+    result := GetTexColorAt(u1,0,FDets[0]<0);
+    exit;
   end;
   if (X = FPoints[1].x) and (FVectors[1].x = 0) then
   begin
@@ -945,11 +1150,7 @@ begin
       exit;
     end;
     v1 := (Y - FPoints[1].y)/(FPoints[2].y-FPoints[1].y);
-    if (v1 >= 0) and (v1 <= 1) then
-    begin
-      result := GetTexColorAt(0,v1,FDets[1]<0);
-      exit;
-    end;
+    result := GetTexColorAt(0,v1,FDets[1]<0);
   end;
   if (Y = FPoints[2].y) and (FVectors[2].y = 0) then
   begin
@@ -959,11 +1160,7 @@ begin
       exit;
     end;
     u1 := (X - FPoints[3].x)/(FPoints[2].x-FPoints[3].x);
-    if (u1 >= 0) and (u1 <= 1) then
-    begin
-      result := GetTexColorAt(u1,1,FDets[2]<0);
-      exit;
-    end;
+    result := GetTexColorAt(u1,1,FDets[2]<0);
   end;
   if (X = FPoints[3].x) and (FVectors[3].x = 0) then
   begin
@@ -973,11 +1170,7 @@ begin
       exit;
     end;
     v1 := (Y - FPoints[0].y)/(FPoints[3].y-FPoints[0].y);
-    if (v1 >= 0) and (v1 <= 1) then
-    begin
-      result := GetTexColorAt(0,v1,FDets[3]<0);
-      exit;
-    end;
+    result := GetTexColorAt(0,v1,FDets[3]<0);
   end;
 
   bb := bb0 + x*FCoeffs[3].y - y*FCoeffs[3].x;
@@ -994,10 +1187,7 @@ begin
     else
       u1 := (x-FCoeffs[0].x-FCoeffs[2].x*v1)/denom;
 
-    if (u1>=0) and (u1<=1) and (v1 >= 0) and (v1 <= 1) then
-      result := GetTexColorAt(u1,v1,bb<0)
-    else
-      result := BGRAPixelTransparent;
+    result := GetTexColorAt(u1,v1,bb<0);
   end else
   begin
     delta := bb*bb - 4*aa*cc;
@@ -1008,72 +1198,83 @@ begin
       exit;
     end;
     det := sqrt(delta);
-    v1 := (-bb+det)*inv2aa;
-    if v1 = 0 then
-      u1 := (FVectors[0]*FInvLengths[0])*(PointF(x,y)-FPoints[0])
-    else if v1 = 1 then
-      u1 := 1 - (FVectors[2]*FInvLengths[2])*(PointF(x,y)-FPoints[2])
-    else
-    begin
-      denom := FCoeffs[1].x+FCoeffs[3].x*v1;
-      if abs(denom)<1e-6 then
-      begin
-        u1 := (bb+det)*inv2aa;
-        denom := FCoeffs[1].y+FCoeffs[3].y*u1;
-        if denom = 0 then
-        begin
-          result := BGRAPixelTransparent;
-          exit;
-        end
-        else v1 := (y-FCoeffs[0].y-FCoeffs[2].y*u1)/denom;
-      end
-      else u1 := (x-FCoeffs[0].x-FCoeffs[2].x*v1)/denom;
-    end;
 
-    v2 := (-bb-det)*inv2aa;
-    if v2 = 0 then
-      u2 := (FVectors[0]*FInvLengths[0])*(PointF(x,y)-FPoints[0])
-    else if v2 = 1 then
-      u2 := 1 - (FVectors[2]*FInvLengths[2])*(PointF(x,y)-FPoints[2])
-    else
+    if FHasC1 and FShowC1 then
     begin
-      denom := FCoeffs[1].x+FCoeffs[3].x*v2;
-      if abs(denom)<1e-6 then
-      begin
-        u2 := (bb-det)*inv2aa;
-        denom := FCoeffs[1].y+FCoeffs[3].y*u2;
-        if denom = 0 then
-        begin
-          result := BGRAPixelTransparent;
-          exit;
-        end
-        else v2 := (y-FCoeffs[0].y-FCoeffs[2].y*u2)/denom;
-      end
-      else u2 := (x-FCoeffs[0].x-FCoeffs[2].x*v2)/denom;
-    end;
-
-    if (u1 >= 0) and (u1 <= 1) and (v1 >= 0) and (v1 <= 1) and FShowC1 then
-    begin
-      if (u2 >= 0) and (u2 <= 1) and (v2 >= 0) and (v2 <= 1) and FShowC2 then
-        ReturnC1C2
+      mergeC1 := true;
+      v1 := (-bb+det)*inv2aa;
+      if v1 = 0 then
+        u1 := (FVectors[0]*FInvLengths[0])*(PointF(x,y)-FPoints[0])
+      else if v1 = 1 then
+        u1 := 1 - (FVectors[2]*FInvLengths[2])*(PointF(x,y)-FPoints[2])
       else
-        with (FSourceMatrix * PointF(u1,v1) + FUVVector*(u1*v1)) do
-          if FTextureInterpolation then
-            result := FSource.ScanAt(x,y)
-          else
-            result := FSource.ScanAtInteger(System.round(x),System.round(y));
-    end
-    else
-    if (u2 >= 0) and (u2 <= 1) and (v2 >= 0) and (v2 <= 1) and FShowC2 then
+      begin
+        denom := FCoeffs[1].x+FCoeffs[3].x*v1;
+        if abs(denom)<1e-6 then
+        begin
+          u1 := (bb+det)*inv2aa;
+          denom := FCoeffs[1].y+FCoeffs[3].y*u1;
+          if denom = 0 then mergeC1 := false
+          else v1 := (y-FCoeffs[0].y-FCoeffs[2].y*u1)/denom;
+        end
+        else u1 := (x-FCoeffs[0].x-FCoeffs[2].x*v1)/denom;
+      end;
+    end else
     begin
-      with (FSourceMatrix * PointF(u2,v2) + FUVVector*(u2*v2)) do
-        if FTextureInterpolation then
-          result := FSource.ScanAt(x,y)
-        else
-          result := FSource.ScanAtInteger(System.round(x),System.round(y));
+      u1 := 0;
+      v1 := 0;
+      mergeC1 := false;
+    end;
+
+    if FHasC2 and FShowC2 then
+    begin
+      mergeC2 := true;
+      v2 := (-bb-det)*inv2aa;
+      if v2 = 0 then
+        u2 := (FVectors[0]*FInvLengths[0])*(PointF(x,y)-FPoints[0])
+      else if v2 = 1 then
+        u2 := 1 - (FVectors[2]*FInvLengths[2])*(PointF(x,y)-FPoints[2])
+      else
+      begin
+        denom := FCoeffs[1].x+FCoeffs[3].x*v2;
+        if abs(denom)<1e-6 then
+        begin
+          u2 := (bb-det)*inv2aa;
+          denom := FCoeffs[1].y+FCoeffs[3].y*u2;
+          if denom = 0 then mergeC2 := false
+          else v2 := (y-FCoeffs[0].y-FCoeffs[2].y*u2)/denom;
+        end
+        else u2 := (x-FCoeffs[0].x-FCoeffs[2].x*v2)/denom;
+      end;
+    end else
+    begin
+      u2 := 0;
+      v2 := 0;
+      mergeC2 := false;
+    end;
+
+    if mergeC1 then
+    begin
+      if mergeC2 then
+      begin
+        GetTexColorAt(u1,v1,c1,isPad1);
+        GetTexColorAt(u2,v2,c2,isPad2);
+        if isPad1 then
+        begin
+          if isPad2 then result := MergeBGRA(c1,c2)
+          else result := c2;
+        end else
+        begin
+          if isPad2 then result := c1
+          else result := MergeBGRA(c1,c2);
+        end;
+      end
+      else GetTexColorAt(u1,v1,result,isPad1);
     end
     else
-      result := BGRAPixelTransparent;
+    if mergeC2 then
+      GetTexColorAt(u2,v2,result,isPad2)
+    else result := BGRAPixelTransparent;
   end;
 end;
 
@@ -1085,6 +1286,11 @@ begin
     result := fcKeepCW
   else
     result := fcKeepCCW;
+end;
+
+function TBGRAQuadLinearScanner.ScanNone: TBGRAPixel;
+begin
+  result := BGRAPixelTransparent;
 end;
 
 procedure TBGRAQuadLinearScanner.PrepareScanVert0;
@@ -1105,30 +1311,23 @@ end;
 
 function TBGRAQuadLinearScanner.ScanVert0: TBGRAPixel;
 var u: single;
+  isPad: boolean;
 begin
-  FCurXF += 1;
+  IncF(FCurXF, 1);
   if ScanVertVStep0 = EmptySingle then
   begin
     result := BGRAPixelTransparent;
     exit;
   end;
-  if (ScanVertV0 >= 0) and (ScanVertV0 <= 1) then
+  if ScanVertDenom0 = 0 then
+    result := BGRAPixelTransparent
+  else
   begin
-    if ScanVertDenom0 = 0 then
-      result := BGRAPixelTransparent
-    else
-    begin
-      u := (FCurYF-(FPoints[0].y*(1-ScanVertV0) + FPoints[3].y*ScanVertV0))/ScanVertDenom0;
-      if (u >= 0) and (u <= 1) then
-        result := GetTexColorAt(u,ScanVertV0,FDets[0]<0)
-      else
-        result := BGRAPixelTransparent;
-    end;
-  end else
-    result := BGRAPixelTransparent;
-
-  ScanVertV0 += ScanVertVStep0;
-  ScanVertDenom0 += ScanVertDenomStep0;
+    u := (FCurYF-(FPoints[0].y*(1-ScanVertV0) + FPoints[3].y*ScanVertV0))/ScanVertDenom0;
+    GetTexColorAt(u,ScanVertV0,result,isPad);
+  end;
+  IncF(ScanVertV0, ScanVertVStep0);
+  IncF(ScanVertDenom0, ScanVertDenomStep0);
 end;
 
 procedure TBGRAQuadLinearScanner.PrepareScanPara;
@@ -1144,8 +1343,9 @@ end;
 function TBGRAQuadLinearScanner.ScanPara: TBGRAPixel;
 var
   u,v,denom: Single;
+  isPad: boolean;
 begin
-  FCurXF += 1;
+  IncF(FCurXF, 1);
 
   if ScanParaBB = 0 then
     result := BGRAPixelTransparent
@@ -1158,23 +1358,33 @@ begin
     else
     begin
       u := (FCurXF-1-FCoeffs[0].x-FCoeffs[2].x*v)/denom;
-
-      if (u>=0) and (u<=1) and (v >= 0) and (v <= 1) then
-        result := GetTexColorAt(u,v,FDets[0]<0)
-      else
-        result := BGRAPixelTransparent;
+      GetTexColorAt(u,v,result,isPad);
     end;
   end;
 
   if FCoeffs[3].y <> 0 then
   begin
-    ScanParaBB += FCoeffs[3].y;
+    IncF(ScanParaBB, FCoeffs[3].y);
     if ScanParaBB <> 0 then
       ScanParaBBInv := 1/ScanParaBB
     else
       ScanParaBBInv := 1;
   end;
-  ScanParaCC += FCoeffs[1].y;
+  IncF(ScanParaCC, FCoeffs[1].y);
+end;
+
+procedure TBGRAQuadLinearScanner.GetTexColorAt(u,v: Single; out AColor: TBGRAPixel; out AIsPadding: boolean);
+begin
+  AIsPadding:= false;
+  if u < 0 then begin if Padding then begin u := 0; AIsPadding := true end else begin AColor := BGRAPixelTransparent; exit end end;
+  if u > 1 then begin if Padding then begin u := 1; AIsPadding := true end else begin AColor := BGRAPixelTransparent; exit end end;
+  if v < 0 then begin if Padding then begin v := 0; AIsPadding := true end else begin AColor := BGRAPixelTransparent; exit end end;
+  if v > 1 then begin if Padding then begin v := 1; AIsPadding := true end else begin AColor := BGRAPixelTransparent; exit end end;
+  with (FSourceMatrix * PointF(u,v) + FUVVector*(u*v)) do
+    if FTextureInterpolation then
+      AColor := FSource.ScanAt(x,y)
+    else
+      AColor := FSource.ScanAtInteger(System.round(x),System.round(y));
 end;
 
 constructor TBGRAQuadLinearScanner.Create(ASource: IBGRAScanner;
@@ -1239,15 +1449,22 @@ end;
 
 function TBGRAAffineBitmapTransform.InternalScanCurrentPixel: TBGRAPixel;
 begin
-  result := FBitmap.GetPixelCycle(FCurX,FCurY,FResampleFilter,FRepeatImageX,FRepeatImageY);
+  if FEmptyMatrix then
+  begin
+    result := BGRAPixelTransparent;
+    exit;
+  end;
+  result := FBitmap.GetPixelCycle(FCur.X,FCur.Y,FResampleFilter,FRepeatImageX,FRepeatImageY);
 end;
 
 procedure TBGRAAffineBitmapTransform.ScanPutPixels(pdest: PBGRAPixel;
   count: integer; mode: TDrawMode);
+const PrecisionShift = {$IFDEF CPU64}24{$ELSE}12{$ENDIF};
+      Precision = 1 shl PrecisionShift;
 var p: PBGRAPixel;
   n: integer;
-  posX4096, posY4096: Int32or64;
-  deltaX4096,deltaY4096: Int32or64;
+  posXPrecision, posYPrecision: Int32or64;
+  deltaXPrecision,deltaYPrecision: Int32or64;
   ix,iy,shrMask,w,h: Int32or64;
   py0: PByte;
   deltaRow: Int32or64;
@@ -1256,12 +1473,20 @@ begin
   h := FBitmap.Height;
   if (w = 0) or (h = 0) then exit;
 
-  posX4096 := round(FCurX*4096);
-  deltaX4096:= round(FMatrix[1,1]*4096);
-  posY4096 := round(FCurY*4096);
-  deltaY4096:= round(FMatrix[2,1]*4096);
+  if GlobalOpacity = 0 then
+  begin
+    if mode = dmSet then
+      FillDWord(pdest^, count, LongWord(BGRAPixelTransparent));
+    FCur.Offset(FMatrix[1,1]*count, FMatrix[2,1]*count);
+    exit;
+  end;
+
+  posXPrecision := round(FCur.X*Precision);
+  deltaXPrecision:= round(FMatrix[1,1]*Precision);
+  posYPrecision := round(FCur.Y*Precision);
+  deltaYPrecision:= round(FMatrix[2,1]*Precision);
   shrMask := -1;
-  shrMask := shrMask shr 12;
+  shrMask := shrMask shr PrecisionShift;
   shrMask := not shrMask;
 
   if mode = dmSet then
@@ -1278,8 +1503,8 @@ begin
 
   if FResampleFilter = rfBox then
   begin
-    posX4096 += 2048;
-    posY4096 += 2048;
+    inc(posXPrecision, Precision shr 1);
+    inc(posYPrecision, Precision shr 1);
     py0 := PByte(FBitmap.ScanLine[0]);
     if FBitmap.LineOrder = riloTopToBottom then
       deltaRow := FBitmap.Width*sizeof(TBGRAPixel) else
@@ -1288,8 +1513,8 @@ begin
     begin
       for n := count-1 downto 0 do
       begin
-        if posX4096 < 0 then ix := (posX4096 shr 12) or shrMask else ix := posX4096 shr 12;
-        if posY4096 < 0 then iy := (posY4096 shr 12) or shrMask else iy := posY4096 shr 12;
+        if posXPrecision < 0 then ix := (posXPrecision shr PrecisionShift) or shrMask else ix := posXPrecision shr PrecisionShift;
+        if posYPrecision < 0 then iy := (posYPrecision shr PrecisionShift) or shrMask else iy := posYPrecision shr PrecisionShift;
         if FRepeatImageX then ix := PositiveMod(ix,w);
         if FRepeatImageY then iy := PositiveMod(iy,h);
         if (ix < 0) or (iy < 0) or (ix >= w) or (iy >= h) then
@@ -1297,22 +1522,22 @@ begin
         else
           p^ := (PBGRAPixel(py0 + iy*deltaRow)+ix)^;
         inc(p);
-        posX4096 += deltaX4096;
-        posY4096 += deltaY4096;
+        inc(posXPrecision, deltaXPrecision);
+        inc(posYPrecision, deltaYPrecision);
       end;
     end else
     begin
      for n := count-1 downto 0 do
      begin
-       if posX4096 < 0 then ix := (posX4096 shr 12) or shrMask else ix := posX4096 shr 12;
-       if posY4096 < 0 then iy := (posY4096 shr 12) or shrMask else iy := posY4096 shr 12;
+       if posXPrecision < 0 then ix := (posXPrecision shr PrecisionShift) or shrMask else ix := posXPrecision shr PrecisionShift;
+       if posYPrecision < 0 then iy := (posYPrecision shr PrecisionShift) or shrMask else iy := posYPrecision shr PrecisionShift;
        if (ix < 0) or (iy < 0) or (ix >= w) or (iy >= h) then
          p^ := BGRAPixelTransparent
        else
          p^ := (PBGRAPixel(py0 + iy*deltaRow)+ix)^;
        inc(p);
-       posX4096 += deltaX4096;
-       posY4096 += deltaY4096;
+       inc(posXPrecision, deltaXPrecision);
+       inc(posYPrecision, deltaYPrecision);
      end;
     end;
   end else
@@ -1321,40 +1546,55 @@ begin
    begin
      for n := count-1 downto 0 do
      begin
-       if posX4096 < 0 then ix := (posX4096 shr 12) or shrMask else ix := posX4096 shr 12;
-       if posY4096 < 0 then iy := (posY4096 shr 12) or shrMask else iy := posY4096 shr 12;
-       p^ := FBitmap.GetPixelCycle256(ix,iy, (posX4096 shr 4) and 255, (posY4096 shr 4) and 255,FResampleFilter);
+       if posXPrecision < 0 then ix := (posXPrecision shr PrecisionShift) or shrMask else ix := posXPrecision shr PrecisionShift;
+       if posYPrecision < 0 then iy := (posYPrecision shr PrecisionShift) or shrMask else iy := posYPrecision shr PrecisionShift;
+       p^ := FBitmap.GetPixelCycle256(ix,iy, (posXPrecision shr (PrecisionShift-8)) and 255, (posYPrecision shr (PrecisionShift-8)) and 255,FResampleFilter);
        inc(p);
-       posX4096 += deltaX4096;
-       posY4096 += deltaY4096;
+       inc(posXPrecision, deltaXPrecision);
+       inc(posYPrecision, deltaYPrecision);
      end;
    end else
    if FRepeatImageX or FRepeatImageY then
    begin
      for n := count-1 downto 0 do
      begin
-       if posX4096 < 0 then ix := (posX4096 shr 12) or shrMask else ix := posX4096 shr 12;
-       if posY4096 < 0 then iy := (posY4096 shr 12) or shrMask else iy := posY4096 shr 12;
-       p^ := FBitmap.GetPixelCycle256(ix,iy, (posX4096 shr 4) and 255, (posY4096 shr 4) and 255,FResampleFilter, FRepeatImageX,FRepeatImageY);
+       if posXPrecision < 0 then ix := (posXPrecision shr PrecisionShift) or shrMask else ix := posXPrecision shr PrecisionShift;
+       if posYPrecision < 0 then iy := (posYPrecision shr PrecisionShift) or shrMask else iy := posYPrecision shr PrecisionShift;
+       p^ := FBitmap.GetPixelCycle256(ix,iy, (posXPrecision shr (PrecisionShift-8)) and 255, (posYPrecision shr (PrecisionShift-8)) and 255,FResampleFilter, FRepeatImageX,FRepeatImageY);
        inc(p);
-       posX4096 += deltaX4096;
-       posY4096 += deltaY4096;
+       inc(posXPrecision, deltaXPrecision);
+       inc(posYPrecision, deltaYPrecision);
      end;
    end else
    begin
     for n := count-1 downto 0 do
     begin
-      if posX4096 < 0 then ix := (posX4096 shr 12) or shrMask else ix := posX4096 shr 12;
-      if posY4096 < 0 then iy := (posY4096 shr 12) or shrMask else iy := posY4096 shr 12;
-      p^ := FBitmap.GetPixel256(ix,iy, (posX4096 shr 4) and 255, (posY4096 shr 4) and 255,FResampleFilter);
+      if posXPrecision < 0 then ix := (posXPrecision shr PrecisionShift) or shrMask else ix := posXPrecision shr PrecisionShift;
+      if posYPrecision < 0 then iy := (posYPrecision shr PrecisionShift) or shrMask else iy := posYPrecision shr PrecisionShift;
+      p^ := FBitmap.GetPixel256(ix,iy, (posXPrecision shr (PrecisionShift-8)) and 255, (posYPrecision shr (PrecisionShift-8)) and 255,FResampleFilter);
       inc(p);
-      posX4096 += deltaX4096;
-      posY4096 += deltaY4096;
+      inc(posXPrecision, deltaXPrecision);
+      inc(posYPrecision, deltaYPrecision);
     end;
    end;
   end;
 
+  if GlobalOpacity < 255 then
+  begin
+    if mode = dmSet then
+      p := pdest
+    else
+      p := FBuffer;
+    for n := count-1 downto 0 do
+    begin
+      p^.alpha := ApplyOpacity(p^.alpha,GlobalOpacity);
+      if p^.alpha = 0 then p^ := BGRAPixelTransparent;
+      inc(p);
+    end;
+  end;
+
   if mode <> dmSet then PutPixels(pdest,FBuffer,count,mode,255);
+  FCur.Offset(FMatrix[1,1]*count, FMatrix[2,1]*count);
 end;
 
 function TBGRAAffineBitmapTransform.IsScanPutPixelsDefined: boolean;
@@ -1458,6 +1698,11 @@ begin
     else
       Result:= FScanAtProc(ptSource.X, ptSource.Y);
   end;
+end;
+
+procedure TBGRAPerspectiveScannerTransform.ScanSkipPixels(ACount: integer);
+begin
+  if FMatrix<>nil then FMatrix.ScanSkip(ACount);
 end;
 
 { TPerspectiveTransform }
@@ -1754,9 +1999,16 @@ begin
    result.x := m * ScanNumX;
    result.y := m * scanNumY;
   end;
-  ScanDenom += w0;
-  ScanNumX += sx;
-  scanNumY += shy;
+  IncF(ScanDenom, w0);
+  IncF(ScanNumX, sx);
+  IncF(scanNumY, shy);
+end;
+
+procedure TPerspectiveTransform.ScanSkip(ACount: integer);
+begin
+  IncF(ScanDenom, w0*ACount);
+  IncF(ScanNumX, sx*ACount);
+  IncF(scanNumY, shy*ACount);
 end;
 
 { TBGRATwirlScanner }

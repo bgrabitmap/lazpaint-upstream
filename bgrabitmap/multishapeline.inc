@@ -1,7 +1,12 @@
+// SPDX-License-Identifier: LGPL-3.0-linking-exception
       begin
         for k := 0 to NbShapeRows-1 do
         with shapeRow[shapeRowsList[k]],shapes[shapeRowsList[k]] do
+        if densMinx <= densMaxx then
         begin
+          if densMinx < minx then densMinx := minx;
+          if densMaxx > maxx then densMaxx := maxx;
+
           if texture <> nil then
           begin
             texture.ScanMoveTo(densMinx,yb);
@@ -10,14 +15,13 @@
             for xb := densMinx to densMaxx do
             with sums[xb-minx] do
             begin
-              j := pdens^; inc(pdens);
-              if j <> 0 then
+              if pdens^ <> 0 then
               begin
                 ec := GammaExpansion(ScanNextFunc());
                 {$ifdef PARAM_ANTIALIASINGFACTOR}
-                  w := DivByAntialiasPrecision65536(j*ec.alpha);
+                  w := DivByAntialiasPrecision65536(pdens^ * ec.alpha);
                 {$else}
-                  w := (j*ec.alpha) shr 16;
+                  w := (pdens^ * ec.alpha) shr 16;
                 {$endif}
                 if w <> 0 then
                 begin
@@ -28,6 +32,7 @@
                 end;
               end else
                 ScanNextFunc();
+              inc(pdens);
             end;
           end else
           begin
@@ -36,13 +41,12 @@
             for xb := densMinx to densMaxx do
              with sums[xb-minx] do
              begin
-               j := pdens^; inc(pdens);
-               if j <> 0 then
+               if pdens^ <> 0 then
                begin
                  {$ifdef PARAM_ANTIALIASINGFACTOR}
-                   w := DivByAntialiasPrecision65536(j*ec.alpha);
+                   w := DivByAntialiasPrecision65536(pdens^ * ec.alpha);
                  {$else}
-                   w := (j*ec.alpha) shr 16;
+                   w := (pdens^ * ec.alpha) shr 16;
                  {$endif}
                  if w <> 0 then
                  begin
@@ -52,6 +56,7 @@
                    inc(sumA,w);
                  end;
                end;
+               inc(pdens);
              end;
           end;
         end;

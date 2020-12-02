@@ -1,41 +1,23 @@
+// SPDX-License-Identifier: LGPL-3.0-linking-exception
 { This component partialy solve problem with no alpha in lazarus GTK.
   It is using BGRABitmap library for drawing icons.
 
-  Copyright (C) 2011 Krzysztof Dibowski dibowski at interia.pl
-
-  This library is free software; you can redistribute it and/or modify it
-  under the terms of the GNU Library General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or (at your
-  option) any later version with the following modification:
-
-  As a special exception, the copyright holders of this library give you
-  permission to link this library with independent modules to produce an
-  executable, regardless of the license terms of these independent modules,and
-  to copy and distribute the resulting executable under terms of your choice,
-  provided that you also meet, for each linked independent module, the terms
-  and conditions of the license of that module. An independent module is a
-  module which is not derived from or based on this library. If you modify
-  this library, you may extend this exception to your version of the library,
-  but you are not obligated to do so. If you do not wish to do so, delete this
-  exception statement from your version.
-
-  This program is distributed in the hope that it will be useful, but WITHOUT
-  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
-  for more details.
-
-  You should have received a copy of the GNU Library General Public License
-  along with this library; if not, write to the Free Software Foundation,
-  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+  originally written in 2011 by Krzysztof Dibowski dibowski at interia.pl
 }
+{******************************* CONTRIBUTOR(S) ******************************
+- Edivando S. Santos Brasil | mailedivando@gmail.com
+  (Compatibility with delphi VCL 11/2018)
+
+***************************** END CONTRIBUTOR(S) *****************************}
 unit BGRASpeedButton;
 
-{$mode objfpc}{$H+}
+{$I bgracontrols.inc}
 
 interface
 
 uses
-  Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, Buttons, BGRABitmap,
+  Classes, SysUtils, {$IFDEF FPC}LResources,{$ENDIF} Forms, Controls, Graphics, Dialogs, Buttons, BGRABitmap,
+  {$IFNDEF FPC}Types, BGRAGraphics, GraphType, FPImage, {$ENDIF}
   BGRABitmapTypes;
 
 {$IFDEF LCLgtk}
@@ -60,8 +42,8 @@ type
     { Protected declarations }
     {$IFDEF BGRA_DRAW}
     function DrawGlyph(ACanvas: TCanvas; const AClient: TRect;
-      const AOffset: TPoint; AState: TButtonState; ATransparent: boolean;
-      BiDiFlags: longint): TRect; override;
+      const AOffset: TPoint; AState: TButtonState; {%H-}ATransparent: boolean;
+      {%H-}BiDiFlags: longint): TRect; override;
     {$ENDIF}
   public
     { Public declarations }
@@ -73,15 +55,17 @@ type
     { Published declarations }
   end;
 
-procedure Register;
+{$IFDEF FPC}procedure Register;{$ENDIF}
 
 implementation
 
+{$IFDEF FPC}
 procedure Register;
 begin
-  {$I icons\bgraspeedbutton_icon.lrs}
-  RegisterComponents('BGRA Controls', [TBGRASpeedButton]);
+  //{$I icons\bgraspeedbutton_icon.lrs}
+  RegisterComponents('BGRA Button Controls', [TBGRASpeedButton]);
 end;
+{$ENDIF}
 
 {$IFDEF BGRA_DRAW}
 { TBGRASpeedButton }
@@ -94,19 +78,21 @@ begin
   {Result := inherited DrawGlyph(ACanvas, AClient, AOffset, AState,
     ATransparent, BiDiFlags); }
 
-  if Glyph = nil then
-    Exit;
+  if not Assigned(Glyph) then
+    begin
+      Result := Rect(0,0,0,0);
+      Exit;
+    end;
   { It's not good solution assigning glyph on each draw call but FGlyph and SetGlyph is
     in private section }
   FBGRA.Assign(Glyph);
 
-  if Assigned(Glyph) then
-  begin
-    if (AState = bsDown) or (Down = True) then
-      FBGRA.Draw(ACanvas, AOffset.x + 1, AOffset.y + 1, False)
-    else
-      FBGRA.Draw(ACanvas, AOffset.x, AOffset.y, False);
-  end;
+  if (AState = bsDown) or (Down = True) then
+    FBGRA.Draw(ACanvas, AOffset.x + 1, AOffset.y + 1, False)
+  else
+    FBGRA.Draw(ACanvas, AOffset.x, AOffset.y, False);
+
+  Result := AClient;
 end;
 
 constructor TBGRASpeedButton.Create(AOwner: TComponent);

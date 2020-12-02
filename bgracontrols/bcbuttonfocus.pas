@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-linking-exception
 { Customizable component which using BGRABitmap for drawing. Control mostly rendered
   using framework.
 
@@ -11,44 +12,25 @@
   - Caption with shadow
   - Full alpha and antialias support
 
-  Copyright (C) 2012 Krzysztof Dibowski dibowski at interia.pl
-
-  This library is free software; you can redistribute it and/or modify it
-  under the terms of the GNU Library General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or (at your
-  option) any later version with the following modification:
-
-  As a special exception, the copyright holders of this library give you
-  permission to link this library with independent modules to produce an
-  executable, regardless of the license terms of these independent modules,and
-  to copy and distribute the resulting executable under terms of your choice,
-  provided that you also meet, for each linked independent module, the terms
-  and conditions of the license of that module. An independent module is a
-  module which is not derived from or based on this library. If you modify
-  this library, you may extend this exception to your version of the library,
-  but you are not obligated to do so. If you do not wish to do so, delete this
-  exception statement from your version.
-
-  This program is distributed in the hope that it will be useful, but WITHOUT
-  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
-  for more details.
-
-  You should have received a copy of the GNU Library General Public License
-  along with this library; if not, write to the Free Software Foundation,
-  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+  originally written in 2012 by Krzysztof Dibowski dibowski at interia.pl
 }
+{******************************* CONTRIBUTOR(S) ******************************
+- Edivando S. Santos Brasil | mailedivando@gmail.com
+  (Compatibility with delphi VCL 11/2018)
 
+***************************** END CONTRIBUTOR(S) *****************************}
 unit BCButtonFocus;
 
-{$mode objfpc}{$H+}
+{$I bgracontrols.inc}
 
 interface
 
 uses
-  Classes, LResources, Controls, Dialogs, BGRABitmap, BGRABitmapTypes,
+  Classes, {$IFDEF FPC}LCLType, LResources, LMessages,{$ENDIF} Controls, Dialogs,
   ActnList, ImgList, Menus, // MORA
-  Buttons, Graphics, LCLType, types, BCTypes, Forms, BCBasectrls;
+  Buttons, Graphics, types,
+  {$IFNDEF FPC}Windows, Messages, BGRAGraphics, GraphType, FPImage, {$ENDIF}
+  BGRABitmap, BGRABitmapTypes, BCTypes, Forms, BCBasectrls, BCThemeManager;
 
 {off $DEFINE DEBUG}
 
@@ -76,8 +58,8 @@ type
     FBackground: TBCBackground;
     FBorder: TBCBorder;
     FFontEx: TBCFont;
-    procedure OnChangeFont(Sender: TObject; {%H-}AData: PtrInt);
-    procedure OnChangeChildProperty(Sender: TObject; AData: PtrInt);
+    procedure OnChangeFont({%H-}Sender: TObject; {%H-}AData: PtrInt);
+    procedure OnChangeChildProperty({%H-}Sender: TObject; AData: PtrInt);
     procedure SetBackground(AValue: TBCBackground);
     procedure SetBorder(AValue: TBCBorder);
     procedure SetFontEx(const AValue: TBCFont);
@@ -97,7 +79,7 @@ type
   TCustomBCButtonFocus = class(TBCStyleCustomControl)
   private
     { Private declarations }
-    {$IFDEF DEBUG}
+    {$IFDEF INDEBUG}
     FRenderCount: integer;
     {$ENDIF}
     FDropDownArrowSize: integer;
@@ -105,8 +87,12 @@ type
     FFlipArrow: boolean;
     FActiveButt: TBCButtonFocusStyle;
     FBGRANormal, FBGRAHover, FBGRAClick: TBGRABitmapEx;
+    FGlyphAlignment: TBCAlignment;
+    FGlyphOldPlacement: boolean;
     FInnerMargin: single;
     FMemoryUsage: TBCButtonFocusMemoryUsage;
+    FOnPaintButton: TNotifyEvent;
+    FPreserveGlyphOnAssign: boolean;
     FRounding: TBCRounding;
     FRoundingDropDown: TBCRounding;
     FStateClicked: TBCButtonFocusState;
@@ -125,11 +111,13 @@ type
     FTextApplyGlobalOpacity: boolean;
     AutoSizeExtraY: integer;
     AutoSizeExtraX: integer;
+    FLastBorderWidth: integer;
     // MORA
-    FClickOffest: boolean;
+    FClickOffset: boolean;
     FDropDownArrow: boolean;
     FDropDownMenu: TPopupMenu;
     FDropDownMenuVisible: boolean;
+    FDropDownClosingTime: TDateTime;
     FDropDownPosition: TBCButtonFocusDropDownPosition;
     FDropDownStyle: TBCButtonFocusDropDownStyle;
     FImageChangeLink: TChangeLink;
@@ -138,8 +126,7 @@ type
     FSaveDropDownClosed: TNotifyEvent;
     FShowCaption: boolean;
     procedure AssignDefaultStyle;
-    procedure CalculateGlyphSize(var NeededWidth, NeededHeight: integer);
-    procedure ConvertToGrayScale(ABGRA: TBGRABitmap);
+    procedure CalculateGlyphSize(out NeededWidth, NeededHeight: integer);
     procedure DropDownClosed(Sender: TObject);
     procedure RenderAll(ANow: boolean = False);
     function GetButtonRect: TRect;
@@ -156,7 +143,9 @@ type
     procedure SetDropDownWidth(AValue: integer);
     procedure SetFlipArrow(AValue: boolean);
     procedure SetGlyph(const AValue: TBitmap);
+    procedure SetGlyphAlignment(AValue: TBCAlignment);
     procedure SetGlyphMargin(const AValue: integer);
+    procedure SetGlyphOldPlacement(AValue: boolean);
     procedure SetImageIndex(AValue: integer);
     procedure SetImages(AValue: TCustomImageList);
     procedure SetInnerMargin(AValue: single);
@@ -169,9 +158,10 @@ type
     procedure SetGlobalOpacity(const AValue: byte);
     procedure SetTextApplyGlobalOpacity(const AValue: boolean);
     procedure UpdateSize;
-    procedure OnChangeGlyph(Sender: TObject);
-    procedure OnChangeState(Sender: TObject; AData: PtrInt);
+    procedure OnChangeGlyph({%H-}Sender: TObject);
+    procedure OnChangeState({%H-}Sender: TObject; AData: PtrInt);
     procedure ImageListChange(ASender: TObject);
+    function GetGlyph: TBitmap;
   protected
     { Protected declarations }
     procedure LimitMemoryUsage;
@@ -198,7 +188,7 @@ type
     procedure Render(ABGRA: TBGRABitmapEx; AState: TBCButtonFocusState); virtual;
     procedure RenderState(ABGRA: TBGRABitmapEx; AState: TBCButtonFocusState;
       const ARect: TRect; ARounding: TBCRounding); virtual;
-    property ClickOffset: boolean read FClickOffest write SetClickOffset default False;
+    property ClickOffset: boolean read FClickOffset write SetClickOffset default False;
     property DropDownArrow: boolean
       read FDropDownArrow write SetDropDownArrow default False;
     property DropDownMenu: TPopupMenu read FDropDownMenu write FDropDownMenu;
@@ -210,13 +200,16 @@ type
     property ImageIndex: integer read FImageIndex write SetImageIndex default -1;
     property ShowCaption: boolean read FShowCaption write SetShowCaption default True;
   protected
-    {$IFDEF DEBUG}
+    {$IFDEF INDEBUG}
     function GetDebugText: string; override;
     {$ENDIF}
     function GetStyleExtension: string; override;
     procedure DrawControl; override;
     procedure RenderControl; override;
   protected
+    procedure WMSetFocus(var Message: {$IFDEF FPC}TLMSetFocus{$ELSE}TWMSetFocus{$ENDIF}); message {$IFDEF FPC}LM_SETFOCUS{$ELSE}WM_SETFOCUS{$ENDIF};
+    procedure WMKillFocus(var Message: {$IFDEF FPC}TLMKillFocus{$ELSE}TWMKillFocus{$ENDIF}); message {$IFDEF FPC}LM_KILLFOCUS{$ELSE}WM_KILLFOCUS{$ENDIF};
+    procedure UpdateFocus(AFocused: boolean);
     property AutoSizeExtraVertical: integer read AutoSizeExtraY;
     property AutoSizeExtraHorizontal: integer read AutoSizeExtraX;
     property StateNormal: TBCButtonFocusState read FStateNormal write SeTBCButtonStateNormal;
@@ -228,8 +221,10 @@ type
     property DropDownArrowSize: integer read FDropDownArrowSize
       write SetDropDownArrowSize;
     property FlipArrow: boolean read FFlipArrow write SetFlipArrow default False;
-    property Glyph: TBitmap read FGlyph write SetGlyph;
+    property Glyph: TBitmap read GetGlyph write SetGlyph;
     property GlyphMargin: integer read FGlyphMargin write SetGlyphMargin default 5;
+    property GlyphAlignment: TBCAlignment read FGlyphAlignment write SetGlyphAlignment default bcaCenter;
+    property GlyphOldPlacement: boolean read FGlyphOldPlacement write SetGlyphOldPlacement default true;
     property Style: TBCButtonFocusStyle read FStyle write SetStyle default bbtButtonF;
     property StaticButton: boolean
       read FStaticButton write SetStaticButton default False;
@@ -244,6 +239,8 @@ type
     property OnButtonClick: TNotifyEvent read FOnButtonClick write FOnButtonClick;
     property MemoryUsage: TBCButtonFocusMemoryUsage read FMemoryUsage write SetMemoryUsage;
     property InnerMargin: single read FInnerMargin write SetInnerMargin;
+    property OnPaintButton: TNotifyEvent read FOnPaintButton write FOnPaintButton;
+    property PreserveGlyphOnAssign: boolean read FPreserveGlyphOnAssign write FPreserveGlyphOnAssign default True;
   public
     { Constructor }
     constructor Create(AOwner: TComponent); override;
@@ -257,18 +254,23 @@ type
     { Called by EndUpdate }
     procedure UpdateControl; override;
   public
+    {$IFDEF FPC}
     { Save all published settings to file }
     procedure SaveToFile(AFileName: string);
     { Load and assign all published settings from file }
     procedure LoadFromFile(AFileName: string);
     { Assign the properties from AFileName to this instance }
     procedure AssignFromFile(AFileName: string);
+    {$ENDIF}
     { Used by SaveToFile/LoadFromFile }
     procedure OnFindClass({%H-}Reader: TReader; const AClassName: string;
       var ComponentClass: TComponentClass);
   end;
 
   TBCButtonFocus = class(TCustomBCButtonFocus)
+  private
+    FBCThemeManager: TBCThemeManager;
+    procedure SetFBCThemeManager(AValue: TBCThemeManager);
   published
     property Action;
     property Align;
@@ -285,6 +287,7 @@ type
     property BorderSpacing;
     property Caption;
     property Color;
+    property Constraints;
     { Set to True to change the button to always show a StateClicked style that will not change when button is clicked or hovered. }
     property Down;
     { The width of the dropdown arrow area. }
@@ -298,6 +301,9 @@ type
     property GlobalOpacity;
     { The glyph icon. }
     property Glyph;
+    property GlyphAlignment;
+    property GlyphOldPlacement;
+    property PreserveGlyphOnAssign;
     { The margin of the glyph icon. }
     property GlyphMargin;
     property Hint;
@@ -352,6 +358,8 @@ type
     property Name;
     { TabStop }
     property TabStop;
+    property ThemeManager: TBCThemeManager read FBCThemeManager write SetFBCThemeManager;
+    property OnPaintButton;
   end;
 
   { TBCButtonFocusActionLink }
@@ -366,12 +374,16 @@ type
     function IsImageIndexLinked: boolean; override;
   end;
 
-procedure Register;
+{$IFDEF FPC}procedure Register;{$ENDIF}
 
 implementation
 
-uses LCLIntf, Math, LCLProc, BCTools, SysUtils, PropEdits, GraphPropEdits;
+uses {$IFDEF FPC}LCLIntf, PropEdits, LCLProc, GraphPropEdits,{$ENDIF} Math, BCTools, SysUtils;
 
+const
+  DropDownReopenDelay = 0.2/(24*60*60);
+
+{$IFDEF FPC}//#
 type
   TBCButtonImageIndexPropertyEditor = class(TImageIndexPropertyEditor)
   protected
@@ -388,14 +400,26 @@ begin
   else
     Result := nil;
 end;
+{$ENDIF}
 
+{ TBCButtonFocus }
+procedure TBCButtonFocus.SetFBCThemeManager(AValue: TBCThemeManager);
+begin
+  if FBCThemeManager=AValue then Exit;
+  FBCThemeManager:=AValue;
+end;
+
+{$IFDEF FPC}
 procedure Register;
 begin
-  {$I icons\bcbuttonfocus_icon.lrs}
-  RegisterComponents('BGRA Controls', [TBCButtonFocus]);
+  //{$I icons\bcbuttonfocus_icon.lrs}
+  RegisterComponents('BGRA Button Controls', [TBCButtonFocus]);
+  {$IFDEF FPC}
   RegisterPropertyEditor(TypeInfo(integer), TBCButtonFocus,
     'ImageIndex', TBCButtonImageIndexPropertyEditor);
+  {$ENDIF}
 end;
+{$ENDIF}
 
 { TBCButtonFocusActionLink }
 
@@ -474,9 +498,9 @@ begin
   FBorder := TBCBorder.Create(AControl);
   FFontEx := TBCFont.Create(AControl);
 
-  FBackground.OnChange := @OnChangeChildProperty;
-  FBorder.OnChange := @OnChangeChildProperty;
-  FFontEx.OnChange := @OnChangeFont;
+  FBackground.OnChange := OnChangeChildProperty;
+  FBorder.OnChange := OnChangeChildProperty;
+  FFontEx.OnChange := OnChangeFont;
 
   inherited Create(AControl);
 end;
@@ -586,7 +610,7 @@ begin
   end;
 end;
 
-procedure TCustomBCButtonFocus.CalculateGlyphSize(var NeededWidth, NeededHeight: integer);
+procedure TCustomBCButtonFocus.CalculateGlyphSize(out NeededWidth, NeededHeight: integer);
 begin
   if Assigned(FGlyph) and not FGlyph.Empty then
   begin
@@ -606,31 +630,9 @@ begin
   end;
 end;
 
-procedure TCustomBCButtonFocus.ConvertToGrayScale(ABGRA: TBGRABitmap);
-var
-  bounds: TRect;
-  px: PBGRAPixel;
-  xb, yb: integer;
-begin
-  bounds := ABGRA.GetImageBounds;
-  if (bounds.Right <= bounds.Left) or (bounds.Bottom <= Bounds.Top) then
-    exit;
-
-  for yb := bounds.Top to bounds.bottom - 1 do
-  begin
-    px := ABGRA.scanline[yb] + bounds.left;
-    for xb := bounds.left to bounds.right - 1 do
-    begin
-      px^ := BGRAToGrayscale(px^);
-      Inc(px);
-    end;
-  end;
-  ABGRA.InvalidateBitmap;
-end;
-
 procedure TCustomBCButtonFocus.RenderAll(ANow: boolean);
 begin
-  if (csCreating in FControlState) or IsUpdating or (FBGRANormal = nil) then
+  if (csCreating in ControlState) or IsUpdating or (FBGRANormal = nil) then
     Exit;
 
   if ANow then
@@ -665,6 +667,11 @@ begin
   Result := FDropDownWidth + (ifthen(AFull, 2, 1) * FStateNormal.FBorder.Width);
 end;
 
+function TCustomBCButtonFocus.GetGlyph: TBitmap;
+begin
+  Result := FGlyph as TBitmap;
+end;
+
 function TCustomBCButtonFocus.GetDropDownRect(AFull: boolean): TRect;
 begin
   Result := GetClientRect;
@@ -678,52 +685,34 @@ begin
 end;
 
 procedure TCustomBCButtonFocus.Render(ABGRA: TBGRABitmapEx; AState: TBCButtonFocusState);
-var
-  r, r_a: TRect;
 
-  { TODO: Create customizable glyph position by creating TBCGlyph type
-          and method in BCTools which render it }
-  procedure _RenderGlyph;
-  var
-    w, h, t, l: integer;
-    g: TBGRABitmap;
-    bitmap: TBitmap;
+  function GetActualGlyph: TBitmap;
   begin
-    // MORA: getting image to draw
-    if Assigned(FGlyph) and not FGlyph.Empty then
-      bitmap := FGlyph
-    else
+    if Assigned(FGlyph) and not FGlyph.Empty then result := FGlyph else
     if Assigned(FImages) and (FImageIndex > -1) and (FImageIndex < FImages.Count) then
     begin
-      bitmap := TBitmap.Create;
-      FImages.GetBitmap(FImageIndex, bitmap);
-    end
-    else
-      bitmap := nil;
-
-    if (bitmap <> nil) and (not bitmap.Empty) then
-    begin
-      if not FShowCaption then
-      begin
-        w := 0;
-        h := 0;
-      end
-      else
-        CalculateTextSize(Caption, AState.FontEx, w, h);
-      l := r.Right - Round(((r.Right - r.Left) + w + bitmap.Width) / 2);
-      t := r.Bottom - Round(((r.Bottom - r.Top) + bitmap.Height) / 2);
-      g := TBGRABitmap.Create(bitmap);
-      ABGRA.BlendImage(l, t, g, boLinearBlend);
-      g.Free;
-      Inc(r.Left, l + bitmap.Width + FGlyphMargin);
-    end;
-
-    if bitmap <> FGlyph then
-      bitmap.Free;
+      result := TBitmap.Create;
+      {$IFDEF FPC}
+      FImages.GetBitmap(FImageIndex, result);
+      {$ELSE}
+      FImages.GetBitmapRaw(FImageIndex, result);
+      {$ENDIF}
+    end else exit(nil);
   end;
 
+  procedure RenderGlyph(ARect: TRect; AGlyph: TBitmap);
+  begin
+    if ARect.IsEmpty or (AGlyph = nil) then exit;
+    ABGRA.PutImage(ARect.Left, ARect.Top, AGlyph, dmLinearBlend);
+  end;
+
+var
+  r, r_a, r_g: TRect;
+  g: TBitmap;
+  actualCaption: TCaption;
+
 begin
-  if (csCreating in FControlState) or IsUpdating then
+  if (csCreating in ControlState) or IsUpdating then
     Exit;
 
   ABGRA.NeedRender := False;
@@ -738,6 +727,9 @@ begin
   r := GetButtonRect;
   RenderState(ABGRA, AState, r, FRounding);
 
+  if not GlyphOldPlacement then
+    r.Inflate(-round(InnerMargin),-round(InnerMargin));
+
   { Calculating rect }
   CalculateBorderRect(AState.Border, r);
 
@@ -748,11 +740,8 @@ begin
     CalculateBorderRect(AState.Border, r_a);
 
     // Click offset for arrow
-    if FClickOffest and (AState = FStateClicked) then
-    begin
-      Inc(r_a.Left, 2);
-      Inc(r_a.Top, 2);
-    end;
+    if FClickOffset and (AState = FStateClicked) then
+      r_a.Offset(1,1);
 
     if FFlipArrow then
       RenderArrow(TBGRABitmap(ABGRA), r_a, FDropDownArrowSize, badUp,
@@ -763,11 +752,8 @@ begin
   end;
 
   // Click offset for text and glyph
-  if FClickOffest and (AState = FStateClicked) then
-  begin
-    Inc(r.Left, 2);
-    Inc(r.Top, 2);
-  end;
+  if FClickOffset and (AState = FStateClicked) then
+    r.Offset(1,1);
 
   // DropDown arrow
   if FDropDownArrow and (FStyle <> bbtDropDownF) then
@@ -783,13 +769,14 @@ begin
     Dec(R.Right, FDropDownWidth);
   end;
 
+  g := GetActualGlyph;
+  if FShowCaption then actualCaption := self.Caption else actualCaption := '';
+  r_g := ComputeGlyphPosition(r, g, GlyphAlignment, GlyphMargin, actualCaption, AState.FontEx, GlyphOldPlacement);
   if FTextApplyGlobalOpacity then
   begin
     { Drawing text }
-    _RenderGlyph;
-    if FShowCaption then
-      RenderText(r, AState.FontEx, Self.Caption, TBGRABitmap(ABGRA));
-
+    RenderText(r, AState.FontEx, actualCaption, ABGRA);
+    RenderGlyph(r_g, g);
     { Set global opacity }
     ABGRA.ApplyGlobalOpacity(FGlobalOpacity);
   end
@@ -798,20 +785,19 @@ begin
     { Set global opacity }
     ABGRA.ApplyGlobalOpacity(FGlobalOpacity);
     { Drawing text }
-    _RenderGlyph;
-    if FShowCaption then
-      RenderText(r, AState.FontEx, Self.Caption, TBGRABitmap(ABGRA));
+    RenderText(r, AState.FontEx, actualCaption, ABGRA);
+    RenderGlyph(r_g, g);
   end;
+  if g <> FGlyph then g.Free;
 
   { Convert to gray if not enabled }
-  if not Enabled then
-    ConvertToGrayScale(ABGRA);
+  if not Enabled then ABGRA.InplaceGrayscale;
 
   if Assigned(FOnAfterRenderBCButton) then
     FOnAfterRenderBCButton(Self, ABGRA, AState, r);
 
-  {$IFDEF DEBUG}
-  FRenderCount += 1;
+  {$IFDEF INDEBUG}
+  FRenderCount := FRenderCount +1;
   {$ENDIF}
 end;
 
@@ -832,7 +818,8 @@ end;
 procedure TCustomBCButtonFocus.OnChangeState(Sender: TObject; AData: PtrInt);
 begin
   RenderControl;
-  if TBCButtonFocusPropertyData(AData) = pdUpdateSizeF then
+  if (TBCButtonFocusPropertyData(AData) = pdUpdateSizeF) or
+    (FStateNormal.Border.Width <> FLastBorderWidth) then
     UpdateSize;
   Invalidate;
 end;
@@ -848,6 +835,11 @@ end;
 
 procedure TCustomBCButtonFocus.LimitMemoryUsage;
 begin
+  {$IFNDEF FPC}//# //@  IN DELPHI NEEDRENDER NEDD TO BE TRUE. IF FALSE COMPONENT IN BGRANORMAL BE BLACK AFTER INVALIDATE.
+  if Assigned(FBGRAHover) then FBGRANormal.NeedRender := True;
+  if Assigned(FBGRAHover) then FBGRAHover.NeedRender := True;
+  if Assigned(FBGRAClick) then FBGRAClick.NeedRender := True;
+  {$ENDIF}
   if (FMemoryUsage = bmuLowF) and Assigned(FBGRANormal) then FBGRANormal.Discard;
   if (FMemoryUsage <> bmuHighF) then
   begin
@@ -888,9 +880,9 @@ end;
 
 procedure TCustomBCButtonFocus.SetClickOffset(AValue: boolean);
 begin
-  if FClickOffest = AValue then
+  if FClickOffset = AValue then
     Exit;
-  FClickOffest := AValue;
+  FClickOffset := AValue;
   RenderControl;
 end;
 
@@ -973,12 +965,30 @@ begin
   Invalidate;
 end;
 
+procedure TCustomBCButtonFocus.SetGlyphAlignment(AValue: TBCAlignment);
+begin
+  if FGlyphAlignment=AValue then Exit;
+  FGlyphAlignment:=AValue;
+  RenderControl;
+  UpdateSize;
+  Invalidate;
+end;
+
 procedure TCustomBCButtonFocus.SetGlyphMargin(const AValue: integer);
 begin
   if FGlyphMargin = AValue then
     exit;
   FGlyphMargin := AValue;
 
+  RenderControl;
+  UpdateSize;
+  Invalidate;
+end;
+
+procedure TCustomBCButtonFocus.SetGlyphOldPlacement(AValue: boolean);
+begin
+  if FGlyphOldPlacement=AValue then Exit;
+  FGlyphOldPlacement:=AValue;
   RenderControl;
   UpdateSize;
   Invalidate;
@@ -999,6 +1009,7 @@ begin
     Exit;
   FImages := AValue;
   RenderControl;
+  UpdateSize;
   Invalidate;
 end;
 
@@ -1007,6 +1018,7 @@ begin
   if FInnerMargin=AValue then Exit;
   FInnerMargin:=AValue;
   RenderControl;
+  UpdateSize;
   Invalidate;
 end;
 
@@ -1079,9 +1091,15 @@ procedure TCustomBCButtonFocus.CalculatePreferredSize(
   var PreferredWidth, PreferredHeight: integer; WithThemeSpace: boolean);
 var
 //  AWidth: integer;
-  gh: integer = 0;
-  gw: integer = 0;
+  gh,gw: integer;
+  actualCaption: TCaption;
+  horizAlign, relHorizAlign: TAlignment;
+  vertAlign, relVertAlign: TTextLayout;
+  glyphHorzMargin, glyphVertMargin: integer;
+  tw, th, availW: integer;
 begin
+  gh := 0;
+  gw := 0;
   if (Parent = nil) or (not Parent.HandleAllocated) then
     Exit;
 {  if WidthIsAnchored then
@@ -1089,37 +1107,94 @@ begin
   else
     AWidth := 10000;}
 
-  PreferredWidth := 0;
-  PreferredHeight := 0;
-  if FShowCaption then
-    CalculateTextSize(Caption, FStateNormal.FontEx, PreferredWidth, PreferredHeight);
-
-  // Extra pixels for DropDown
-  if Style = bbtDropDownF then
-    if FDropDownPosition in [bdpBottomF] then
-      Inc(PreferredHeight, GetDropDownWidth)
-    else
-      Inc(PreferredWidth, GetDropDownWidth);
-
-  if (Style = bbtButtonF) and FDropDownArrow then
-    Inc(PreferredWidth, FDropDownArrowSize);// GetDropDownWidth);
-
+  FLastBorderWidth := FStateNormal.Border.Width;
   CalculateGlyphSize(gw, gh);
 
-  //if (FGlyph <> nil) and (not FGlyph.Empty) then
-  if (gw > 0) and (gh > 0) then
+  if GlyphOldPlacement then
   begin
-    //if Caption = '' then
-    if PreferredWidth = 0 then
+    {  if WidthIsAnchored then
+        AWidth := Width
+      else
+        AWidth := 10000;}
+
+    PreferredWidth := 0;
+    PreferredHeight := 0;
+    if FShowCaption then
+      CalculateTextSize(Caption, FStateNormal.FontEx, PreferredWidth, PreferredHeight);
+
+    // Extra pixels for DropDown
+    if Style = bbtDropDownF then
+      if FDropDownPosition in [bdpBottomF] then
+        Inc(PreferredHeight, GetDropDownWidth)
+      else
+        Inc(PreferredWidth, GetDropDownWidth);
+
+    if (Style = bbtButtonF) and FDropDownArrow then
+      Inc(PreferredWidth, FDropDownArrowSize);// GetDropDownWidth);
+
+
+    //if (FGlyph <> nil) and (not FGlyph.Empty) then
+    if (gw > 0) and (gh > 0) then
     begin
-      Inc(PreferredWidth, gw{ - AutoSizeExtraY * 2});
-      Inc(PreferredHeight, gh);
-    end
-    else
+      //if Caption = '' then
+      if PreferredWidth = 0 then
+      begin
+        Inc(PreferredWidth, gw{ - AutoSizeExtraY * 2});
+        Inc(PreferredHeight, gh);
+      end
+      else
+      begin
+        Inc(PreferredWidth, gw + FGlyphMargin);
+        if gh > PreferredHeight then
+          PreferredHeight := gh;
+      end;
+    end;
+
+    // Extra pixels for AutoSize
+    Inc(PreferredWidth, AutoSizeExtraX);
+    Inc(PreferredHeight, AutoSizeExtraY);
+  end else
+  begin
+    if ShowCaption then actualCaption := Caption else actualCaption := '';
+    PreferredWidth := round(InnerMargin);
+    PreferredHeight := round(InnerMargin);
+    case FStyle of
+    bbtDropDownF:
+      case FDropDownPosition of
+        bdpBottomF: inc(PreferredHeight, GetDropDownWidth(False));
+        else{bdpLeft} inc(PreferredWidth, GetDropDownWidth(False));
+      end;
+    else{bbtButton} if FDropDownArrow then
+      inc(PreferredWidth, FDropDownWidth);
+    end;
+    inc(PreferredWidth, FStateNormal.Border.Width);
+    inc(PreferredHeight, FStateNormal.Border.Width);
+
+    if actualCaption='' then
     begin
-      Inc(PreferredWidth, gw + FGlyphMargin);
-      if gh > PreferredHeight then
-        PreferredHeight := gh;
+      inc(PreferredWidth,gw);
+      inc(PreferredHeight,gh);
+      if gw>0 then inc(PreferredWidth, GlyphMargin*2);
+      if gh>0 then inc(PreferredHeight, GlyphMargin*2);
+    end else
+    begin
+      GetGlyphActualLayout(actualCaption, FStateNormal.FontEx, GlyphAlignment, GlyphMargin,
+        horizAlign, vertAlign, relHorizAlign, relVertAlign, glyphHorzMargin, glyphVertMargin);
+      availW := 65535;
+      if (Align in [alTop,alBottom]) and (Parent <> nil) then
+        availW := Parent.ClientWidth - PreferredWidth;
+      CalculateTextSizeEx(actualCaption, FStateNormal.FontEx, tw, th, availW);
+      if (tw<>0) and FStateNormal.FontEx.WordBreak then inc(tw);
+      if vertAlign<>relVertAlign then
+      begin
+        inc(PreferredWidth,  max(gw+2*GlyphMargin,tw));
+        inc(PreferredHeight, GlyphMargin+gh+th);
+      end
+      else
+      begin
+        inc(PreferredWidth,  GlyphMargin+gw+tw);
+        inc(PreferredHeight, max(gh+2*GlyphMargin,th));
+      end;
     end;
   end;
 
@@ -1148,15 +1223,20 @@ procedure TCustomBCButtonFocus.DropDownClosed(Sender: TObject);
 begin
   if Assigned(FSaveDropDownClosed) then
     FSaveDropDownClosed(Sender);
+  {$IFDEF FPC}
   if Assigned(FDropDownMenu) then
     FDropDownMenu.OnClose := FSaveDropDownClosed;
+  {$ENDIF}
 
   // MORA: DropDownMenu is still visible if mouse is over control
-  FDropDownMenuVisible := PtInRect(ClientRect, ScreenToClient(Mouse.CursorPos));
+  FDropDownMenuVisible := {$IFNDEF FPC}BGRAGraphics.{$ENDIF}PtInRect(ClientRect, ScreenToClient(Mouse.CursorPos));
+  FDropDownClosingTime := Now;
 end;
 
 procedure TCustomBCButtonFocus.MouseDown(Button: TMouseButton; Shift: TShiftState;
   X, Y: integer);
+var
+  ClientToScreenPoint : TPoint;
 begin
   inherited MouseDown(Button, Shift, X, Y);
   if csDesigning in ComponentState then
@@ -1193,19 +1273,21 @@ begin
     Invalidate;}
 
     // MORA: Show DropDown menu
-    if FDropDownMenuVisible then
+    if FDropDownMenuVisible or (Now < FDropDownClosingTime+DropDownReopenDelay) then
       FDropDownMenuVisible := False // Prevent redropping
     else
     if ((FActiveButt = bbtDropDownF) or (FStyle = bbtButtonF)) and
       (FDropDownMenu <> nil) and Enabled then
-      with ClientToScreen(Point(0, Height)) do
+    begin
+      ClientToScreenPoint := ClientToScreen(Point(0, Height));
+      with ClientToScreenPoint do
       begin
         // normal button
         if FStyle = bbtButtonF then
         begin
           x := x + Width * integer(FDropDownMenu.Alignment = paRight);
           if FFlipArrow then
-            y -= Height;
+            y := y -Height;
         end
         else
           // dropdown button
@@ -1214,12 +1296,12 @@ begin
           begin
             x := x + Width * integer(FDropDownMenu.Alignment = paRight);
             if FFlipArrow then
-              y -= (FDropDownWidth + (FStateNormal.FBorder.Width * 2));
+              y := y -(FDropDownWidth + (FStateNormal.FBorder.Width * 2));
           end
           else
           begin
             if FFlipArrow then
-              y -= Height;
+              y := y -Height;
             if FDropDownStyle = bdsSeparateF then
               x := x + Width - (FDropDownWidth + (FStateNormal.FBorder.Width * 2)) *
                 integer(FDropDownMenu.Alignment <> paRight)
@@ -1229,10 +1311,13 @@ begin
         end;
 
         FDropDownMenuVisible := True;
+        {$IFDEF FPC}
         FSaveDropDownClosed := FDropDownMenu.OnClose;
-        FDropDownMenu.OnClose := @DropDownClosed;
+        FDropDownMenu.OnClose := DropDownClosed;
+        {$ENDIF}
         FDropDownMenu.PopUp(x, y);
       end;
+    end;
   end;
 end;
 
@@ -1319,7 +1404,9 @@ begin
   // Old
   {FButtonState := msHover;
   Invalidate;}
+  {$IFDEF FPC}
   inherited MouseEnter;
+  {$ENDIF}
 end;
 
 procedure TCustomBCButtonFocus.MouseLeave;
@@ -1335,7 +1422,9 @@ begin
     FButtonState := msNone;
   FDownButtonState := msNone;
   Invalidate;
+  {$IFDEF FPC} //#
   inherited MouseLeave;
+  {$ENDIF}
 end;
 
 procedure TCustomBCButtonFocus.MouseMove(Shift: TShiftState; X, Y: integer);
@@ -1400,7 +1489,9 @@ end;
 
 procedure TCustomBCButtonFocus.TextChanged;
 begin
+  {$IFDEF FPC}
   inherited TextChanged;
+  {$ENDIF}
   RenderControl;
   UpdateSize;
   Invalidate;
@@ -1458,6 +1549,7 @@ begin
   inherited UpdateControl; // indalidate
 end;
 
+{$IFDEF FPC}
 procedure TCustomBCButtonFocus.SaveToFile(AFileName: string);
 var
   AStream: TMemoryStream;
@@ -1478,7 +1570,7 @@ begin
   AStream := TMemoryStream.Create;
   try
     AStream.LoadFromFile(AFileName);
-    ReadComponentFromTextStream(AStream, TComponent(Self), @OnFindClass);
+    ReadComponentFromTextStream(AStream, TComponent(Self), OnFindClass);
   finally
     AStream.Free;
   end;
@@ -1493,13 +1585,14 @@ begin
   AStream := TMemoryStream.Create;
   try
     AStream.LoadFromFile(AFileName);
-    ReadComponentFromTextStream(AStream, TComponent(AButton), @OnFindClass);
+    ReadComponentFromTextStream(AStream, TComponent(AButton), OnFindClass);
     Assign(AButton);
   finally
     AStream.Free;
     AButton.Free;
   end;
 end;
+{$ENDIF}
 
 procedure TCustomBCButtonFocus.OnFindClass(Reader: TReader; const AClassName: string;
   var ComponentClass: TComponentClass);
@@ -1508,8 +1601,8 @@ begin
     ComponentClass := TBCButtonFocus;
 end;
 
-{$IFDEF DEBUG}
-function TCustomBCButton.GetDebugText: string;
+{$IFDEF INDEBUG}
+function TCustomBCButtonFocus.GetDebugText: string;
 begin
   Result := 'R: ' + IntToStr(FRenderCount);
 end;
@@ -1538,7 +1631,7 @@ begin
         msHover: bgra := FBGRAHover;
         msClicked: bgra := FBGRAClick;
       end;
-    if bgra.NeedRender then
+    if {%H-}bgra.NeedRender then
       Render(bgra, TBCButtonFocusState(bgra.CustomData));
     bgra.Draw(Self.Canvas, 0, 0, False);
   end
@@ -1602,6 +1695,9 @@ begin
     end;
   end;
 
+  if Assigned(FOnPaintButton) then
+    FOnPaintButton(Self);
+
   LimitMemoryUsage;
 end;
 
@@ -1609,6 +1705,39 @@ procedure TCustomBCButtonFocus.RenderControl;
 begin
   inherited RenderControl;
   RenderAll;
+end;
+
+procedure TCustomBCButtonFocus.WMSetFocus(var Message: {$IFDEF FPC}TLMSetFocus{$ELSE}TWMSetFocus{$ENDIF});
+begin
+  inherited;
+
+  UpdateFocus(True);
+end;
+
+procedure TCustomBCButtonFocus.WMKillFocus(var Message: {$IFDEF FPC}TLMKillFocus{$ELSE}TWMKillFocus{$ENDIF});
+begin
+  inherited;
+
+  if Message.FocusedWnd <> Handle then
+    UpdateFocus(False);
+end;
+
+procedure TCustomBCButtonFocus.UpdateFocus(AFocused: boolean);
+var
+  lForm: TCustomForm;
+begin
+  lForm := GetParentForm(Self);
+  if lForm = nil then
+    exit;
+
+  {$IFDEF FPC}//#
+  if AFocused then
+    ActiveDefaultControlChanged(lForm.ActiveControl)
+  else
+    ActiveDefaultControlChanged(nil);
+  {$ENDIF}
+
+  Invalidate;
 end;
 
 procedure TCustomBCButtonFocus.SetGlobalOpacity(const AValue: byte);
@@ -1634,12 +1763,19 @@ end;
 constructor TCustomBCButtonFocus.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  {$IFDEF DEBUG}
+
+  ControlStyle := ControlStyle + [csParentBackground];
+
+  {$IFDEF INDEBUG}
   FRenderCount := 0;
   {$ENDIF}
   FMemoryUsage := bmuHighF;
+  {$IFDEF FPC}
   DisableAutoSizing;
   Include(FControlState, csCreating);
+  {$ELSE} //#
+
+  {$ENDIF}
   //{$IFDEF WINDOWS}
   // default sizes under different dpi settings
   //SetSizeVariables(ScaleX(8,96), ScaleX(16,96), ScaleY(8,96), ScaleX(24,96));
@@ -1663,15 +1799,15 @@ begin
     FStateNormal := TBCButtonFocusState.Create(Self);
     FStateHover := TBCButtonFocusState.Create(Self);
     FStateClicked := TBCButtonFocusState.Create(Self);
-    FStateNormal.OnChange := @OnChangeState;
-    FStateHover.OnChange := @OnChangeState;
-    FStateClicked.OnChange := @OnChangeState;
+    FStateNormal.OnChange := OnChangeState;
+    FStateHover.OnChange := OnChangeState;
+    FStateClicked.OnChange := OnChangeState;
 
     FRounding := TBCRounding.Create(Self);
-    FRounding.OnChange := @OnChangeState;
+    FRounding.OnChange := OnChangeState;
 
     FRoundingDropDown := TBCRounding.Create(Self);
-    FRoundingDropDown.OnChange := @OnChangeState;
+    FRoundingDropDown.OnChange := OnChangeState;
 
     { Connecting bitmaps with states property to easy call and access }
     FBGRANormal.CustomData := PtrInt(FStateNormal);
@@ -1682,8 +1818,10 @@ begin
     FDownButtonState := msNone;
     FFlipArrow := False;
     FGlyph := TBitmap.Create;
-    FGlyph.OnChange := @OnChangeGlyph;
+    FGlyph.OnChange := OnChangeGlyph;
     FGlyphMargin := 5;
+    FGlyphAlignment:= bcaCenter;
+    FGlyphOldPlacement:= true;
     FStyle := bbtButtonF;
     FStaticButton := False;
     FActiveButt := bbtButtonF;
@@ -1696,13 +1834,17 @@ begin
     AssignDefaultStyle;
 
     FImageChangeLink := TChangeLink.Create;
-    FImageChangeLink.OnChange := @ImageListChange;
+    FImageChangeLink.OnChange := ImageListChange;
     FImageIndex := -1;
 
     FShowCaption := True;
+    FPreserveGlyphOnAssign := True;
   finally
+    {$IFDEF FPC}
     Exclude(FControlState, csCreating);
     EnableAutoSizing;
+    {$ELSE} //#
+    {$ENDIF}
     EndUpdate;
   end;
 end;
@@ -1716,7 +1858,7 @@ begin
   FBGRANormal.Free;
   FBGRAHover.Free;
   FBGRAClick.Free;
-  FreeThenNil(FGlyph);
+  {$IFDEF FPC}FreeThenNil{$ELSE}FreeAndNil{$ENDIF}(FGlyph);
   FRounding.Free;
   FRoundingDropDown.Free;
   inherited Destroy;
@@ -1726,7 +1868,8 @@ procedure TCustomBCButtonFocus.Assign(Source: TPersistent);
 begin
   if Source is TCustomBCButtonFocus then
   begin
-    Glyph := TCustomBCButtonFocus(Source).Glyph;
+    if not PreserveGlyphOnAssign then
+      Glyph := TCustomBCButtonFocus(Source).Glyph;
     FGlyphMargin := TCustomBCButtonFocus(Source).FGlyphMargin;
     FStyle := TCustomBCButtonFocus(Source).FStyle;
     FFlipArrow := TCustomBCButtonFocus(Source).FFlipArrow;

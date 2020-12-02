@@ -10,32 +10,37 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces,
 
-  process, Forms, SysUtils, Inifiles, FileUtil, printer4lazarus, //packages
-  {$if FPC_FULLVERSION>=030001}LazUTF8, {$endif}
+  process, Forms, FileUtil, SysUtils, Inifiles, BGRAUTF8, LazFileUtils, printer4lazarus, //packages
 
   LazPaintType, LazpaintInstance, LazpaintMainForm, UConfig, UOnline,
 
   UToolbox, UChooseColor, ULayerstack,  //tool windows
-  UMac, UScaleDPI, UVolatileScrollBar, UCursors, UTranslation, //interface
+  UMac, LCScaleDPI, UVolatileScrollBar, UCursors, UTranslation, //interface
 
-  UGraph, UTool, UImage, UStateType, UImageState, UClipboard,
+  UGraph, UImage, UStateType, UImageState, UClipboard,
   UCommandline, UParse, UZoom, UResourceStrings, UImageObservation,
   UFilterConnector, UFilters, UImageAction, ULoadImage, UImageDiff,
   UFilterThread,
 
   //forms
   UNewimage, UMultiImage, UBrowseImages, UBlendOp, UCanvassize, UResample, UObject3D,
-  URadialBlur, UMotionBlur, UCustomblur, UEmboss, UTwirl, UPixelate,
+  URadialBlur, UMotionBlur, UCustomblur, UEmboss, UTwirl, UWaveDisplacement, UPixelate,
   UColorintensity, UShiftColors, UColorize, USharpen,
   UPhongFilter, UFilterFunction,
   UAbout, ULoading,
 
   //tools
-  UToolDeformationGrid, UToolSelect, UToolPolygon, UToolFloodFill, UToolBasic,
-  UToolPhong, UToolText, UScripting, UMenu, UColorFilters, uadjustcurves,
-  UScriptType, ULayerAction, UImageType, uposterize, UMySLV, UToolLayer,
-  unoisefilter, uprint, uimagelist, UBarUpDown, UFileExtensions, UFileSystem, UToolBrush, UMainFormLayout, USaveOption, UBrushType, 
-  ugeometricbrush, URainType, UFormRain, UPaletteToolbar;
+  UTool, UToolVectorial, UToolDeformationGrid, UToolSelect, UToolPolygon, UToolFloodFill, UToolBasic,
+  UToolPhong, UToolText, UToolBrush, UToolIcon, UToolLayer,
+
+  UScripting, UMenu, UColorFilters, uadjustcurves,
+  UScriptType, ULayerAction, UImageType, uposterize, UMySLV,
+  unoisefilter, uprint, uimagelist, UFileExtensions, UFileSystem,
+  UMainFormLayout, USaveOption, UBrushType, ugeometricbrush,
+  URainType, UFormRain, UPaletteToolbar, uselectionhighlight,
+  UImagePreview, UPreviewDialog, UQuestion, UTiff, UImageView,
+  UDarkTheme, URaw, UProcessAuto, UPython, UImageBackup, ULayerStackInterface,
+  UChooseColorInterface, UIconCache;
 
 //sometimes LResources disappear in the uses clause
 
@@ -58,6 +63,11 @@ type
   TMyLazPaintInstance = class(TLazPaintInstance)
     FMyOnlineUpdater: TLazPaintOnlineUpdater;
     function GetOnlineUpdater: TLazPaintCustomOnlineUpdater; override;
+    constructor Create; override;
+    constructor Create(AEmbedded: boolean); override;
+    destructor Destroy; override;
+  private
+    procedure ApplicationException(Sender: TObject; E: Exception);
   end;
 
 var
@@ -87,14 +97,110 @@ begin
   end;
 end;
 
+constructor TMyLazPaintInstance.Create;
+begin
+  inherited Create;
+  Application.OnException:=@ApplicationException;
+end;
+
+constructor TMyLazPaintInstance.Create(AEmbedded: boolean);
+begin
+  inherited Create(AEmbedded);
+  Application.OnException:=@ApplicationException;
+end;
+
+destructor TMyLazPaintInstance.Destroy;
+begin
+  if Application.OnException = @ApplicationException then
+    Application.OnException:= nil;
+  inherited Destroy;
+end;
+
+procedure TMyLazPaintInstance.ApplicationException(Sender: TObject; E: Exception);
+var
+  I: Integer;
+  Frames: PPointer;
+  Report: string;
+begin
+  if Initialized then
+    Report := 'Unhandled exception!' + LineEnding
+  else
+    Report := 'Error initializing application!' + LineEnding;
+  Report += LineEnding;
+  if E <> nil then
+  begin
+    if E.ClassName <> 'Exception' then
+      Report += 'Exception class: ' + E.ClassName + LineEnding;
+    Report += 'Message: ' + E.Message + LineEnding;
+  end;
+  {$IFDEF DEBUG}
+  Report += 'Stacktrace:' + LineEnding;
+  Report := Report + '  ' + BackTraceStrFunc(ExceptAddr) + LineEnding;
+  Frames := ExceptFrames;
+  for I := 0 to ExceptFrameCount - 1 do
+    Report := Report + '  ' + BackTraceStrFunc(Frames[I]) + LineEnding;
+  {$ELSE}
+  Report += 'To get more information, use the debug version.' + LineEnding;
+  {$ENDIF}
+  Report += LineEnding;
+  if Initialized then
+    Report += 'It is recommanded to save a backup of your image and restart the application.'
+  else
+    Report += 'Application will now close.';
+  ShowError(rsLazPaint, Report);
+  if not Initialized then
+    Halt; // End of program execution
+end;
+
 {$R *.res}
 
+{$IFDEF DARWIN}{$IFDEF DEBUG}
+const
+  ConsoleOutputFile = '/dev/ttys000';
+var
+  OldOutput: TextFile;
+  HasTerminalOutput: boolean;
+
+  procedure InitOutput;
+  var TerminalOutput: TextFile;
+  begin
+    //on MacOS, you need to open the terminal before running LazPaint to get debug information
+    OldOutput := Output;
+    AssignFile(TerminalOutput, ConsoleOutputFile);
+    try
+      Append(TerminalOutput);
+      Output := TerminalOutput;
+      HasTerminalOutput := true;
+      Writeln;
+      Writeln('Debug started');
+    except
+      HasTerminalOutput := false;
+    end;
+  end;
+
+  procedure DoneOutput;
+  begin
+    if HasTerminalOutput then
+    begin
+      Writeln('Debug ended');
+      CloseFile(Output);
+      Output := OldOutput;
+      HasTerminalOutput := false;
+      SetHeapTraceOutput(ConsoleOutputFile);
+    end;
+  end;
+{$ENDIF}{$ENDIF}
+
 begin
+  {$IFDEF DARWIN}{$IFDEF DEBUG}InitOutput;{$ENDIF}{$ENDIF}
+
   ActualConfig := GetActualConfig;
   TranslateLazPaint(ActualConfig);
 
-  Application.Title := 'LazPaint';
+  Application.Title:='LazPaint';
   Application.Initialize;
+  UGraph.NicePointMaxRadius:= DoScaleX(UGraph.NicePointMaxRadius, OriginalDPI);
+  UGraph.FrameDashLength:= DoScaleX(UGraph.FrameDashLength, OriginalDPI);
 
   LazpaintApplication := TMyLazPaintInstance.Create;
   LazpaintApplication.UseConfig(ActualConfig);
@@ -117,5 +223,7 @@ begin
   RestartQuery := LazpaintApplication.RestartQuery;
   LazpaintApplication.Free;
   if RestartQuery then RestartApplication;
+
+  {$IFDEF DARWIN}{$IFDEF DEBUG}DoneOutput;{$ENDIF}{$ENDIF}
 end.
 

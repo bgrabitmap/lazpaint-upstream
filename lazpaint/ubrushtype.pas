@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 unit UBrushType;
 
 {$mode objfpc}{$H+}
@@ -158,7 +159,6 @@ end;
 
 function TLazPaintBrush.GetSourceImage: TBGRABitmap;
 var
-  finalFilename: string;
   string64: TStringStream;
   decode64: TBase64DecodingStream;
   temp: TMemoryStream;
@@ -168,7 +168,7 @@ begin
     FSourceImage := nil;
     try
       if FileName <> '' then
-        FSourceImage := LoadFlatImageUTF8(FileName, finalFilename, '', True)
+        FSourceImage := LoadFlatImageUTF8(FileName, 0).bmp
       else
       if Stream64<> '' then
       begin

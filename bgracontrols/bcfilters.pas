@@ -6,33 +6,12 @@
   Site: https://sourceforge.net/p/bgra-controls/
   Wiki: http://wiki.lazarus.freepascal.org/BGRAControls
   Forum: http://forum.lazarus.freepascal.org/index.php/board,46.0.html
-
-  This library is free software; you can redistribute it and/or modify it
-  under the terms of the GNU Library General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or (at your
-  option) any later version with the following modification:
-
-  As a special exception, the copyright holders of this library give you
-  permission to link this library with independent modules to produce an
-  executable, regardless of the license terms of these independent modules,and
-  to copy and distribute the resulting executable under terms of your choice,
-  provided that you also meet, for each linked independent module, the terms
-  and conditions of the license of that module. An independent module is a
-  module which is not derived from or based on this library. If you modify
-  this library, you may extend this exception to your version of the library,
-  but you are not obligated to do so. If you do not wish to do so, delete this
-  exception statement from your version.
-
-  This program is distributed in the hope that it will be useful, but WITHOUT
-  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
-  for more details.
-
-  You should have received a copy of the GNU Library General Public License
-  along with this library; if not, write to the Free Software Foundation,
-  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 }
+{******************************* CONTRIBUTOR(S) ******************************
+- Edivando S. Santos Brasil | mailedivando@gmail.com
+  (Compatibility with delphi VCL 11/2018)
 
+***************************** END CONTRIBUTOR(S) *****************************}
 unit bcfilters;
 
 {
@@ -72,12 +51,12 @@ begin
   Bitmap.InvalidateBitmap;
 }
 
-{$mode objfpc}{$H+}
+{$I bgracontrols.inc}
 
 interface
 
 uses
-  Classes, SysUtils, LCLProc, Math, BGRABitmap, BGRABitmapTypes;
+  Classes, SysUtils, {$IFDEF FPC}LCLProc, LazUTF8,{$ELSE}Types, BGRAGraphics, GraphType, FPImage, {$ENDIF} Math, BGRABitmap, BGRABitmapTypes;
 
 type
   TBCSimpleFilter = (bcsNone, bcsGameBoyDithering, bcsBlackAndWhiteDithering, bcsInvert,
@@ -135,14 +114,14 @@ procedure GGG(Bitmap: TBGRABitmap);
 procedure BBB(Bitmap: TBGRABitmap);
 
 { Invert colors, keep alpha }
-procedure Invert(Bitmap: TBGRABitmap);
+procedure Invert(Bitmap: TBGRABitmap); overload;
 { Invert colors, advanced options }
-procedure Invert(Bitmap: TBGRABitmap; touchR, touchG, touchB, touchA: boolean);
+procedure Invert(Bitmap: TBGRABitmap; touchR, touchG, touchB, touchA: boolean); overload;
 
 { GrayScale, keep alpha }
-procedure GrayScale(Bitmap: TBGRABitmap);
+procedure GrayScale(Bitmap: TBGRABitmap); overload;
 { GrayScale, keep alpha, pallete }
-procedure GrayScale(Bitmap: TBGRABitmap; pallete: byte);
+procedure GrayScale(Bitmap: TBGRABitmap; pallete: byte); overload;
 { GrayScale, alpha 255}
 procedure GrayScaleA(Bitmap: TBGRABitmap);
 { GrayScale, using BGRAToGrayScale }
@@ -156,17 +135,17 @@ procedure GameBoyDithering(Bitmap: TBGRABitmap);
 procedure BlackAndWhiteDithering(Bitmap: TBGRABitmap);
 
 { Noise random color, keep alpha }
-procedure Noise(Bitmap: TBGRABitmap);
+procedure Noise(Bitmap: TBGRABitmap); overload;
 { Noise random color, advanced options }
-procedure Noise(Bitmap: TBGRABitmap; touchR, touchG, touchB, touchA: boolean);
+procedure Noise(Bitmap: TBGRABitmap; touchR, touchG, touchB, touchA: boolean); overload;
 { Noise random color, random alpha }
 procedure NoiseA(Bitmap: TBGRABitmap);
 
 { Noise random color, set max posible values }
-procedure NoiseMax(Bitmap: TBGRABitmap; maxR, maxG, maxB, maxA: byte);
+procedure NoiseMax(Bitmap: TBGRABitmap; maxR, maxG, maxB, maxA: byte); overload;
 { Noise random color, set max posible values, advanced options }
 procedure NoiseMax(Bitmap: TBGRABitmap; maxR, maxG, maxB, maxA: byte;
-  touchR, touchG, touchB, touchA: boolean);
+  touchR, touchG, touchB, touchA: boolean); overload;
 
 { Noise black and white, keep alpha }
 procedure NoiseBW(Bitmap: TBGRABitmap);
@@ -183,9 +162,9 @@ procedure CheckeredL(Bitmap: TBGRABitmap);
 procedure CheckeredR(Bitmap: TBGRABitmap);
 
 { Black and White, middle 128 }
-procedure BlackAndWhite(Bitmap: TBGRABitmap);
+procedure BlackAndWhite(Bitmap: TBGRABitmap); overload;
 { Black and White, custom middle }
-procedure BlackAndWhite(Bitmap: TBGRABitmap; middle: byte);
+procedure BlackAndWhite(Bitmap: TBGRABitmap; middle: byte); overload;
 
 { Instagram Filters }
 // sepia
@@ -216,19 +195,16 @@ procedure SimpleFilter(Bitmap: TBGRABitmap; Filter: TBCSimpleFilter);
 
 implementation
 
-{$if FPC_FULLVERSION>=030001}
-uses Lazutf8;
-{$endif}
-
 function StrToTBCSimpleFilter(const s: ansistring): TBCSimpleFilter;
 var
   sf: TBCSimpleFilter;
   ls: ansistring;
 begin
+  sf := bcsNone;
   Result := sf;
-  ls := UTF8LowerCase(s);
+  ls := {$IFDEF FPC}UTF8LowerCase{$ELSE}LowerCase{$ENDIF}(s);
   for sf := low(TBCSimpleFilter) to high(TBCSimpleFilter) do
-    if ls = UTF8LowerCase(BCSimpleFilterStr[sf]) then
+    if ls = {$IFDEF FPC}UTF8LowerCase{$ELSE}LowerCase{$ENDIF}(BCSimpleFilterStr[sf]) then
     begin
       Result := sf;
       break;

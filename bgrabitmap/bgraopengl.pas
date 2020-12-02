@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-linking-exception
 unit BGRAOpenGL;
 
 {$mode objfpc}{$H+}
@@ -6,9 +7,9 @@ unit BGRAOpenGL;
 interface
 
 uses
-  Classes, SysUtils, FPimage, BGRAGraphics,
+  BGRAClasses, SysUtils, FPimage, BGRAGraphics,
   BGRAOpenGLType, BGRASpriteGL, BGRACanvasGL, GL, GLext, GLU, BGRABitmapTypes,
-  BGRAFontGL, BGRASSE;
+  BGRAFontGL, BGRASSE, BGRAMatrix3D;
 
 type
   TBGLCustomCanvas = BGRACanvasGL.TBGLCustomCanvas;
@@ -23,7 +24,14 @@ type
   TBGLCustomElementArray = BGRACanvasGL.TBGLCustomElementArray;
   TBGLCustomArray = BGRACanvasGL.TBGLCustomArray;
   TOpenGLPrimitive = BGRAOpenGLType.TOpenGLPrimitive;
+  TTextLayout = BGRAGraphics.TTextLayout;
 
+const
+  tlTop = BGRAGraphics.tlTop;
+  tlCenter = BGRAGraphics.tlCenter;
+  tlBottom = BGRAGraphics.tlBottom;
+
+type
   { TBGLContext }
 
   TBGLContext = object
@@ -35,6 +43,31 @@ type
     Sprites: TBGLCustomSpriteEngine;
     property Width: integer read GetWidth;
     property Height: integer read GetHeight;
+  end;
+
+  { TBGLFrameBuffer }
+
+  TBGLFrameBuffer = class(TBGLCustomFrameBuffer)
+  protected
+    FHeight: integer;
+    FMatrix: TAffineMatrix;
+    FProjectionMatrix: TMatrix4D;
+    FTexture: IBGLTexture;
+    FFrameBufferId, FRenderBufferId: GLuint;
+    FWidth: integer;
+    FSettingMatrices: boolean;
+    function GetTexture: IBGLTexture; override;
+    function GetHandle: pointer; override;
+    function GetHeight: integer; override;
+    function GetMatrix: TAffineMatrix; override;
+    function GetProjectionMatrix: TMatrix4D; override;
+    function GetWidth: integer; override;
+    procedure SetMatrix(AValue: TAffineMatrix); override;
+    procedure SetProjectionMatrix(AValue: TMatrix4D); override;
+  public
+    constructor Create(AWidth,AHeight: integer);
+    function MakeTextureAndFree: IBGLTexture; override;
+    destructor Destroy; override;
   end;
 
 const
@@ -59,9 +92,58 @@ type
   TBGLBitmap = class(TBGLCustomBitmap)
   protected
     function GetOpenGLMaxTexSize: integer; override;
+  public
+    function NewBitmap: TBGLBitmap; overload; override;
+    function NewBitmap(AWidth, AHeight: integer): TBGLBitmap; overload; override;
+    function NewBitmap(AWidth, AHeight: integer; const Color: TBGRAPixel): TBGLBitmap; overload; override;
+    function NewBitmap(AWidth, AHeight: integer; AColor: Pointer): TBGLBitmap; overload; override;
+    function NewBitmap(Filename: string): TBGLBitmap; overload; override;
+    function NewBitmap(Filename: string; AIsUtf8: boolean): TBGLBitmap; overload; override;
+    function NewBitmap(Filename: string; AIsUtf8: boolean; AOptions: TBGRALoadingOptions): TBGLBitmap; overload; override;
+    function NewBitmap(AFPImage: TFPCustomImage): TBGLBitmap; overload; override;
+    function NewReference: TBGLBitmap; override;
+    function GetUnique: TBGLBitmap; override;
+    function Duplicate(DuplicateProperties: Boolean = False): TBGLBitmap; overload; override;
+    function Duplicate(DuplicateProperties, DuplicateXorMask: Boolean) : TBGLBitmap; overload; override;
+    function GetPart(const ARect: TRect): TBGLBitmap; override;
+    function CreateBrushTexture(ABrushStyle: TBrushStyle; APatternColor, ABackgroundColor: TBGRAPixel;
+                AWidth: integer = 8; AHeight: integer = 8; APenWidth: single = 1): TBGLBitmap; override;
+    function Resample(newWidth, newHeight: integer;
+      mode: TResampleMode = rmFineResample): TBGLBitmap; override;
+    function FilterSmartZoom3(Option: TMedianOption): TBGLBitmap; override;
+    function FilterMedian(Option: TMedianOption): TBGLBitmap; override;
+    function FilterSmooth: TBGLBitmap; override;
+    function FilterSharpen(Amount: single = 1): TBGLBitmap; overload; override;
+    function FilterSharpen(ABounds: TRect; Amount: single = 1): TBGLBitmap; overload; override;
+    function FilterContour(AGammaCorrection: boolean = false): TBGLBitmap; override;
+    function FilterPixelate(pixelSize: integer; useResample: boolean; filter: TResampleFilter = rfLinear): TBGLBitmap; override;
+    function FilterBlurRadial(radius: single; blurType: TRadialBlurType): TBGLBitmap; overload; override;
+    function FilterBlurRadial(const ABounds: TRect; radius: single; blurType: TRadialBlurType): TBGLBitmap; overload; override;
+    function FilterBlurRadial(radiusX, radiusY: single; blurType: TRadialBlurType): TBGLBitmap; overload; override;
+    function FilterBlurRadial(const ABounds: TRect; radiusX, radiusY: single; blurType: TRadialBlurType): TBGLBitmap; overload; override;
+    function FilterBlurMotion(distance: single; angle: single; oriented: boolean): TBGLBitmap; overload; override;
+    function FilterBlurMotion(const ABounds: TRect; distance: single; angle: single; oriented: boolean): TBGLBitmap; overload; override;
+    function FilterCustomBlur(mask: TCustomUniversalBitmap): TBGLBitmap; overload; override;
+    function FilterCustomBlur(const ABounds: TRect; mask: TCustomUniversalBitmap): TBGLBitmap; overload; override;
+    function FilterEmboss(angle: single; AStrength: integer= 64; AOptions: TEmbossOptions = []): TBGLBitmap; overload; override;
+    function FilterEmboss(angle: single; ABounds: TRect; AStrength: integer= 64; AOptions: TEmbossOptions = []): TBGLBitmap; overload; override;
+    function FilterEmbossHighlight(FillSelection: boolean): TBGLBitmap; overload; override;
+    function FilterEmbossHighlight(FillSelection: boolean; BorderColor: TBGRAPixel): TBGLBitmap; overload; override;
+    function FilterEmbossHighlight(FillSelection: boolean; BorderColor: TBGRAPixel; var Offset: TPoint): TBGLBitmap; overload; override;
+    function FilterGrayscale: TBGLBitmap; overload; override;
+    function FilterGrayscale(ABounds: TRect): TBGLBitmap; overload; override;
+    function FilterNormalize(eachChannel: boolean = True): TBGLBitmap; overload; override;
+    function FilterNormalize(ABounds: TRect; eachChannel: boolean = True): TBGLBitmap; overload; override;
+    function FilterRotate(origin: TPointF; angle: single; correctBlur: boolean = false): TBGLBitmap; override;
+    function FilterAffine(AMatrix: TAffineMatrix; correctBlur: boolean = false): TBGLBitmap; override;
+    function FilterSphere: TBGLBitmap; override;
+    function FilterTwirl(ACenter: TPoint; ARadius: Single; ATurn: Single=1; AExponent: Single=3): TBGLBitmap; overload; override;
+    function FilterTwirl(ABounds: TRect; ACenter: TPoint; ARadius: Single; ATurn: Single=1; AExponent: Single=3): TBGLBitmap; overload; override;
+    function FilterCylinder: TBGLBitmap; override;
+    function FilterPlane: TBGLBitmap; override;
   end;
 
-function BGLTexture(ARGBAData: PDWord; AllocatedWidth,AllocatedHeight, ActualWidth,ActualHeight: integer): IBGLTexture; overload;
+function BGLTexture(ARGBAData: PLongWord; AllocatedWidth,AllocatedHeight, ActualWidth,ActualHeight: integer): IBGLTexture; overload;
 function BGLTexture(AFPImage: TFPCustomImage): IBGLTexture; overload;
 function BGLTexture(ABitmap: TBitmap): IBGLTexture; overload;
 function BGLTexture(AWidth, AHeight: integer; Color: TColor): IBGLTexture; overload;
@@ -112,11 +194,10 @@ type
 
 implementation
 
-uses BGRATransform{$IFDEF BGRABITMAP_USE_LCL}, BGRAText, BGRATextFX{$ENDIF}
-    ,BGRAMatrix3D;
+uses BGRABlurGL, BGRATransform{$IFDEF BGRABITMAP_USE_LCL}, BGRAText, BGRATextFX{$ENDIF};
 
 type
-  TBlendFuncSeparateProc = procedure(sfactorRGB: GLenum; dfactorRGB: GLenum; sfactorAlpha: GLenum; dfactorAlpha: GLenum); stdcall;
+  TBlendFuncSeparateProc = procedure(sfactorRGB: GLenum; dfactorRGB: GLenum; sfactorAlpha: GLenum; dfactorAlpha: GLenum); {$IFDEF Windows} stdcall; {$ELSE} cdecl; {$ENDIF}
 
 function PrimitiveToOpenGL(AValue: TOpenGLPrimitive): GLenum;
 begin
@@ -171,8 +252,9 @@ type
     FFlipX,FFlipY: Boolean;
 
     function GetOpenGLMaxTexSize: integer; override;
-    function CreateOpenGLTexture(ARGBAData: PDWord; AAllocatedWidth, AAllocatedHeight, AActualWidth, AActualHeight: integer): TBGLTextureHandle; override;
-    procedure UpdateOpenGLTexture(ATexture: TBGLTextureHandle; ARGBAData: PDWord; AAllocatedWidth, AAllocatedHeight, AActualWidth,AActualHeight: integer); override;
+    function CreateOpenGLTexture(ARGBAData: PLongWord; AAllocatedWidth, AAllocatedHeight, AActualWidth, AActualHeight: integer; RGBAOrder: boolean): TBGLTextureHandle; override;
+    procedure UpdateOpenGLTexture(ATexture: TBGLTextureHandle; ARGBAData: PLongWord; AAllocatedWidth, AAllocatedHeight, AActualWidth,AActualHeight: integer; RGBAOrder: boolean); override;
+    class function SupportsBGRAOrder: boolean; override;
     procedure SetOpenGLTextureSize(ATexture: TBGLTextureHandle; AAllocatedWidth, AAllocatedHeight, AActualWidth, AActualHeight: integer); override;
     procedure ComputeOpenGLFramesCoord(ATexture: TBGLTextureHandle; FramesX: Integer=1; FramesY: Integer=1); override;
     function GetOpenGLFrameCount(ATexture: TBGLTextureHandle): integer; override;
@@ -201,6 +283,8 @@ type
     procedure ToggleFlipX; override;
     procedure ToggleFlipY; override;
     procedure Bind(ATextureNumber: integer); override;
+    function FilterBlurMotion(ARadius: single; ABlurType: TRadialBlurType; ADirection: TPointF): IBGLTexture; override;
+    function FilterBlurRadial(ARadius: single; ABlurType: TRadialBlurType): IBGLTexture; override;
 
   end;
 
@@ -238,11 +322,11 @@ type
     procedure InternalStartPolyline(const pt: TPointF); override;
     procedure InternalStartPolygon(const pt: TPointF); override;
     procedure InternalStartTriangleFan(const pt: TPointF); override;
-    procedure InternalContinueShape(const pt: TPointF); override;
+    procedure InternalContinueShape(const pt: TPointF); overload; override;
 
-    procedure InternalContinueShape(const pt: TPoint3D); override;
-    procedure InternalContinueShape(const pt: TPoint3D_128); override;
-    procedure InternalContinueShape(const pt, normal: TPoint3D_128); override;
+    procedure InternalContinueShape(const pt: TPoint3D); overload; override;
+    procedure InternalContinueShape(const pt: TPoint3D_128); overload; override;
+    procedure InternalContinueShape(const pt, normal: TPoint3D_128); overload; override;
 
     procedure InternalEndShape; override;
 
@@ -259,12 +343,16 @@ type
 
     function GetBlendMode: TOpenGLBlendMode; override;
     procedure SetBlendMode(AValue: TOpenGLBlendMode); override;
+
+    procedure SetActiveFrameBuffer(AValue: TBGLCustomFrameBuffer); override;
   public
     destructor Destroy; override;
     procedure Fill(AColor: TBGRAPixel); override;
     procedure StartZBuffer; override;
     procedure EndZBuffer; override;
     procedure WaitForGPU(AOption: TWaitForGPUOption); override;
+    function GetImage(x, y, w, h: integer): TBGRACustomBitmap; override;
+    function CreateFrameBuffer(AWidth, AHeight: integer): TBGLCustomFrameBuffer; override;
   end;
 
   { TBGLLighting }
@@ -290,19 +378,125 @@ type
     function RemoveLight(AIndex: integer): boolean; override;
     procedure SetSpecularIndex(AIndex: integer); override;
 
-    function MakeVertexShader(ASource: string): DWord; override;
-    function MakeFragmentShader(ASource: string): DWord; override;
-    function MakeShaderProgram(AVertexShader, AFragmentShader: DWord): DWord; override;
-    procedure UseProgram(AProgram: DWord); override;
-    procedure DeleteShaderObject(AShader: DWord); override;
-    procedure DeleteShaderProgram(AProgram: DWord); override;
-    function GetUniformVariable(AProgram: DWord; AName: string): DWord; override;
-    function GetAttribVariable(AProgram: DWord; AName: string): DWord; override;
-    procedure SetUniformSingle(AVariable: DWord; const AValue; ACount: integer); override;
-    procedure SetUniformInteger(AVariable: DWord; const AValue; ACount: integer); override;
+    function MakeVertexShader(ASource: string): LongWord; override;
+    function MakeFragmentShader(ASource: string): LongWord; override;
+    function MakeShaderProgram(AVertexShader, AFragmentShader: LongWord): LongWord; override;
+    procedure UseProgram(AProgram: LongWord); override;
+    procedure DeleteShaderObject(AShader: LongWord); override;
+    procedure DeleteShaderProgram(AProgram: LongWord); override;
+    function GetUniformVariable(AProgram: LongWord; AName: string): LongWord; override;
+    function GetAttribVariable(AProgram: LongWord; AName: string): LongWord; override;
+    procedure SetUniformSingle(AVariable: LongWord; const AValue; AElementCount, AComponentCount: integer); override;
+    procedure SetUniformInteger(AVariable: LongWord; const AValue; AElementCount, AComponentCount: integer); override;
     procedure BindAttribute(AAttribute: TAttributeVariable); override;
     procedure UnbindAttribute(AAttribute: TAttributeVariable); override;
   end;
+
+{ TBGLFrameBuffer }
+
+procedure TBGLFrameBuffer.SetMatrix(AValue: TAffineMatrix);
+begin
+  if FSettingMatrices then Exit;
+  FSettingMatrices := true;
+  FMatrix:=AValue;
+  if FCanvas <> nil then
+    TBGLCustomCanvas(FCanvas).Matrix := AValue;
+  FSettingMatrices := false;
+end;
+
+function TBGLFrameBuffer.GetMatrix: TAffineMatrix;
+begin
+  result := FMatrix;
+end;
+
+function TBGLFrameBuffer.GetTexture: IBGLTexture;
+begin
+  result := FTexture.FlipY;
+end;
+
+function TBGLFrameBuffer.GetHandle: pointer;
+begin
+  result := @FFrameBufferId;
+end;
+
+function TBGLFrameBuffer.GetHeight: integer;
+begin
+  result := FHeight;
+end;
+
+function TBGLFrameBuffer.GetProjectionMatrix: TMatrix4D;
+begin
+  result := FProjectionMatrix;
+end;
+
+function TBGLFrameBuffer.GetWidth: integer;
+begin
+  result := FWidth;
+end;
+
+procedure TBGLFrameBuffer.SetProjectionMatrix(AValue: TMatrix4D);
+begin
+  if FSettingMatrices then Exit;
+  FSettingMatrices := true;
+  FProjectionMatrix:= AValue;
+  if FCanvas <> nil then
+    TBGLCustomCanvas(FCanvas).ProjectionMatrix := AValue;
+  FSettingMatrices := false;
+end;
+
+constructor TBGLFrameBuffer.Create(AWidth, AHeight: integer);
+var frameBufferStatus: GLenum;
+begin
+  if not Load_GL_version_3_0 then
+      raise exception.Create('Cannot load OpenGL 3.0');
+
+  FWidth := AWidth;
+  FHeight := AHeight;
+
+  FTexture := BGLTextureFactory.Create(nil,AWidth,AHeight,AWidth,AHeight);
+
+  //depth and stencil
+  glGenRenderbuffers(1, @FRenderBufferId);
+  glBindRenderbuffer(GL_RENDERBUFFER, FRenderBufferId);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, AWidth,AHeight);
+  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+  glGenFramebuffers(1, @FFrameBufferId);
+  glBindFramebuffer(GL_FRAMEBUFFER, FFrameBufferId);
+
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, PGLuint(FTexture.Handle)^, 0);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, FFrameBufferId);
+
+  frameBufferStatus:= glCheckFramebufferStatus(GL_FRAMEBUFFER);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  if frameBufferStatus <> GL_FRAMEBUFFER_COMPLETE then
+  begin
+    glDeleteFramebuffers(1, @FFrameBufferId);
+    glDeleteRenderbuffers(1, @FRenderBufferId);
+    FTexture := nil;
+    raise exception.Create('Error ' + inttostr(frameBufferStatus) + ' while initializing frame buffer');
+  end;
+
+  UseOrthoProjection;
+  Matrix := AffineMatrixIdentity;
+end;
+
+function TBGLFrameBuffer.MakeTextureAndFree: IBGLTexture;
+begin
+  result := FTexture;
+  FTexture := nil;
+  Free;
+end;
+
+destructor TBGLFrameBuffer.Destroy;
+begin
+  glDeleteFramebuffers(1, @FFrameBufferId);
+  glDeleteRenderbuffers(1, @FRenderBufferId);
+  FTexture := nil;
+
+  inherited Destroy;
+end;
 
 procedure ApplyBlendMode(ABlendMode: TOpenGLBlendMode);
 var
@@ -337,7 +531,7 @@ begin
     glBlendFunc( srcBlend, dstBlend );
 end;
 
-function BGLTexture(ARGBAData: PDWord; AllocatedWidth, AllocatedHeight,
+function BGLTexture(ARGBAData: PLongWord; AllocatedWidth, AllocatedHeight,
   ActualWidth, ActualHeight: integer): IBGLTexture;
 begin
   result := TBGLTexture.Create(ARGBAData,AllocatedWidth, AllocatedHeight,
@@ -502,7 +696,7 @@ end;
 
 constructor TBGLElementArray.Create(const AElements: array of integer);
 var bufferSize: integer;
-  i: NativeInt;
+  i: Int32or64;
 begin
   NeedOpenGL2_0;
   setlength(FElements,length(AElements));
@@ -516,7 +710,7 @@ end;
 
 procedure TBGLElementArray.Draw(ACanvas: TBGLCustomCanvas; APrimitive: TOpenGLPrimitive; AAttributes: array of TAttributeVariable);
 var
-  i: NativeInt;
+  i: Int32or64;
 begin
   for i := 0 to high(AAttributes) do
     ACanvas.Lighting.BindAttribute(AAttributes[i]);
@@ -605,12 +799,12 @@ begin
   end;
 end;
 
-function TBGLLighting.MakeVertexShader(ASource: string): DWord;
+function TBGLLighting.MakeVertexShader(ASource: string): LongWord;
 begin
   result := MakeShaderObject(GL_VERTEX_SHADER, ASource);
 end;
 
-function TBGLLighting.MakeFragmentShader(ASource: string): DWord;
+function TBGLLighting.MakeFragmentShader(ASource: string): LongWord;
 begin
   result := MakeShaderObject(GL_FRAGMENT_SHADER, ASource);
 end;
@@ -705,7 +899,7 @@ begin
   result := CheckOpenGL2_0;
 end;
 
-function TBGLLighting.MakeShaderProgram(AVertexShader, AFragmentShader: DWord): DWord;
+function TBGLLighting.MakeShaderProgram(AVertexShader, AFragmentShader: LongWord): LongWord;
 var
   programOk: GLint;
   shaderProgram: GLuint;
@@ -734,50 +928,66 @@ begin
   result := shaderProgram;
 end;
 
-procedure TBGLLighting.UseProgram(AProgram: DWord);
+procedure TBGLLighting.UseProgram(AProgram: LongWord);
 begin
   NeedOpenGL2_0;
   glUseProgram(AProgram);
 end;
 
-procedure TBGLLighting.DeleteShaderObject(AShader: DWord);
+procedure TBGLLighting.DeleteShaderObject(AShader: LongWord);
 begin
   NeedOpenGL2_0;
   if AShader<> 0 then
     glDeleteShader(AShader);
 end;
 
-procedure TBGLLighting.DeleteShaderProgram(AProgram: DWord);
+procedure TBGLLighting.DeleteShaderProgram(AProgram: LongWord);
 begin
   NeedOpenGL2_0;
   if AProgram<> 0 then
     glDeleteProgram(AProgram);
 end;
 
-function TBGLLighting.GetUniformVariable(AProgram: DWord; AName: string): DWord;
+function TBGLLighting.GetUniformVariable(AProgram: LongWord; AName: string): LongWord;
 begin
   NeedOpenGL2_0;
   result := glGetUniformLocation(AProgram, @AName[1]);
 end;
 
-function TBGLLighting.GetAttribVariable(AProgram: DWord; AName: string): DWord;
+function TBGLLighting.GetAttribVariable(AProgram: LongWord; AName: string): LongWord;
 begin
   NeedOpenGL2_0;
   result := glGetAttribLocation(AProgram, @AName[1]);
 end;
 
-procedure TBGLLighting.SetUniformSingle(AVariable: DWord;
-  const AValue; ACount: integer);
+procedure TBGLLighting.SetUniformSingle(AVariable: LongWord;
+  const AValue; AElementCount, AComponentCount: integer);
 begin
   NeedOpenGL2_0;
-  glUniform1fv(AVariable, ACount, @AValue);
+  case AComponentCount of
+    1: glUniform1fv(AVariable, AElementCount, @AValue);
+    2: glUniform2fv(AVariable, AElementCount, @AValue);
+    3: glUniform3fv(AVariable, AElementCount, @AValue);
+    4: glUniform4fv(AVariable, AElementCount, @AValue);
+    9: glUniformMatrix3fv(AVariable, AElementCount, GL_FALSE, @AValue);
+    16: glUniformMatrix4fv(AVariable, AElementCount, GL_FALSE, @AValue);
+  else
+    raise exception.Create('Unexpected number of components');
+  end;
 end;
 
-procedure TBGLLighting.SetUniformInteger(AVariable: DWord;
-  const AValue; ACount: integer);
+procedure TBGLLighting.SetUniformInteger(AVariable: LongWord;
+  const AValue; AElementCount, AComponentCount: integer);
 begin
   NeedOpenGL2_0;
-  glUniform1iv(AVariable, ACount, @AValue);
+  case AComponentCount of
+    1: glUniform1iv(AVariable, AElementCount, @AValue);
+    2: glUniform2iv(AVariable, AElementCount, @AValue);
+    3: glUniform3iv(AVariable, AElementCount, @AValue);
+    4: glUniform4iv(AVariable, AElementCount, @AValue);
+  else
+    raise exception.Create('Unexpected number of components');
+  end;
 end;
 
 procedure TBGLLighting.BindAttribute(AAttribute: TAttributeVariable);
@@ -840,7 +1050,10 @@ end;
 
 function TBGLCanvas.GetMatrix: TAffineMatrix;
 begin
-  result := FMatrix;
+  if ActiveFrameBuffer <> nil then
+    result := ActiveFrameBuffer.Matrix
+  else
+    result := FMatrix;
 end;
 
 procedure TBGLCanvas.SetMatrix(const AValue: TAffineMatrix);
@@ -849,20 +1062,31 @@ begin
   glMatrixMode(GL_MODELVIEW);
   m := AffineMatrixToMatrix4D(AValue);
   glLoadMatrixf(@m);
-  FMatrix := AValue;
+
+  if ActiveFrameBuffer <> nil then
+    ActiveFrameBuffer.Matrix := AValue
+  else
+    FMatrix := AValue;
 end;
 
 function TBGLCanvas.GetProjectionMatrix: TMatrix4D;
 begin
-  result := FProjectionMatrix;
+  if ActiveFrameBuffer <> nil then
+    result := ActiveFrameBuffer.ProjectionMatrix
+  else
+    result := FProjectionMatrix;
 end;
 
 procedure TBGLCanvas.SetProjectionMatrix(const AValue: TMatrix4D);
 begin
-  FProjectionMatrix := AValue;
   glMatrixMode(GL_PROJECTION);
   glLoadMatrixf(@AValue);
   glMatrixMode(GL_MODELVIEW);
+
+  if ActiveFrameBuffer <> nil then
+    ActiveFrameBuffer.ProjectionMatrix := AValue
+  else
+    FProjectionMatrix := AValue;
 end;
 
 function TBGLCanvas.GetFaceCulling: TFaceCulling;
@@ -935,10 +1159,12 @@ end;
 
 procedure TBGLCanvas.InternalSetColor(const AColor: TBGRAPixel);
 begin
+  {$PUSH}{$WARNINGS OFF}
   if TBGRAPixel_RGBAOrder then
     glColor4ubv(@AColor)
   else
     glColor4ub(AColor.red,AColor.green,AColor.blue,AColor.alpha);
+  {$POP}
 end;
 
 procedure TBGLCanvas.InternalSetColorF(const AColor: TColorF);
@@ -1006,6 +1232,23 @@ begin
   end;
 end;
 
+function TBGLCanvas.GetImage(x, y, w, h: integer): TBGRACustomBitmap;
+begin
+  NeedOpenGL2_0;
+  result := BGRABitmapFactory.Create(w,h);
+  {$PUSH}{$WARNINGS OFF}
+  if TBGRAPixel_RGBAOrder then
+    glReadPixels(x,self.Height-y-h, w,h, GL_RGBA, GL_UNSIGNED_BYTE, result.Data)
+  else
+    glReadPixels(x,self.Height-y-h, w,h, GL_BGRA, GL_UNSIGNED_BYTE, result.Data);
+  {$POP}
+end;
+
+function TBGLCanvas.CreateFrameBuffer(AWidth, AHeight: integer): TBGLCustomFrameBuffer;
+begin
+  Result:= TBGLFrameBuffer.Create(AWidth,AHeight);
+end;
+
 procedure TBGLCanvas.EnableScissor(AValue: TRect);
 begin
   glScissor(AValue.left,Height-AValue.bottom,AValue.right-AValue.left,AValue.Bottom-AValue.Top);
@@ -1027,6 +1270,28 @@ begin
   FBlendMode := AValue;
 end;
 
+procedure TBGLCanvas.SetActiveFrameBuffer(AValue: TBGLCustomFrameBuffer);
+var
+  m: TMatrix4D;
+begin
+  if AValue = ActiveFrameBuffer then exit;
+  inherited SetActiveFrameBuffer(AValue);
+  if AValue = nil then
+    glBindFramebuffer(GL_FRAMEBUFFER, 0)
+  else
+    glBindFramebuffer(GL_FRAMEBUFFER, PGLuint(AValue.Handle)^);
+
+  glViewPort(0,0,Width,Height);
+
+  glMatrixMode(GL_PROJECTION);
+  m := ProjectionMatrix;
+  glLoadMatrixf(@m);
+
+  glMatrixMode(GL_MODELVIEW);
+  m := AffineMatrixToMatrix4D(Matrix);
+  glLoadMatrixf(@m);
+end;
+
 destructor TBGLCanvas.Destroy;
 begin
   FLighting.Free;
@@ -1041,11 +1306,13 @@ begin
   glGetIntegerv( GL_MAX_TEXTURE_SIZE, @result );
 end;
 
-function TBGLTexture.CreateOpenGLTexture(ARGBAData: PDWord;
-  AAllocatedWidth, AAllocatedHeight, AActualWidth, AActualHeight: integer
-  ): TBGLTextureHandle;
+function TBGLTexture.CreateOpenGLTexture(ARGBAData: PLongWord;
+  AAllocatedWidth, AAllocatedHeight, AActualWidth, AActualHeight: integer;
+  RGBAOrder: boolean): TBGLTextureHandle;
 var p: POpenGLTexture;
+  providedFormat: GLenum;
 begin
+  if RGBAOrder then providedFormat:= GL_RGBA else providedFormat:= GL_BGRA;
   New(p);
   p^.AllocatedWidth := AAllocatedWidth;
   p^.AllocatedHeight := AAllocatedHeight;
@@ -1056,18 +1323,24 @@ begin
   glBindTexture( GL_TEXTURE_2D, p^.ID );
   glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
   glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-  glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, AAllocatedWidth, AAllocatedHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, ARGBAData );
-
+  glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, AAllocatedWidth, AAllocatedHeight, 0, providedFormat, GL_UNSIGNED_BYTE, ARGBAData );
   result := p;
 end;
 
 procedure TBGLTexture.UpdateOpenGLTexture(ATexture: TBGLTextureHandle;
-  ARGBAData: PDWord; AAllocatedWidth, AAllocatedHeight, AActualWidth,
-  AActualHeight: integer);
+  ARGBAData: PLongWord; AAllocatedWidth, AAllocatedHeight, AActualWidth,
+  AActualHeight: integer; RGBAOrder: boolean);
+var providedFormat: GLenum;
 begin
+  if RGBAOrder then providedFormat:= GL_RGBA else providedFormat:= GL_BGRA;
   SetOpenGLTextureSize(ATexture, AAllocatedWidth,AAllocatedHeight, AActualWidth,AActualHeight);
   glBindTexture( GL_TEXTURE_2D, TOpenGLTexture(ATexture^).ID );
-  glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, AAllocatedWidth, AAllocatedHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, ARGBAData );
+  glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, AAllocatedWidth, AAllocatedHeight, 0, providedFormat, GL_UNSIGNED_BYTE, ARGBAData );
+end;
+
+class function TBGLTexture.SupportsBGRAOrder: boolean;
+begin
+  Result:= true;
 end;
 
 procedure TBGLTexture.SetOpenGLTextureSize(ATexture: TBGLTextureHandle;
@@ -1184,10 +1457,12 @@ end;
 
 procedure TBGLTexture.InternalSetColor(const AColor: TBGRAPixel);
 begin
+  {$PUSH}{$WARNINGS OFF}
   if TBGRAPixel_RGBAOrder then
     glColor4ubv(@AColor)
   else
     glColor4ub(AColor.red,AColor.green,AColor.blue,AColor.alpha);
+  {$POP}
 end;
 
 procedure TBGLTexture.DoDrawTriangleOrQuad(const APoints: array of TPointF;
@@ -1360,7 +1635,7 @@ end;
 
 procedure TBGLTexture.ToggleFlipY;
 begin
-  FFlipX := not FFlipY;
+  FFlipY := not FFlipY;
 end;
 
 procedure TBGLTexture.Bind(ATextureNumber: integer);
@@ -1376,6 +1651,43 @@ begin
   glBindTexture(GL_TEXTURE_2D, POpenGLTexture(FOpenGLTexture)^.ID);
   if ATextureNumber<>0 then
     glActiveTexture(GL_TEXTURE0);
+end;
+
+function TBGLTexture.FilterBlurMotion(ARadius: single; ABlurType: TRadialBlurType; ADirection: TPointF): IBGLTexture;
+var shader: TBGLCustomShader;
+  blurName: string;
+begin
+  blurName := 'TBGLBlurShader(' + RadialBlurTypeToStr[ABlurType] + ')';
+  shader := BGLCanvas.Lighting.Shader[blurName];
+  if shader = nil then
+  begin
+    shader := TBGLBlurShader.Create(BGLCanvas, ABlurType);
+    BGLCanvas.Lighting.Shader[blurName] := shader;
+  end;
+  with (shader as TBGLBlurShader) do
+  begin
+    Radius := ARadius;
+    Direction := ADirection;
+    result := FilterBlurMotion(self);
+  end;
+end;
+
+function TBGLTexture.FilterBlurRadial(ARadius: single; ABlurType: TRadialBlurType): IBGLTexture;
+var shader: TBGLCustomShader;
+  blurName: String;
+begin
+  blurName := 'TBGLBlurShader(' + RadialBlurTypeToStr[ABlurType] + ')';
+  shader := BGLCanvas.Lighting.Shader[blurName];
+  if shader = nil then
+  begin
+    shader := TBGLBlurShader.Create(BGLCanvas, ABlurType);
+    BGLCanvas.Lighting.Shader[blurName] := shader;
+  end;
+  with (shader as TBGLBlurShader) do
+  begin
+    Radius := ARadius;
+    result := FilterBlurRadial(self);
+  end;
 end;
 
 procedure TBGLTexture.Init(ATexture: TBGLTextureHandle; AWidth,
@@ -1421,6 +1733,259 @@ function TBGLBitmap.GetOpenGLMaxTexSize: integer;
 begin
   result := 0;
   glGetIntegerv( GL_MAX_TEXTURE_SIZE, @result );
+end;
+
+function TBGLBitmap.NewBitmap: TBGLBitmap;
+begin
+  Result:=inherited NewBitmap as TBGLBitmap;
+end;
+
+function TBGLBitmap.NewBitmap(AWidth, AHeight: integer): TBGLBitmap;
+begin
+  Result:=inherited NewBitmap(AWidth, AHeight) as TBGLBitmap;
+end;
+
+function TBGLBitmap.NewBitmap(AWidth, AHeight: integer; const Color: TBGRAPixel
+  ): TBGLBitmap;
+begin
+  Result:=inherited NewBitmap(AWidth, AHeight, Color) as TBGLBitmap;
+end;
+
+function TBGLBitmap.NewBitmap(AWidth, AHeight: integer; AColor: Pointer
+  ): TBGLBitmap;
+begin
+  Result:=inherited NewBitmap(AWidth, AHeight, AColor) as TBGLBitmap;
+end;
+
+function TBGLBitmap.NewBitmap(Filename: string): TBGLBitmap;
+begin
+  Result:=inherited NewBitmap(Filename) as TBGLBitmap;
+end;
+
+function TBGLBitmap.NewBitmap(Filename: string; AIsUtf8: boolean): TBGLBitmap;
+begin
+  Result:=inherited NewBitmap(Filename, AIsUtf8) as TBGLBitmap;
+end;
+
+function TBGLBitmap.NewBitmap(Filename: string; AIsUtf8: boolean;
+  AOptions: TBGRALoadingOptions): TBGLBitmap;
+begin
+  Result:=inherited NewBitmap(Filename, AIsUtf8, AOptions) as TBGLBitmap;
+end;
+
+function TBGLBitmap.NewBitmap(AFPImage: TFPCustomImage): TBGLBitmap;
+begin
+  Result:=inherited NewBitmap(AFPImage) as TBGLBitmap;
+end;
+
+function TBGLBitmap.NewReference: TBGLBitmap;
+begin
+  Result:=inherited NewReference as TBGLBitmap;
+end;
+
+function TBGLBitmap.GetUnique: TBGLBitmap;
+begin
+  Result:=inherited GetUnique as TBGLBitmap;
+end;
+
+function TBGLBitmap.Duplicate(DuplicateProperties: Boolean): TBGLBitmap;
+begin
+  Result:=inherited Duplicate(DuplicateProperties) as TBGLBitmap;
+end;
+
+function TBGLBitmap.Duplicate(DuplicateProperties, DuplicateXorMask: Boolean): TBGLBitmap;
+begin
+  Result:=inherited Duplicate(DuplicateProperties, DuplicateXorMask) as TBGLBitmap;
+end;
+
+function TBGLBitmap.GetPart(const ARect: TRect): TBGLBitmap;
+begin
+  Result:=inherited GetPart(ARect) as TBGLBitmap;
+end;
+
+function TBGLBitmap.CreateBrushTexture(ABrushStyle: TBrushStyle; APatternColor,
+  ABackgroundColor: TBGRAPixel; AWidth: integer; AHeight: integer;
+  APenWidth: single): TBGLBitmap;
+begin
+  Result:=inherited CreateBrushTexture(ABrushStyle, APatternColor,
+    ABackgroundColor, AWidth, AHeight, APenWidth) as TBGLBitmap;
+end;
+
+function TBGLBitmap.Resample(newWidth, newHeight: integer; mode: TResampleMode
+  ): TBGLBitmap;
+begin
+  Result:=inherited Resample(newWidth, newHeight, mode) as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterSmartZoom3(Option: TMedianOption): TBGLBitmap;
+begin
+  Result:=inherited FilterSmartZoom3(Option) as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterMedian(Option: TMedianOption): TBGLBitmap;
+begin
+  Result:=inherited FilterMedian(Option) as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterSmooth: TBGLBitmap;
+begin
+  Result:=inherited FilterSmooth as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterSharpen(Amount: single): TBGLBitmap;
+begin
+  Result:=inherited FilterSharpen(Amount) as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterSharpen(ABounds: TRect; Amount: single): TBGLBitmap;
+begin
+  Result:=inherited FilterSharpen(ABounds, Amount) as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterContour(AGammaCorrection: boolean = false): TBGLBitmap;
+begin
+  Result:=inherited FilterContour(AGammaCorrection) as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterPixelate(pixelSize: integer; useResample: boolean;
+  filter: TResampleFilter): TBGLBitmap;
+begin
+  Result:=inherited FilterPixelate(pixelSize, useResample, filter) as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterBlurRadial(radius: single; blurType: TRadialBlurType): TBGLBitmap;
+begin
+  Result:=inherited FilterBlurRadial(radius, blurType) as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterBlurRadial(const ABounds: TRect; radius: single;
+  blurType: TRadialBlurType): TBGLBitmap;
+begin
+  Result:=inherited FilterBlurRadial(ABounds, radius, blurType) as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterBlurRadial(radiusX, radiusY: single;
+  blurType: TRadialBlurType): TBGLBitmap;
+begin
+  Result:=inherited FilterBlurRadial(radiusX, radiusY, blurType) as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterBlurRadial(const ABounds: TRect; radiusX,
+  radiusY: single; blurType: TRadialBlurType): TBGLBitmap;
+begin
+  Result:=inherited FilterBlurRadial(ABounds, radiusX, radiusY, blurType) as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterBlurMotion(distance: single; angle: single;
+  oriented: boolean): TBGLBitmap;
+begin
+  Result:=inherited FilterBlurMotion(distance, angle, oriented) as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterBlurMotion(const ABounds: TRect; distance: single;
+  angle: single; oriented: boolean): TBGLBitmap;
+begin
+  Result:=inherited FilterBlurMotion(ABounds, distance, angle, oriented) as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterCustomBlur(mask: TCustomUniversalBitmap): TBGLBitmap;
+begin
+  Result:=inherited FilterCustomBlur(mask) as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterCustomBlur(const ABounds: TRect;
+  mask: TCustomUniversalBitmap): TBGLBitmap;
+begin
+  Result:=inherited FilterCustomBlur(ABounds, mask) as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterEmboss(angle: single; AStrength: integer;
+  AOptions: TEmbossOptions): TBGLBitmap;
+begin
+  Result:=inherited FilterEmboss(angle, AStrength, AOptions) as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterEmboss(angle: single; ABounds: TRect;
+  AStrength: integer; AOptions: TEmbossOptions): TBGLBitmap;
+begin
+  Result:=inherited FilterEmboss(angle, ABounds, AStrength, AOptions) as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterEmbossHighlight(FillSelection: boolean): TBGLBitmap;
+begin
+  Result:=inherited FilterEmbossHighlight(FillSelection) as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterEmbossHighlight(FillSelection: boolean;
+  BorderColor: TBGRAPixel): TBGLBitmap;
+begin
+  Result:=inherited FilterEmbossHighlight(FillSelection, BorderColor) as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterEmbossHighlight(FillSelection: boolean;
+  BorderColor: TBGRAPixel; var Offset: TPoint): TBGLBitmap;
+begin
+  Result:=inherited FilterEmbossHighlight(FillSelection, BorderColor, Offset) as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterGrayscale: TBGLBitmap;
+begin
+  Result:=inherited FilterGrayscale as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterGrayscale(ABounds: TRect): TBGLBitmap;
+begin
+  Result:=inherited FilterGrayscale(ABounds) as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterNormalize(eachChannel: boolean): TBGLBitmap;
+begin
+  Result:=inherited FilterNormalize(eachChannel) as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterNormalize(ABounds: TRect; eachChannel: boolean
+  ): TBGLBitmap;
+begin
+  Result:=inherited FilterNormalize(ABounds, eachChannel) as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterRotate(origin: TPointF; angle: single;
+  correctBlur: boolean): TBGLBitmap;
+begin
+  Result:=inherited FilterRotate(origin, angle, correctBlur) as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterAffine(AMatrix: TAffineMatrix; correctBlur: boolean
+  ): TBGLBitmap;
+begin
+  Result:=inherited FilterAffine(AMatrix, correctBlur) as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterSphere: TBGLBitmap;
+begin
+  Result:=inherited FilterSphere as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterTwirl(ACenter: TPoint; ARadius: Single;
+  ATurn: Single; AExponent: Single): TBGLBitmap;
+begin
+  Result:=inherited FilterTwirl(ACenter, ARadius, ATurn, AExponent) as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterTwirl(ABounds: TRect; ACenter: TPoint;
+  ARadius: Single; ATurn: Single; AExponent: Single): TBGLBitmap;
+begin
+  Result:=inherited FilterTwirl(ABounds, ACenter, ARadius, ATurn, AExponent) as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterCylinder: TBGLBitmap;
+begin
+  Result:=inherited FilterCylinder as TBGLBitmap;
+end;
+
+function TBGLBitmap.FilterPlane: TBGLBitmap;
+begin
+  Result:=inherited FilterPlane as TBGLBitmap;
 end;
 
 initialization

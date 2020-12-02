@@ -1,0 +1,1434 @@
+msgid ""
+msgstr ""
+"Last-Translator: Yacine Bouklif <yacinebouklif@gmail.com>\n"
+"PO-Revision-Date: 2020-03-13 21:47+0100\n"
+"Last-Translator: Yacine Bouklif <yacinebouklif@gmail.com>\n"
+"Language-Team: \n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"MIME-Version: 1.0\n"
+"POT-Creation-Date: \n"
+"Project-Id-Version: \n"
+"Language: kab\n"
+"X-Generator: Poedit 2.3\n"
+
+#: lclstrconsts.hhshelpbrowsernotexecutable
+msgid "Browser %s%s%s not executable."
+msgstr "Iminig %s%s%s ur yettwaselkam ara."
+
+#: lclstrconsts.hhshelpbrowsernotfound
+msgid "Browser %s%s%s not found."
+msgstr "Iminig %s%s%s ur yettwaf ara."
+
+#: lclstrconsts.hhshelperrorwhileexecuting
+msgid "Error while executing %s%s%s:%s%s"
+msgstr "Tuccḍa deg uselkem n %s%s%s : %s%s"
+
+#: lclstrconsts.hhshelpnohtmlbrowserfound
+msgid "Unable to find a HTML browser."
+msgstr "D awezɣi tifin n iminig HTML."
+
+#: lclstrconsts.hhshelpnohtmlbrowserfoundpleasedefineoneinhelpconfigurehe
+msgid "No HTML Browser found.%sPlease define one in Environment -> Options -> Help -> Help Options"
+msgstr "Ulac iminig HTML yettwafen.%sTtxil-k sbadu yiwen di Tawennaḍt -> Tinefrunin -> Tallelt -> Tinefrunin n tallelt"
+
+#: lclstrconsts.hhshelpthehelpdatabasewasunabletofindfile
+msgid "The help database %s%s%s was unable to find file %s%s%s."
+msgstr "Azadur n yisefka %s%s%s ur yufi ara afaylu %s%s%s."
+
+#: lclstrconsts.hhshelpthemacrosinbrowserparamswillbereplacedbytheurl
+msgid "The macro %s in BrowserParams will be replaced by the URL."
+msgstr "Amɣer %s di BrowserParams ad yettusemselsi s URL."
+
+#: lclstrconsts.ifsalt
+msgid "Alt"
+msgstr "Alt"
+
+#: lclstrconsts.ifsctrl
+msgid "Ctrl"
+msgstr "Ctrl"
+
+#: lclstrconsts.ifsvk_accept
+msgid "Accept"
+msgstr "Qbel"
+
+#: lclstrconsts.ifsvk_apps
+msgid "application key"
+msgstr "tasarut n usnas"
+
+#: lclstrconsts.ifsvk_back
+msgid "Backspace"
+msgstr "Tallunt ɣer deffir"
+
+#: lclstrconsts.ifsvk_cancel
+msgctxt "lclstrconsts.ifsvk_cancel"
+msgid "Cancel"
+msgstr "Sefsex"
+
+#: lclstrconsts.ifsvk_capital
+msgid "Capital"
+msgstr "Asekkil ameqran"
+
+#: lclstrconsts.ifsvk_clear
+msgid "Clear"
+msgstr "Sfeḍ"
+
+#: lclstrconsts.ifsvk_control
+msgid "Control"
+msgstr "Senqed"
+
+#: lclstrconsts.ifsvk_convert
+msgid "Convert"
+msgstr "Selket"
+
+#: lclstrconsts.ifsvk_delete
+msgctxt "lclstrconsts.ifsvk_delete"
+msgid "Delete"
+msgstr "Kkes"
+
+#: lclstrconsts.ifsvk_down
+msgctxt "lclstrconsts.ifsvk_down"
+msgid "Down"
+msgstr "Ukessar"
+
+#: lclstrconsts.ifsvk_end
+msgctxt "lclstrconsts.ifsvk_end"
+msgid "End"
+msgstr "Taggara"
+
+#: lclstrconsts.ifsvk_escape
+msgid "Escape"
+msgstr "Asenser"
+
+#: lclstrconsts.ifsvk_execute
+msgid "Execute"
+msgstr "Selkem"
+
+#: lclstrconsts.ifsvk_final
+msgid "Final"
+msgstr "Aneggaru"
+
+#: lclstrconsts.ifsvk_hanja
+msgid "Hanja"
+msgstr "Hanja"
+
+#: lclstrconsts.ifsvk_help
+msgid "Help"
+msgstr "Tallelt"
+
+#: lclstrconsts.ifsvk_home
+msgctxt "lclstrconsts.ifsvk_home"
+msgid "Home"
+msgstr "Axxam"
+
+#: lclstrconsts.ifsvk_insert
+msgctxt "lclstrconsts.ifsvk_insert"
+msgid "Insert"
+msgstr "Ger"
+
+#: lclstrconsts.ifsvk_junja
+msgid "Junja"
+msgstr "Junja"
+
+#: lclstrconsts.ifsvk_kana
+msgid "Kana"
+msgstr "Kana"
+
+#: lclstrconsts.ifsvk_lbutton
+msgid "Mouse Button Left"
+msgstr "Taqeffalt tazelmaḍt n tɣerdayt"
+
+#: lclstrconsts.ifsvk_left
+msgctxt "lclstrconsts.ifsvk_left"
+msgid "Left"
+msgstr "Azelmaḍ"
+
+#: lclstrconsts.ifsvk_lwin
+msgid "left windows key"
+msgstr "taqeffalt Windows tazelmaḍt"
+
+#: lclstrconsts.ifsvk_mbutton
+msgid "Mouse Button Middle"
+msgstr "Taqeffalt talemmast n tɣerdayt"
+
+#: lclstrconsts.ifsvk_menu
+msgctxt "lclstrconsts.ifsvk_menu"
+msgid "Menu"
+msgstr "Umuɣ"
+
+#: lclstrconsts.ifsvk_modechange
+msgid "Mode Change"
+msgstr "Asnifel n uskar"
+
+#: lclstrconsts.ifsvk_next
+msgctxt "lclstrconsts.ifsvk_next"
+msgid "Next"
+msgstr "Uḍfir"
+
+#: lclstrconsts.ifsvk_nonconvert
+msgid "Nonconvert"
+msgstr "Ur ittuselket ara"
+
+#: lclstrconsts.ifsvk_numlock
+msgid "Numlock"
+msgstr "Aseḍru n imḍanen"
+
+#: lclstrconsts.ifsvk_numpad
+msgid "Numpad %d"
+msgstr "Asettif umḍin %d"
+
+#: lclstrconsts.ifsvk_pause
+msgid "Pause key"
+msgstr "Taqeffalt n usgunfu"
+
+#: lclstrconsts.ifsvk_print
+msgid "Print"
+msgstr "Siggez"
+
+#: lclstrconsts.ifsvk_prior
+msgctxt "lclstrconsts.ifsvk_prior"
+msgid "Prior"
+msgstr "Uzwir"
+
+#: lclstrconsts.ifsvk_rbutton
+msgid "Mouse Button Right"
+msgstr "Taqeffalt tayfust n tɣerdayt"
+
+#: lclstrconsts.ifsvk_return
+msgid "Return"
+msgstr "Tuɣalin"
+
+#: lclstrconsts.ifsvk_right
+msgctxt "lclstrconsts.ifsvk_right"
+msgid "Right"
+msgstr "Ayfus"
+
+#: lclstrconsts.ifsvk_rwin
+msgid "right windows key"
+msgstr "taqeffalt Windows tayfust"
+
+#: lclstrconsts.ifsvk_scroll
+msgid "Scroll"
+msgstr "Adrurem"
+
+#: lclstrconsts.ifsvk_select
+msgid "Select"
+msgstr "Fren"
+
+#: lclstrconsts.ifsvk_shift
+msgid "Shift"
+msgstr "Asekḥer"
+
+#: lclstrconsts.ifsvk_snapshot
+msgid "Snapshot"
+msgstr "Tuṭṭfa n ugdil"
+
+#: lclstrconsts.ifsvk_space
+msgid "Space key"
+msgstr "Taqeffalt n tallunt"
+
+#: lclstrconsts.ifsvk_tab
+msgctxt "lclstrconsts.ifsvk_tab"
+msgid "Tab"
+msgstr "Tabzimt"
+
+#: lclstrconsts.ifsvk_unknown
+msgid "Unknown"
+msgstr "Arussin"
+
+#: lclstrconsts.ifsvk_up
+msgctxt "lclstrconsts.ifsvk_up"
+msgid "Up"
+msgstr "Uksawen"
+
+#: lclstrconsts.liscannotexecute
+msgid "can not execute %s"
+msgstr "ulamek aselkem n %s"
+
+#: lclstrconsts.lislclresourcesnotfound
+msgctxt "lclstrconsts.lislclresourcesnotfound"
+msgid "Resource %s not found"
+msgstr "Taɣbalut %s ur tettwaf ara"
+
+#: lclstrconsts.lisprogramfilenotfound
+msgid "program file not found %s"
+msgstr "afaylu n wahil ur yettwaf ara %s"
+
+#: lclstrconsts.rs3ddkshadowcolorcaption
+msgid "3D Dark Shadow"
+msgstr "Tili timsullest 3D"
+
+#: lclstrconsts.rs3dlightcolorcaption
+msgid "3D Light"
+msgstr "Tafat 3D"
+
+#: lclstrconsts.rsacontrolcannothaveitselfasparent
+msgid "A control can't have itself as a parent"
+msgstr "Asenqed ur yezmir ara ad yesɛu iman-is d amarraw"
+
+#: lclstrconsts.rsactivebordercolorcaption
+msgid "Active Border"
+msgstr "Iri rmid"
+
+#: lclstrconsts.rsactivecaptioncolorcaption
+msgid "Active Caption"
+msgstr "Tawaṭṭfa turmidt"
+
+#: lclstrconsts.rsallfiles
+msgid "All files (%s)|%s|%s"
+msgstr "Akk ifuyla (%s)|%s|%s"
+
+#: lclstrconsts.rsappworkspacecolorcaption
+msgid "Application Workspace"
+msgstr "Tallunt n umahil n usnas"
+
+#: lclstrconsts.rsaquacolorcaption
+msgid "Aqua"
+msgstr "Anili azegzaw"
+
+#: lclstrconsts.rsbackgroundcolorcaption
+msgid "Desktop"
+msgstr "Tanarit"
+
+#: lclstrconsts.rsbackward
+msgid "Backward"
+msgstr "Ɣer deffir"
+
+#: lclstrconsts.rsbitmaps
+msgid "Bitmaps"
+msgstr "Bitmaps"
+
+#: lclstrconsts.rsblackcolorcaption
+msgid "Black"
+msgstr "Aberkan"
+
+#: lclstrconsts.rsblank
+msgid "Blank"
+msgstr "Amellal"
+
+#: lclstrconsts.rsbluecolorcaption
+msgid "Blue"
+msgstr "Anili"
+
+#: lclstrconsts.rsbtnfacecolorcaption
+msgid "Button Face"
+msgstr "Udem n tqeffalt"
+
+#: lclstrconsts.rsbtnhighlightcolorcaption
+msgid "Button Highlight"
+msgstr "Asebrureq n tqeffalt"
+
+#: lclstrconsts.rsbtnshadowcolorcaption
+msgid "Button Shadow"
+msgstr "Tili n tqeffalt"
+
+#: lclstrconsts.rsbtntextcolorcaption
+msgid "Button Text"
+msgstr "Aḍris n tqeffalt"
+
+#: lclstrconsts.rscalculator
+msgid "Calculator"
+msgstr "Amsiḍen"
+
+#: lclstrconsts.rscancelrecordhint
+msgctxt "lclstrconsts.rscancelrecordhint"
+msgid "Cancel"
+msgstr "Sefsex"
+
+#: lclstrconsts.rscannotfocus
+msgid "Can not focus"
+msgstr "Ulamek asaḍas"
+
+#: lclstrconsts.rscanvasdoesnotallowdrawing
+msgid "Canvas does not allow drawing"
+msgstr "Taɣzut n usuneɣ ur tessareg ara asuneɣ"
+
+#: lclstrconsts.rscaptiontextcolorcaption
+msgid "Caption Text"
+msgstr "Aḍris n twaṭṭfa"
+
+#: lclstrconsts.rscasesensitive
+msgid "Case sensitive"
+msgstr "Yettḥulfu i tejṛut n usekkil"
+
+#: lclstrconsts.rscontrolclasscantcontainchildclass
+msgid "Control of class '%s' can't have control of class '%s' as a child"
+msgstr "Asenqed n tserkemt '%s' ulamek ara yesɛu asenqed n tserkemt '%s' d aqrur"
+
+#: lclstrconsts.rscontrolhasnoparentwindow
+msgid "Control '%s' has no parent window"
+msgstr "Asenqed '%s' ur yesɛi ara asfaylu amarraw"
+
+#: lclstrconsts.rscreamcolorcaption
+msgid "Cream"
+msgstr "Cream"
+
+#: lclstrconsts.rscreatinggdbcatchableerror
+msgid "Creating gdb catchable error:"
+msgstr "Asnulfu n tuccḍa gdb yettwaṭṭafen:"
+
+#: lclstrconsts.rscursor
+msgid "Cursor"
+msgstr "Taḥnaccaḍt"
+
+#: lclstrconsts.rscustomcolorcaption
+msgid "Custom ..."
+msgstr "Yugen..."
+
+#: lclstrconsts.rsdefaultcolorcaption
+msgid "Default"
+msgstr "Lexṣas"
+
+#: lclstrconsts.rsdefaultfileinfovalue
+msgid "permissions user group size date time"
+msgstr "tisirag aseqdac agraw tiddi azemz asrag"
+
+#: lclstrconsts.rsdeleterecord
+msgid "Delete record?"
+msgstr "Kkes akalas?"
+
+#: lclstrconsts.rsdeleterecordhint
+msgctxt "lclstrconsts.rsdeleterecordhint"
+msgid "Delete"
+msgstr "Kkes"
+
+#: lclstrconsts.rsdirection
+msgid "Direction"
+msgstr "Tanila"
+
+#: lclstrconsts.rsdirectory
+msgid "&Directory"
+msgstr "A&karam"
+
+#: lclstrconsts.rsdocking
+msgid "Docking"
+msgstr "Asemdey"
+
+#: lclstrconsts.rsduplicateiconformat
+msgid "Duplicate icon format."
+msgstr "Sisleg amasal n tignit."
+
+#: lclstrconsts.rseditrecordhint
+msgid "Edit"
+msgstr "Ẓreg"
+
+#: lclstrconsts.rsentirescope
+msgid "Search entire file"
+msgstr "Nadi afaylu ummid"
+
+#: lclstrconsts.rserror
+msgctxt "lclstrconsts.rserror"
+msgid "Error"
+msgstr "Tuccḍa"
+
+#: lclstrconsts.rserrorcreatingdevicecontext
+msgid "Error creating device context for %s.%s"
+msgstr "Tuccḍa deg usnulfu n twennaḍt n yibenk i %s.%s"
+
+#: lclstrconsts.rserrorinlcl
+msgid "ERROR in LCL: "
+msgstr "TUCCḌA di LCL : "
+
+#: lclstrconsts.rserroroccurredinataddressframe
+msgid "Error occurred in %s at %sAddress %s%s Frame %s"
+msgstr "Teḍra-d tuccḍa di %s di %sTansa %s%s Akatar %s"
+
+#: lclstrconsts.rserrorreadingproperty
+msgid "Error reading %s%s%s: %s"
+msgstr "Tuccḍa n tɣuri %s%s%s: %s"
+
+#: lclstrconsts.rserrorwhilesavingbitmap
+msgid "Error while saving bitmap."
+msgstr "Tuccḍa deg usekles n bitmap."
+
+#: lclstrconsts.rsexception
+msgid "Exception"
+msgstr "Tasureft"
+
+#: lclstrconsts.rsfddirectorymustexist
+msgid "Directory must exist"
+msgstr "Akaram isefk ad yili"
+
+#: lclstrconsts.rsfddirectorynotexist
+msgid "The directory \"%s\" does not exist."
+msgstr "Akaram \"%s\" ulac-it."
+
+#: lclstrconsts.rsfdfilealreadyexists
+msgid "The file \"%s\" already exists. Overwrite ?"
+msgstr "Afaylu \"%s\" yella yakan. Ad t-tsemselsiḍ ?"
+
+#: lclstrconsts.rsfdfilemustexist
+msgid "File must exist"
+msgstr "Afaylu isefk ad yili"
+
+#: lclstrconsts.rsfdfilenotexist
+msgid "The file \"%s\" does not exist."
+msgstr "Afaylu \"%s\" ulac-it."
+
+#: lclstrconsts.rsfdfilereadonly
+msgid "The file \"%s\" is not writable."
+msgstr "Afaylu \"%s\" i tɣuri kan."
+
+#: lclstrconsts.rsfdfilereadonlytitle
+msgid "File is not writable"
+msgstr "Afaylu yemmesten ɣef tira"
+
+#: lclstrconsts.rsfdfilesaveas
+msgid "Save file as"
+msgstr "Sekles afaylu am"
+
+#: lclstrconsts.rsfdopenfile
+msgid "Open existing file"
+msgstr "Ldi afaylu yellan"
+
+#: lclstrconsts.rsfdoverwritefile
+msgid "Overwrite file ?"
+msgstr "Semslsi afaylu ?"
+
+#: lclstrconsts.rsfdpathmustexist
+msgid "Path must exist"
+msgstr "Abrid isefk ad yili"
+
+#: lclstrconsts.rsfdpathnoexist
+msgid "The path \"%s\" does not exist."
+msgstr "Akaram \"%s\" ulac-it."
+
+#: lclstrconsts.rsfdselectdirectory
+msgid "Select Directory"
+msgstr "Fren akaram"
+
+#: lclstrconsts.rsfileinfofilenotfound
+msgid "(file not found: \"%s\")"
+msgstr "(Afaylu \"%s\" ur yettwaf ara)"
+
+#: lclstrconsts.rsfileinformation
+msgid "File information"
+msgstr "Talɣut n ufaylu"
+
+#: lclstrconsts.rsfind
+msgid "Find"
+msgstr "Nadi"
+
+#: lclstrconsts.rsfindmore
+msgid "Find more"
+msgstr "Rnu nadi"
+
+#: lclstrconsts.rsfirstrecordhint
+msgid "First"
+msgstr "Amezwaru"
+
+#: lclstrconsts.rsfixedcolstoobig
+msgid "FixedCols can't be >= ColCount"
+msgstr "FixedCols ur yezmir ara ad yili >= ColCount"
+
+#: lclstrconsts.rsfixedrowstoobig
+msgid "FixedRows can't be >= RowCount"
+msgstr "FixedRows ur yezmir ara ad yili >= RowCount"
+
+#: lclstrconsts.rsformcolorcaption
+msgid "Form"
+msgstr "Tiferkit"
+
+#: lclstrconsts.rsformstreamingerror
+msgid "Form streaming \"%s\" error: %s"
+msgstr "Tuccḍa n usuddem n tferkit \"%s\": %s"
+
+#: lclstrconsts.rsforward
+msgid "Forward"
+msgstr "Ɣer sdat"
+
+#: lclstrconsts.rsfuchsiacolorcaption
+msgid "Fuchsia"
+msgstr "Fuchsia"
+
+#: lclstrconsts.rsgdkoptiondebug
+msgid "--gdk-debug flags     Turn on specific GDK trace/debug messages."
+msgstr "--gdk-debug flags    Sermed iznan ulmisen n GDK trace/debug."
+
+#: lclstrconsts.rsgdkoptionnodebug
+msgid "--gdk-no-debug flags  Turn off specific GDK trace/debug messages."
+msgstr "--gdk-no-debug flags  Sens iznan ulmisen n GDK trace/debug."
+
+#: lclstrconsts.rsgif
+msgid "Graphics Interchange Format"
+msgstr "Graphics Interchange Format"
+
+#: lclstrconsts.rsgoptionfatalwarnings
+msgid "--g-fatal-warnings    Warnings and errors generated by Gtk+/GDK will halt the application."
+msgstr "--g-fatal-warnings    ismigalen akked tuccḍiwin i d-isarew Gtk+/GDK ad sḥebsen asnas."
+
+#: lclstrconsts.rsgradientactivecaptioncolorcaption
+msgid "Gradient Active Caption"
+msgstr "Tawaṭtfa turmidt n ufesniw"
+
+#: lclstrconsts.rsgradientinactivecaptioncolorcaption
+msgid "Gradient Inactive Caption"
+msgstr "Tawaṭtfa yensan n ufesniw"
+
+#: lclstrconsts.rsgraphic
+msgid "Graphic"
+msgstr "Udlif"
+
+#: lclstrconsts.rsgraycolorcaption
+msgid "Gray"
+msgstr "Amelliɣdi"
+
+#: lclstrconsts.rsgraytextcolorcaption
+msgid "Gray Text"
+msgstr "Aḍris amelliɣdi"
+
+#: lclstrconsts.rsgreencolorcaption
+msgid "Green"
+msgstr "Azegzaw"
+
+#: lclstrconsts.rsgridfiledoesnotexists
+msgid "Grid file doesn't exists"
+msgstr "Afaylu Grid ulac-it"
+
+#: lclstrconsts.rsgridindexoutofrange
+msgid "Grid index out of range."
+msgstr "Amatar n Grid iɛedda tilisa."
+
+#: lclstrconsts.rsgroupindexcannotbelessthanprevious
+msgid "GroupIndex cannot be less than a previous menu item's GroupIndex"
+msgstr "GroupIndex ur yezmir ara ad yili d ameẓyan ɣef GroupIndex n iferdisen uzwiren n wumuɣ"
+
+#: lclstrconsts.rsgtkfilter
+msgid "Filter:"
+msgstr "Tastayt :"
+
+#: lclstrconsts.rsgtkhistory
+msgid "History:"
+msgstr "Amazray:"
+
+#: lclstrconsts.rsgtkoptionclass
+msgid "--class classname     Following Xt conventions, the class of a program is the program name with the initial character capitalized. For example, the classname for gimp is \"Gimp\". If --class is specified, the class of the program will be set to \"classname\"."
+msgstr "--class classname     S weḍfar n imsisiyen Xt , taserkemt n wahil d isem n wahil  tesɛa asekkil amezwaru d ameqran. Deg umedya, isem n tserkemt n gimp d \"Gimp\". Ma yella --class yettunefk-d, taserkemt n wahil ad tt-ttuseɣwer ɣer \"classname\"."
+
+#: lclstrconsts.rsgtkoptiondebug
+msgid "--gtk-debug flags     Turn on specific Gtk+ trace/debug messages."
+msgstr "--gtk-debug flags     Sermed iznan ulmisen n Gtk+ trace/debug."
+
+#: lclstrconsts.rsgtkoptiondisplay
+msgid "--display h:s:d       Connect to the specified X server, where \"h\" is the hostname, \"s\" is the server number (usually 0), and \"d\" is the display number (typically omitted). If --display is not specified, the DISPLAY environment variable is used."
+msgstr "--display h:s:d       Qqen ɣer uqeddac X i d-ittunefken, anida \"h\" d isem n usneftaɣ, \"s\" d uḍḍun n uqeddac (di tegti 0), \"d\" d uḍḍun n ubeqqeḍ (yettwattu). Ma yella --display ur d-yettunefk ara, amutti awennaḍan DISPLAY ad yettwaseqdec."
+
+#: lclstrconsts.rsgtkoptionmodule
+msgid "--gtk-module module   Load the specified module at startup."
+msgstr "--gtk-module module   Sali-d azegrir i d-ittunefken deg usekker."
+
+#: lclstrconsts.rsgtkoptionname
+msgid "--name programe       Set program name to \"progname\". If not specified, program name will be set to ParamStrUTF8(0)."
+msgstr "--name programe       Seɣwer isem n wahil ɣer \"progname\". Ma yella ur d-ittunefk ara, isem n wahil ad ittuseɣwer ɣer ParamStrUTF8(0)."
+
+#: lclstrconsts.rsgtkoptionnodebug
+msgid "--gtk-no-debug flags  Turn off specific Gtk+ trace/debug messages."
+msgstr "--gtk-no-debug flags  Sens iznan ulmisen n Gtk+ trace/debug."
+
+#: lclstrconsts.rsgtkoptionnotransient
+msgid "--lcl-no-transient    Do not set transient order for modal forms"
+msgstr "--lcl-no-transient    Ur sseɣwar ara amizzwer n leɛḍil n talɣiwin tiskaranin"
+
+#: lclstrconsts.rsgtkoptionnoxshm
+msgid "--no-xshm             Disable use of the X Shared Memory Extension."
+msgstr "--no-xshm             Ad yesens aseqdec n tkatut yeẓlen i yebḍa X."
+
+#: lclstrconsts.rsgtkoptionsync
+msgid "--sync                Call XSynchronize (display, True) after the Xserver connection has been established. This makes debugging X protocol errors easier, because X request buffering will be disabled and X errors will be received immediately after the protocol request that generated the error has been processed by the X server."
+msgstr "--sync                Asiwel XSynchronize (abeqqeḍ, True) ticki teɣser tuqqna n uqeddac Xserver . Ayagi ad yesishel aseɣti n tuccḍiwin n uneggaf X, acku asuter n teɣzut n weḥraz (buffering) ad yexsi yerna tuccḍiwin X ad d-ttwaṭṭefent srid mbaɛd mi yesekker uqeddac X asuter n uneggaf i d-yurwen tuccḍa."
+
+#: lclstrconsts.rshelpalreadyregistered
+msgid "%s: Already registered"
+msgstr "%s : Yekles yakan"
+
+#: lclstrconsts.rshelpcontextnotfound
+msgid "Help Context not found"
+msgstr "Tawennaḍt n tallelt ur tettwaf ara"
+
+#: lclstrconsts.rshelpdatabasenotfound
+msgid "Help Database not found"
+msgstr "Azadur n yisefka n tallelt ur yettwaf ara"
+
+#: lclstrconsts.rshelperror
+msgid "Help Error"
+msgstr "Tuccḍa n tallelt"
+
+#: lclstrconsts.rshelphelpcontextnotfound
+msgid "Help context %s not found."
+msgstr "Tawennaḍt n tallelt %s ur tettwaf ara."
+
+#: lclstrconsts.rshelphelpcontextnotfoundindatabase
+msgid "Help context %s not found in Database %s%s%s."
+msgstr "Tawennaḍt n tallelt %s ur tettwaf ara deg uzadur n yisefka %s%s%s."
+
+#: lclstrconsts.rshelphelpdatabasedidnotfoundaviewerforahelppageoftype
+msgid "Help Database %s%s%s did not found a viewer for a help page of type %s"
+msgstr "Azadur n yisefka n tallelt %s%s%s ur d-yufi ara tameẓrayt i usebtar n tallelt n wanaw %s"
+
+#: lclstrconsts.rshelphelpdatabasenotfound
+msgid "Help Database %s%s%s not found"
+msgstr "Azadur n yisefka n tallelt %s%s%s ur yettwaf ara"
+
+#: lclstrconsts.rshelphelpkeywordnotfound
+msgid "Help keyword %s%s%s not found."
+msgstr "Awal yufraren n tallelt %s%s%s ur yettwaf ara."
+
+#: lclstrconsts.rshelphelpkeywordnotfoundindatabase
+msgid "Help keyword %s%s%s not found in Database %s%s%s."
+msgstr "Awal yufraren n tallelt %s%s%s ur yettwaf ara deg uzadur n yisefka %s%s%s."
+
+#: lclstrconsts.rshelphelpnodehasnohelpdatabase
+msgid "Help node %s%s%s has no Help Database"
+msgstr "Tikerrist n tallelt %s%s%s ur tesɛi ara azadur n yisefka"
+
+#: lclstrconsts.rshelpnohelpfoundforsource
+msgid "No help found for line %d, column %d of %s."
+msgstr "Ulac tallelt yettwafen i uzirig %d, ajgu %d n %s."
+
+#: lclstrconsts.rshelpnohelpnodesavailable
+msgid "No help nodes available"
+msgstr "Ulac tikerrisin n tallelt iwejden"
+
+#: lclstrconsts.rshelpnotfound
+msgid "Help not found"
+msgstr "Tallelt ur tettwaf ara"
+
+#: lclstrconsts.rshelpnotregistered
+msgid "%s: Not registered"
+msgstr "%s: Ur yeklis ara"
+
+#: lclstrconsts.rshelpselectorerror
+msgid "Help Selector Error"
+msgstr "Tuccḍa n umafran n tallelt"
+
+#: lclstrconsts.rshelpthereisnoviewerforhelptype
+msgid "There is no viewer for help type %s%s%s"
+msgstr "Ulac ula yiwet n tmeẓrayt i wanaw-agi n tallelt %s%s%s"
+
+#: lclstrconsts.rshelpviewererror
+msgid "Help Viewer Error"
+msgstr "Tuccḍa n tmeẓrayt n tallelt"
+
+#: lclstrconsts.rshelpviewernotfound
+msgid "Help Viewer not found"
+msgstr "Tameẓrayt n tallelt ur tettwaf ara"
+
+#: lclstrconsts.rshighlightcolorcaption
+msgid "Highlight"
+msgstr "Sebrureq"
+
+#: lclstrconsts.rshighlighttextcolorcaption
+msgid "Highlight Text"
+msgstr "Sebrureq aḍris"
+
+#: lclstrconsts.rshotlightcolorcaption
+msgid "Hot Light"
+msgstr "Tafat iǧehden"
+
+#: lclstrconsts.rsicns
+msgid "Mac OS X Icon"
+msgstr "Mac OS X Icon"
+
+#: lclstrconsts.rsicon
+msgid "Icon"
+msgstr "Tignit"
+
+#: lclstrconsts.rsiconimageempty
+msgid "Icon image cannot be empty"
+msgstr "Tugna n tignit ulamek ara tili d tilemt"
+
+#: lclstrconsts.rsiconimageformat
+msgid "Icon image must have the same format"
+msgstr "Tugna n tignit isefk ad yili umasal-ines kif kif"
+
+#: lclstrconsts.rsiconimageformatchange
+msgid "Cannot change format of icon image"
+msgstr "D awezɣi abeddel n umasal n tugna n tignit"
+
+#: lclstrconsts.rsiconimagesize
+msgid "Icon image must have the same size"
+msgstr "Tugna n tignit isefk ad tili tiddi-ines kif kif"
+
+#: lclstrconsts.rsiconimagesizechange
+msgid "Cannot change size of icon image"
+msgstr "D awezɣi abeddel n tiddi n tugna n tignit"
+
+#: lclstrconsts.rsiconnocurrent
+msgid "Icon has no current image"
+msgstr "Tignit ur tesɛi ara tugna"
+
+#: lclstrconsts.rsinactivebordercolorcaption
+msgid "Inactive Border"
+msgstr "Iri arurmid"
+
+#: lclstrconsts.rsinactivecaptioncolorcaption
+msgctxt "lclstrconsts.rsinactivecaptioncolorcaption"
+msgid "Inactive Caption"
+msgstr "Tawaṭṭfa tarurmidt"
+
+#: lclstrconsts.rsinactivecaptiontext
+msgctxt "lclstrconsts.rsinactivecaptiontext"
+msgid "Inactive Caption"
+msgstr "Tawaṭṭfa tarurmidt"
+
+#: lclstrconsts.rsindexoutofbounds
+msgid "%s Index %d out of bounds 0 .. %d"
+msgstr "%s Amatar %d iɛedda tilisa 0 .. %d"
+
+#: lclstrconsts.rsindexoutofrange
+msgid "Index Out of range Cell[Col=%d Row=%d]"
+msgstr "Amatar iɛedda tilisa Cell[Col=%d Row=%d]"
+
+#: lclstrconsts.rsinfobkcolorcaption
+msgid "Info Background"
+msgstr "Talɣut n ugilal"
+
+#: lclstrconsts.rsinfotextcolorcaption
+msgid "Info Text"
+msgstr "Talɣut s uḍris"
+
+#: lclstrconsts.rsinsertrecordhint
+msgctxt "lclstrconsts.rsinsertrecordhint"
+msgid "Insert"
+msgstr "Ger"
+
+#: lclstrconsts.rsinvaliddate
+msgid "Invalid Date : %s"
+msgstr "Azemz d armeɣtu : %s"
+
+#: lclstrconsts.rsinvaliddaterangehint
+msgid "Invalid Date: %s. Must be between %s and %s"
+msgstr "Azemz armeɣtu: %s. Isefk ad yili gar %s akked %s"
+
+#: lclstrconsts.rsinvalidformobjectstream
+msgid "invalid Form object stream"
+msgstr "asuddem n tɣawsa tiferkit d armeɣtu"
+
+#: lclstrconsts.rsinvalidpropertyvalue
+msgid "Invalid property value"
+msgstr "Azal n wayla d armeɣtu"
+
+#: lclstrconsts.rsinvalidstreamformat
+msgid "Invalid stream format"
+msgstr "Amasal n usuddem d armeɣtu"
+
+#: lclstrconsts.rsisalreadyassociatedwith
+msgid "%s is already associated with %s"
+msgstr "%s yeddukel yakan akked %s"
+
+#: lclstrconsts.rsjpeg
+msgid "Joint Picture Expert Group"
+msgstr "Joint Picture Expert Group"
+
+#: lclstrconsts.rslastrecordhint
+msgid "Last"
+msgstr "Aneggaru"
+
+#: lclstrconsts.rslimecolorcaption
+msgid "Lime"
+msgstr "Aqares"
+
+#: lclstrconsts.rslistindexexceedsbounds
+msgid "List index exceeds bounds (%d)"
+msgstr "Amatar n tebdart iɛedda tilisa (%d)"
+
+#: lclstrconsts.rslistmustbeempty
+msgid "List must be empty"
+msgstr "Tabdart isefk ad tili d tilemt"
+
+#: lclstrconsts.rsmarooncolorcaption
+msgid "Maroon"
+msgstr "Aqahwi"
+
+#: lclstrconsts.rsmbabort
+msgid "Abort"
+msgstr "Eǧǧ"
+
+#: lclstrconsts.rsmball
+msgid "&All"
+msgstr "&Akk"
+
+#: lclstrconsts.rsmbcancel
+msgctxt "lclstrconsts.rsmbcancel"
+msgid "Cancel"
+msgstr "Sefsex"
+
+#: lclstrconsts.rsmbclose
+msgid "&Close"
+msgstr "&Mdel"
+
+#: lclstrconsts.rsmbhelp
+msgid "&Help"
+msgstr "Ta&llelt"
+
+#: lclstrconsts.rsmbignore
+msgid "&Ignore"
+msgstr "&Ttu"
+
+#: lclstrconsts.rsmbno
+msgid "&No"
+msgstr "&Ala"
+
+#: lclstrconsts.rsmbnotoall
+msgid "No to all"
+msgstr "Ala i meṛṛa"
+
+#: lclstrconsts.rsmbok
+msgid "&OK"
+msgstr "&Ih"
+
+#: lclstrconsts.rsmbopen
+msgid "&Open"
+msgstr "&Ldi"
+
+#: lclstrconsts.rsmbretry
+msgid "&Retry"
+msgstr "&Eɛreḍ tikkelt-nniḍen"
+
+#: lclstrconsts.rsmbsave
+msgid "&Save"
+msgstr "&Sekles"
+
+#: lclstrconsts.rsmbunlock
+msgid "&Unlock"
+msgstr "&Kkes aseḍru"
+
+#: lclstrconsts.rsmbyes
+msgid "&Yes"
+msgstr "&Ih"
+
+#: lclstrconsts.rsmbyestoall
+msgid "Yes to &All"
+msgstr "Ih i &meṛṛa"
+
+#: lclstrconsts.rsmedgraycolorcaption
+msgid "Medium Gray"
+msgstr "Amelliɣdi alemmas"
+
+#: lclstrconsts.rsmenubarcolorcaption
+msgid "Menu Bar"
+msgstr "Afeggag n wumuɣ"
+
+#: lclstrconsts.rsmenucolorcaption
+msgctxt "lclstrconsts.rsmenucolorcaption"
+msgid "Menu"
+msgstr "Umuɣ"
+
+#: lclstrconsts.rsmenuhighlightcolorcaption
+msgid "Menu Highlight"
+msgstr "Asebrureq n wumuɣ"
+
+#: lclstrconsts.rsmenutextcolorcaption
+msgid "Menu Text"
+msgstr "Aḍris n wumuɣ"
+
+#: lclstrconsts.rsmodified
+msgid "  modified "
+msgstr " yettwabeddel "
+
+#: lclstrconsts.rsmoneygreencolorcaption
+msgid "Money Green"
+msgstr "Azegzaw n wedrim"
+
+#: lclstrconsts.rsmtauthentication
+msgid "Authentication"
+msgstr "Asesteb"
+
+#: lclstrconsts.rsmtconfirmation
+msgid "Confirmation"
+msgstr "Asentem"
+
+#: lclstrconsts.rsmtcustom
+msgid "Custom"
+msgstr "Yugen"
+
+#: lclstrconsts.rsmterror
+msgctxt "lclstrconsts.rsmterror"
+msgid "Error"
+msgstr "Tuccḍa"
+
+#: lclstrconsts.rsmtinformation
+msgid "Information"
+msgstr "Talɣut"
+
+#: lclstrconsts.rsmtwarning
+msgid "Warning"
+msgstr "Asmigel"
+
+#: lclstrconsts.rsnavycolorcaption
+msgid "Navy"
+msgstr "Anili n yilel"
+
+#: lclstrconsts.rsnextrecordhint
+msgctxt "lclstrconsts.rsnextrecordhint"
+msgid "Next"
+msgstr "Ɣer sdat"
+
+#: lclstrconsts.rsnonecolorcaption
+msgid "None"
+msgstr "Ulac"
+
+#: lclstrconsts.rsnotavalidgridfile
+msgid "Not a valid grid file"
+msgstr "Mačči d afaylu n uferrug ameɣtu"
+
+#: lclstrconsts.rsnowidgetset
+msgid "No widgetset object. Please check if the unit \"interfaces\" was added to the programs uses clause."
+msgstr "Ulac ula yiwet n tɣawsa widgetset. Ttxil-k selken ma yella aferdis \"interfaces\" yettwarna ɣer tfada n wahil."
+
+#: lclstrconsts.rsolivecolorcaption
+msgid "Olive"
+msgstr "Azemmur"
+
+#: lclstrconsts.rspickdate
+msgid "Select a date"
+msgstr "Fren azemz"
+
+#: lclstrconsts.rspixmap
+msgid "Pixmap"
+msgstr "Pixmap"
+
+#: lclstrconsts.rsportablebitmap
+msgid "Portable BitMap"
+msgstr "Portable BitMap"
+
+#: lclstrconsts.rsportablegraymap
+msgid "Portable GrayMap"
+msgstr "Portable GrayMap"
+
+#: lclstrconsts.rsportablenetworkgraphic
+msgid "Portable Network Graphic"
+msgstr "Portable Network Graphic"
+
+#: lclstrconsts.rsportablepixmap
+msgid "Portable PixMap"
+msgstr "Portable PixMap"
+
+#: lclstrconsts.rspostrecordhint
+msgid "Post"
+msgstr "Azen"
+
+#: lclstrconsts.rspressoktoignoreandriskdatacorruptionpresscanceltok
+msgid "%s%sPress OK to ignore and risk data corruption.%sPress Cancel to kill the program."
+msgstr "%s%sPress Ih iwakken ad tɛemdeḍ afsad n yisefka. %sPress Sefsex iwakken ad tmedleḍ ahil."
+
+#: lclstrconsts.rspriorrecordhint
+msgctxt "lclstrconsts.rspriorrecordhint"
+msgid "Prior"
+msgstr "Uzwir"
+
+#: lclstrconsts.rspropertydoesnotexist
+msgid "Property %s does not exist"
+msgstr "Ayla %s ulac-it"
+
+#: lclstrconsts.rspurplecolorcaption
+msgid "Purple"
+msgstr "Agadaw"
+
+#: lclstrconsts.rsqtoptiondograb
+msgid "-dograb (only under X11), running under a debugger can cause an implicit -nograb, use -dograb to override. Need QT_DEBUG."
+msgstr "-dograb (ddaw kan X11), aselkem ddaw imseɣti yezmer ad d-yeseglu s -nograb udrig, seqdec -dograb iwakken ad tsemselsiḍ. Yesra QT_DEBUG."
+
+#: lclstrconsts.rsqtoptiongraphicsstyle
+msgid "-graphicssystem param, sets the backend to be used for on-screen widgets and QPixmaps. Available options are native, raster and opengl. OpenGL is still unstable."
+msgstr "-graphicssystem param, seɣwer agilal i yiwiǧiten akked QPixmaps n wegdil. Tinefrunin iwejden d : native, raster akked opengl."
+
+#: lclstrconsts.rsqtoptionnograb
+msgid "-nograb, tells Qt that it must never grab the mouse or the keyboard. Need QT_DEBUG."
+msgstr "-nograb, ad s-yini i QT werǧin ad yeṭṭef taɣerdayt neɣ anasiw. Yesra QT_DEBUG."
+
+#: lclstrconsts.rsqtoptionreverse
+msgid "-reverse, sets the application's layout direction to Qt::RightToLeft."
+msgstr "-reverse, ad iseɣwer taɣda n tneɣruft ɣer Qt::RightToLeft."
+
+#: lclstrconsts.rsqtoptionsession
+msgid "-session session, restores the application from an earlier session."
+msgstr "-session session, ad d-yerr asnas seg tɣimit taneggarut yezrin."
+
+#: lclstrconsts.rsqtoptionstyle
+msgid "-style style or -style=style, sets the application GUI style. Possible values are motif, windows, and platinum. If you compiled Qt with additional styles or have additional styles as plugins these will be available to the -style  command line option. NOTE: Not all styles are available on all platforms. If style param does not exist Qt will start an application with default common style (windows)."
+msgstr "-style style neɣ -style=style, ad iseɣwer aɣanib n usnas GUI. Azalen i yezemren ad ilin d : motif, windows, akked platinum. Ma tsefsaḍ Qt s yiɣunab imernanen neɣ tesɛiḍ iɣunab imernanen am iseɣzaf wigad-agi ad wejden i tnefrunt n unezḍay -style. Tamawt: mačči akk iɣunab i yewejden di tɣerɣerin meṛṛa. Ma ulac aɣewwar QT ad yesekker asnas s uɣanib ucrik (windows)."
+
+#: lclstrconsts.rsqtoptionstylesheet
+msgid "-stylesheet stylesheet or -stylesheet=stylesheet, sets the application Style Sheet. The value must be a path to a file that contains the Style Sheet. Note: Relative URLs in the Style Sheet file are relative to the Style Sheet file's path."
+msgstr "-stylesheet stylesheet neɣ -stylesheet=stylesheet, ad iseɣwer tiferkit n uɣanib n wesnas. Azal isefk ad yili d abrid s afaylu igebren tiferkit n uɣanib. Tamawt: URL imassɣen deg ufaylu n tferkit n uɣanib d imassaɣen ɣer ubrid n ufaylu n tferkit n uɣanib."
+
+#: lclstrconsts.rsqtoptionsync
+msgid "-sync (only under X11), switches to synchronous mode for debugging."
+msgstr "-sync (only under X11), ad isenfel askar n umtawi i weseɣti."
+
+#: lclstrconsts.rsqtoptionwidgetcount
+msgid "-widgetcount, prints debug message at the end about number of widgets left undestroyed and maximum number of widgets existed at the same time."
+msgstr "-widgetcount, ad isiggez izen n useɣti di taggara ɣef umḍan n iwiǧiten ur nettwasenger ara akked umḍan afellay n iwiǧiten i yellan deg yiwet n tikkelt."
+
+#: lclstrconsts.rsqtoptionx11bgcolor
+msgid "-bg or -background color, sets the default background color and an application palette (light and dark shades are calculated)."
+msgstr "-bg or -background color, ad yeseɣwer ini n ugilal n lexṣas akked tpaliḍt n wesnas (tili tafawt akked tili timsullest ttusektant)."
+
+#: lclstrconsts.rsqtoptionx11btncolor
+msgid "-btn or -button color, sets the default button color."
+msgstr "-btn or -button color, ad iseɣwer ini n lexṣas n tqeffalt."
+
+#: lclstrconsts.rsqtoptionx11cmap
+msgid "-cmap, causes the application to install a private color map on an 8-bit display."
+msgstr "-cmap, ad ismentel asnas iwakken ad isbedd tafelwit tamaẓlayt n yiniten deg ubeqqeḍ n 8-bit."
+
+#: lclstrconsts.rsqtoptionx11display
+msgid "-display display, sets the X display (default is $DISPLAY)."
+msgstr "-display display, ad iseɣwer abeqqeḍ X (lexṣas d $DISPLAY)."
+
+#: lclstrconsts.rsqtoptionx11fgcolor
+msgid "-fg or -foreground color, sets the default foreground color."
+msgstr "-fg or -foreground color, ad iseɣwer ini n lexṣas n ugilal."
+
+#: lclstrconsts.rsqtoptionx11font
+msgid "-fn or -font font, defines the application font. The font should be specified using an X logical font description."
+msgstr "-fn or -font font, ad isbadu tasefsit n wesnas. Tasefsit isefk ad d-ttunefk s useqdec n weglam ameẓẓul n tsefsit X."
+
+#: lclstrconsts.rsqtoptionx11geometry
+msgid "-geometry geometry, sets the client geometry of the first window that is shown."
+msgstr "-geometry geometry, ad iseɣwer tanzeggit n umsaɣ n usfaylu amezwaru ara yettwaseknen."
+
+#: lclstrconsts.rsqtoptionx11im
+msgid "-im, sets the input method server (equivalent to setting the XMODIFIERS environment variable)."
+msgstr "-im, ad iseɣwer tarrayt n usekcem n uqeddac (agdazal d aseɣwer n umutti awennaḍan XMODIFIERS )."
+
+#: lclstrconsts.rsqtoptionx11inputstyle
+msgid "-inputstyle, defines how the input is inserted into the given widget, e.g. onTheSpot makes the input appear directly in the widget, while overTheSpot makes the input appear in a box floating over the widget and is not inserted until the editing is done."
+msgstr "-inputstyle, ad yesbadu amek ara yettwager unekcum deg uwiǧit i d-ittunefken, md. onTheSpot ad yerr anekcum yettban srid deg uwiǧit, ma d onTheSpot ad yerr anekcum yettban di tenkult yettifliwen nnig n uwiǧit yerna ur yettwagar ara alama ifuk usiẓreg."
+
+#: lclstrconsts.rsqtoptionx11name
+msgid "-name name, sets the application name."
+msgstr "-name name, ad iseɣwer isem n usnas."
+
+#: lclstrconsts.rsqtoptionx11ncols
+msgid "-ncols count, limits the number of colors allocated in the color cube on an 8-bit display, if the application is using the QApplication::ManyColor color specification. If count is 216 then a 6x6x6 color cube is used (i.e. 6 levels of red, 6 of green, and 6 of blue); for other values, a cube approximately proportional to a 2x3x1 cube is used."
+msgstr "-ncols count, ad isebded amḍan n yiniten i yettwaḥeṛṛan deg ugasas n yiniten deg ubeqqeḍ n 8-bit, ma yella asnas iseqdac asefru n yini QApplication::ManyColor. Ma yella amḍan d 216 ihi agasas n yiniten 6x6x6 ad yettwaseqdec (md. 6 n yiswiren n uzeggaɣ, 6 n uzegzaw, akked 6 n unili); agasas n yiniten d amassaɣ ɣer ugasas 2x3x1 ad yettwaseqdec i wazalen-nniḍen."
+
+#: lclstrconsts.rsqtoptionx11title
+msgid "-title title, sets the application title."
+msgstr "-title title, ad iseɣwer azwel n usnas."
+
+#: lclstrconsts.rsqtoptionx11visual
+msgid "-visual TrueColor, forces the application to use a TrueColor visual on an 8-bit display."
+msgstr "-visual TrueColor, ad iḥettem asnas akken ad iseqdec TrueColor visual deg ubeqqeḍ n 8-bit."
+
+#: lclstrconsts.rsrasterimageendupdate
+msgid "Endupdate while no update in progress"
+msgstr "Endupdate ur ittleqqim ara s usfari"
+
+#: lclstrconsts.rsrasterimagesaveinupdate
+msgid "Cannot save image while update in progress"
+msgstr "Ulamek asekles n tugna ticki itteddu uleqqem"
+
+#: lclstrconsts.rsrasterimageupdateall
+msgid "Cannot begin update all when canvas only update in progress"
+msgstr "Ulamek ara yettwaleqqem ticki d taɣzut n usuneɣ kan i yetteddun"
+
+#: lclstrconsts.rsredcolorcaption
+msgid "Red"
+msgstr "Azeggaɣ"
+
+#: lclstrconsts.rsrefreshrecordshint
+msgid "Refresh"
+msgstr "Sismeḍ"
+
+#: lclstrconsts.rsreplace
+msgid "Replace"
+msgstr "Semselsi"
+
+#: lclstrconsts.rsreplaceall
+msgid "Replace all"
+msgstr "Semselsi akk"
+
+#: lclstrconsts.rsresourcenotfound
+msgctxt "lclstrconsts.rsresourcenotfound"
+msgid "Resource %s not found"
+msgstr "Taɣbalut %s ur tettwaf ara"
+
+#: lclstrconsts.rsscrollbarcolorcaption
+msgid "ScrollBar"
+msgstr "Afeggag n udrurem"
+
+#: lclstrconsts.rsscrollbaroutofrange
+msgid "ScrollBar property out of range"
+msgstr "Ayla n ufeggag n udrurem iɛedda tilisa"
+
+#: lclstrconsts.rsselectcolortitle
+msgid "Select color"
+msgstr "Fren ini"
+
+#: lclstrconsts.rsselectfonttitle
+msgid "Select a font"
+msgstr "Fren tasefsit"
+
+#: lclstrconsts.rssilvercolorcaption
+msgid "Silver"
+msgstr "Aẓref"
+
+#: lclstrconsts.rssize
+msgid "  size "
+msgstr "  tiddi "
+
+#: lclstrconsts.rsskybluecolorcaption
+msgid "Sky Blue"
+msgstr "Anili n igni"
+
+#: lclstrconsts.rstealcolorcaption
+msgid "Teal"
+msgstr "Anili"
+
+#: lclstrconsts.rstext
+msgid "Text"
+msgstr "Aḍris"
+
+#: lclstrconsts.rstiff
+msgid "Tagged Image File Format"
+msgstr "Tagged Image File Format"
+
+#: lclstrconsts.rsunabletoloaddefaultfont
+msgid "Unable to load default font"
+msgstr "D awezɣi asali n tsefsit n lexṣas"
+
+#: lclstrconsts.rsunknownerrorpleasereportthisbug
+msgid "Unknown Error, please report this bug"
+msgstr "Tuccḍa tarussint, ttxil-k azen aneqqis ɣef wugur-agi"
+
+#: lclstrconsts.rsunknownpictureextension
+msgid "Unknown picture extension"
+msgstr "Anaw n tugna d arussin"
+
+#: lclstrconsts.rsunknownpictureformat
+msgid "Unknown picture format"
+msgstr "Amasal n tugna d arussin"
+
+#: lclstrconsts.rsunsupportedbitmapformat
+msgid "Unsupported bitmap format."
+msgstr "Amasal n bitmap ur itteddu ara."
+
+#: lclstrconsts.rsunsupportedclipboardformat
+msgid "Unsupported clipboard format: %s"
+msgstr "Amasal n tecfawit ur itteddu ara: %s"
+
+#: lclstrconsts.rswarningunreleaseddcsdump
+msgid " WARNING: There are %d unreleased DCs, a detailed dump follows:"
+msgstr " ALƔU: Llan %d n DCs mačči d ilelliyen, attaya telqayt:"
+
+#: lclstrconsts.rswarningunreleasedgdiobjectsdump
+msgid " WARNING: There are %d unreleased GDIObjects, a detailed dump follows:"
+msgstr " ALƔU: Llan %d n GDIObjects mačči d tilelliyin, attaya telqayt:"
+
+#: lclstrconsts.rswarningunreleasedmessagesinqueue
+msgid " WARNING: There are %d messages left in the queue! I'll free them"
+msgstr " ALƔU: Llan %d n yiznan gran deg udras ! Ad ten-slelliɣ"
+
+#: lclstrconsts.rswarningunreleasedtimerinfos
+msgid " WARNING: There are %d TimerInfo structures left, I'll free them"
+msgstr " ALƔU: Llan %d n temṣukin i yegran, ad tent-slelliɣ"
+
+#: lclstrconsts.rswarningunremovedpaintmessages
+msgid " WARNING: There are %s unremoved LM_PAINT/LM_GtkPAINT message links left."
+msgstr " ALƔU: Llan %s n isɣewnen n yiznan n LM_PAINT/LM_GtkPAINT i d-yegran ur ttwakksen ara."
+
+#: lclstrconsts.rswhitecolorcaption
+msgid "White"
+msgstr "Amellal"
+
+#: lclstrconsts.rswholewordsonly
+msgid "Whole words only"
+msgstr "Awal ummid kan"
+
+#: lclstrconsts.rswin32error
+msgid "Error:"
+msgstr "Tuccḍa:"
+
+#: lclstrconsts.rswin32warning
+msgid "Warning:"
+msgstr "Asmigel:"
+
+#: lclstrconsts.rswindowcolorcaption
+msgid "Window"
+msgstr "Asfaylu"
+
+#: lclstrconsts.rswindowframecolorcaption
+msgid "Window Frame"
+msgstr "Akatar n usfaylu"
+
+#: lclstrconsts.rswindowtextcolorcaption
+msgid "Window Text"
+msgstr "Aḍris n usfaylu"
+
+#: lclstrconsts.rsyellowcolorcaption
+msgid "Yellow"
+msgstr "Awraɣ"
+
+#: lclstrconsts.scannotfocus
+msgid "Cannot focus a disabled or invisible window"
+msgstr "Ulamek asiḍes n usfaylu yensan neɣ ur nettban ara"
+
+#: lclstrconsts.sduplicatemenus
+msgid "Duplicate menus"
+msgstr "Umuɣen usligen"
+
+#: lclstrconsts.sinvalidactioncreation
+msgid "Invalid action creation"
+msgstr "Asnulfu n tigawt tarmeɣtut"
+
+#: lclstrconsts.sinvalidactionenumeration
+msgid "Invalid action enumeration"
+msgstr "Tigawt n usmiwer d tarmeɣtut"
+
+#: lclstrconsts.sinvalidactionregistration
+msgid "Invalid action registration"
+msgstr "Tigawt n usekles d tarmeɣtut"
+
+#: lclstrconsts.sinvalidactionunregistration
+msgid "Invalid action unregistration"
+msgstr "Tigawt n tukksa n usekles d tarmeɣtut"
+
+#: lclstrconsts.sinvalidcharset
+msgid "The char set in mask \"%s\" is not valid!"
+msgstr "Asekkil yersen di tgelmust %s\" mačči d ameɣtu !"
+
+#: lclstrconsts.sinvalidimagesize
+msgid "Invalid image size"
+msgstr "Tiddi n tugna d tarmeɣtut"
+
+#: lclstrconsts.sinvalidindex
+msgid "Invalid ImageList Index"
+msgstr "Amatar n tebdart n tugniwin d armeɣtu"
+
+#: lclstrconsts.smenuindexerror
+msgid "Menu index out of range"
+msgstr "Amatar n wumuɣ iɛedda tilisa"
+
+#: lclstrconsts.smenuitemisnil
+msgid "MenuItem is nil"
+msgstr "MenuItem ur yettusdukkel ara (nil)"
+
+#: lclstrconsts.smenunotfound
+msgid "Sub-menu is not in menu"
+msgstr "Anaw anaddaw ulac-it deg wumuɣ"
+
+#: lclstrconsts.smkcalt
+msgid "Alt+"
+msgstr "Alt+"
+
+#: lclstrconsts.smkcbksp
+msgid "BkSp"
+msgstr "BkSp"
+
+#: lclstrconsts.smkcctrl
+msgid "Ctrl+"
+msgstr "Ctrl+"
+
+#: lclstrconsts.smkcdel
+msgid "Del"
+msgstr "Del"
+
+#: lclstrconsts.smkcdown
+msgctxt "lclstrconsts.smkcdown"
+msgid "Down"
+msgstr "Ukessar"
+
+#: lclstrconsts.smkcend
+msgctxt "lclstrconsts.smkcend"
+msgid "End"
+msgstr "Taggara"
+
+#: lclstrconsts.smkcenter
+msgid "Enter"
+msgstr "Kcem"
+
+#: lclstrconsts.smkcesc
+msgid "Esc"
+msgstr "Esc"
+
+#: lclstrconsts.smkchome
+msgctxt "lclstrconsts.smkchome"
+msgid "Home"
+msgstr "Axxam"
+
+#: lclstrconsts.smkcins
+msgid "Ins"
+msgstr "Ins"
+
+#: lclstrconsts.smkcleft
+msgctxt "lclstrconsts.smkcleft"
+msgid "Left"
+msgstr "Azelmaḍ"
+
+#: lclstrconsts.smkcmeta
+msgid "Meta+"
+msgstr "Meta+"
+
+#: lclstrconsts.smkcpgdn
+msgid "PgDn"
+msgstr "SbSw"
+
+#: lclstrconsts.smkcpgup
+msgid "PgUp"
+msgstr "SbKs"
+
+#: lclstrconsts.smkcright
+msgctxt "lclstrconsts.smkcright"
+msgid "Right"
+msgstr "Ayfus"
+
+#: lclstrconsts.smkcshift
+msgid "Shift+"
+msgstr "Shift+"
+
+#: lclstrconsts.smkcspace
+msgid "Space"
+msgstr "Tallunt"
+
+#: lclstrconsts.smkctab
+msgctxt "lclstrconsts.smkctab"
+msgid "Tab"
+msgstr "Tabzimt"
+
+#: lclstrconsts.smkcup
+msgctxt "lclstrconsts.smkcup"
+msgid "Up"
+msgstr "Uksawen"
+
+#: lclstrconsts.snomdiform
+msgid "No MDI form present."
+msgstr "Ulac tiferkit MDI."
+
+#: lclstrconsts.snotimers
+msgid "No timers available"
+msgstr "Ulac imakuden iwejden"
+
+#: lclstrconsts.sparexpected
+msgid "Wrong token type: %s expected"
+msgstr "Anaw n tiddest d armeɣtu: %s yetturaǧu"
+
+#: lclstrconsts.sparinvalidfloat
+msgid "Invalid floating point number: %s"
+msgstr "Amḍan s ticcert yettifliwen d armeɣtu: %s"
+
+#: lclstrconsts.sparinvalidinteger
+msgid "Invalid integer number: %s"
+msgstr "Amḍan ummid d armeɣtu: %s"
+
+#: lclstrconsts.sparlocinfo
+msgid " (at %d,%d, stream offset %.8x)"
+msgstr " (at %d,%d, stream offset %.8x)"
+
+#: lclstrconsts.sparunterminatedbinvalue
+msgid "Unterminated byte value"
+msgstr "Azal n ubit ur nfuk ara"
+
+#: lclstrconsts.sparunterminatedstring
+msgid "Unterminated string"
+msgstr "Azrar ur nfuk ara"
+
+#: lclstrconsts.sparwrongtokensymbol
+msgid "Wrong token symbol: %s expected but %s found"
+msgstr "Azamul n tiddest d armeɣtu: yetturaǧu %s maca yettwaf %s"
+
+#: lclstrconsts.sparwrongtokentype
+msgid "Wrong token type: %s expected but %s found"
+msgstr "Anaw n tiddest d armeɣtu: yetturaǧu %s maca yettwaf %s"

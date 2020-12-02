@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-linking-exception
 {
   Created by BGRA Controls Team
   Dibo, Circular, lainz (007) and contributors.
@@ -6,41 +7,22 @@
   Site: https://sourceforge.net/p/bgra-controls/
   Wiki: http://wiki.lazarus.freepascal.org/BGRAControls
   Forum: http://forum.lazarus.freepascal.org/index.php/board,46.0.html
-
-  This library is free software; you can redistribute it and/or modify it
-  under the terms of the GNU Library General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or (at your
-  option) any later version with the following modification:
-
-  As a special exception, the copyright holders of this library give you
-  permission to link this library with independent modules to produce an
-  executable, regardless of the license terms of these independent modules,and
-  to copy and distribute the resulting executable under terms of your choice,
-  provided that you also meet, for each linked independent module, the terms
-  and conditions of the license of that module. An independent module is a
-  module which is not derived from or based on this library. If you modify
-  this library, you may extend this exception to your version of the library,
-  but you are not obligated to do so. If you do not wish to do so, delete this
-  exception statement from your version.
-
-  This program is distributed in the hope that it will be useful, but WITHOUT
-  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
-  for more details.
-
-  You should have received a copy of the GNU Library General Public License
-  along with this library; if not, write to the Free Software Foundation,
-  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 }
+{******************************* CONTRIBUTOR(S) ******************************
+- Edivando S. Santos Brasil | mailedivando@gmail.com
+  (Compatibility with delphi VCL 11/2018)
 
+***************************** END CONTRIBUTOR(S) *****************************}
 unit BCTrackbarUpdown;
 
-{$mode objfpc}{$H+}
+{$I bgracontrols.inc}
 
 interface
 
 uses
-  LCLType, Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs,
+  {$IFDEF FPC}LCLType, LResources,{$ENDIF}
+  Classes, SysUtils, Types, Forms, Controls, Graphics, Dialogs,
+  {$IFNDEF FPC}BGRAGraphics, GraphType, FPImage, {$ENDIF}
   ExtCtrls, BGRABitmap, BCBaseCtrls, BCTypes;
 
 type
@@ -53,6 +35,8 @@ type
     FHandlingUserInput: boolean;
     FLongTimeInterval,FShortTimeInterval: integer;
     FMinValue,FMaxValue,FIncrement,FValue: integer;
+    FAllowNegativeValues: boolean;
+    FStartNegativeValue: boolean;
     FBarExponent: single;
     FSelStart,FSelLength: integer;
     FEmptyText: boolean;
@@ -67,11 +51,14 @@ type
     FArrowColor: TColor;
     FHasTrackBar: boolean;
 
+    FCanvasScaling: double;
     FTextLeft: Integer;
     FBarLeft,FBarTop,FBarWidth,FBarHeight: Integer;
     FUpDownWidth: Integer;
     FUpDownLeft: Integer;
+    FDownButtonTop: integer;
     function GetValue: integer;
+    procedure SetAllowNegativeValues(AValue: boolean);
     procedure SetArrowColor(AValue: TColor);
     procedure SetHasTrackBar(AValue: boolean);
     procedure SetBarExponent(AValue: single);
@@ -80,8 +67,8 @@ type
     procedure SetBCButtonBackground(AValue: TBCBackground);
     procedure SetBCButtonDownBackground(AValue: TBCBackground);
     procedure SetBCRounding(AValue: TBCRounding);
-    procedure OnChangeProperty(Sender: TObject; {%H-}AData: PtrInt);
-    procedure Timer(Sender: TObject);
+    procedure OnChangeProperty({%H-}Sender: TObject; {%H-}AData: PtrInt);
+    procedure Timer({%H-}Sender: TObject);
     procedure RenderOnBitmap(ABitmap: TBGRABitmap);
     procedure DrawControl; override;
     procedure DoSelectAll;
@@ -98,7 +85,8 @@ type
     procedure MouseDown(Button: TMouseButton; {%H-}Shift: TShiftState; X, Y: Integer); override;
     procedure MouseMove(Shift: TShiftState; X, Y: Integer); override;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
-    procedure UTF8KeyPress(var UTF8Key: TUTF8Char); override;
+    function DoMouseWheel(Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint): Boolean; override;
+    procedure UTF8KeyPress(var UTF8Key: {$IFDEF FPC}TUTF8Char{$ELSE}String{$ENDIF}); override;
     procedure DoEnter; override;
     procedure DoExit; override;
   public
@@ -116,6 +104,7 @@ type
     property ArrowColor: TColor read FArrowColor write SetArrowColor;
     property HasTrackBar: boolean read FHasTrackBar write SetHasTrackBar;
 
+    property AllowNegativeValues: boolean read FAllowNegativeValues write SetAllowNegativeValues;
     property BarExponent: single read FBarExponent write SetBarExponent;
     property Increment: integer read FIncrement write SetIncrement;
     property LongTimeInterval: integer read FLongTimeInterval write FLongTimeInterval;
@@ -131,6 +120,7 @@ type
 
   TBCTrackbarUpdown = class(TCustomBCTrackbarUpdown)
   published
+    property AllowNegativeValues;
     property BarExponent;
     property Increment;
     property LongTimeInterval;
@@ -155,6 +145,9 @@ type
     property Anchors;
     property BorderSpacing;
     property ChildSizing;
+    {$IFDEF FPC} //#
+    property OnGetDockCaption;
+    {$ENDIF}
     property ClientHeight;
     property ClientWidth;
     property Constraints;
@@ -182,7 +175,6 @@ type
     property OnEnter;
     property OnExit;
     property OnGetSiteInfo;
-    property OnGetDockCaption;
     property OnMouseDown;
     property OnMouseEnter;
     property OnMouseLeave;
@@ -194,23 +186,31 @@ type
     property OnUnDock;
   end;
 
-procedure Register;
+{$IFDEF FPC}procedure Register;{$ENDIF}
 
 implementation
 
-uses BGRABitmapTypes, Types, Math, BCTools;
+uses BGRABitmapTypes, Math, BCTools;
 
+{$IFDEF FPC}
 procedure Register;
 begin
-{$I icons\bctrackbarupdown_icon.lrs}
+//{$I icons\bctrackbarupdown_icon.lrs}
   RegisterComponents('BGRA Controls', [TBCTrackbarUpdown]);
 end;
+{$ENDIF}
 
 { TCustomBCTrackbarUpdown }
 
 function TCustomBCTrackbarUpdown.GetText: string;
 begin
-  if FEmptyText then result := '' else
+  if FEmptyText then
+  begin
+    if FStartNegativeValue then
+      result := '-'
+    else
+      result := '';
+  end else
     result := IntToStr(FValue);
 end;
 
@@ -221,9 +221,10 @@ var errPos,tempValue: integer;
 begin
   if trim(AValue) = '' then
   begin
-    if not FEmptyText then
+    if not FEmptyText or FStartNegativeValue then
     begin
       FEmptyText:= true;
+      FStartNegativeValue:= false;
       Invalidate;
     end;
     exit;
@@ -233,9 +234,15 @@ begin
   if errPos = 0 then
   begin
     if tempValue > FMaxValue then tempValue := FMaxValue;
+    if (tempValue < 0) and (tempValue < FMinValue) then tempValue:= FMinValue;
     if (FValue = tempValue) and not FEmptyText then exit;
     FValue := tempValue;
     FEmptyText:= false;
+  end else
+  if (AValue = '-') and AllowNegativeValues then
+  begin
+    FEmptyText:= true;
+    FStartNegativeValue:= true;
   end;
   txt := Text;
   if FSelStart > length(txt) then FSelStart := length(txt);
@@ -263,7 +270,7 @@ end;
 
 procedure TCustomBCTrackbarUpdown.SetMaxValue(AValue: integer);
 begin
-  if AValue < 0 then AValue := 0;
+  if not AllowNegativeValues and (AValue < 0) then AValue := 0;
   if FMaxValue=AValue then Exit;
   FMaxValue:=AValue;
   if FMaxValue < FMinValue then FMinValue := FMaxValue;
@@ -273,7 +280,7 @@ end;
 
 procedure TCustomBCTrackbarUpdown.SetMinValue(AValue: integer);
 begin
-  if AValue < 0 then AValue := 0;
+  if not AllowNegativeValues and (AValue < 0) then AValue := 0;
   if FMinValue=AValue then Exit;
   FMinValue:=AValue;
   if FMinValue > FMaxValue then FMaxValue := FMinValue;
@@ -305,6 +312,29 @@ begin
   if FHasTrackBar=AValue then Exit;
   FHasTrackBar:=AValue;
   Invalidate;
+end;
+
+procedure TCustomBCTrackbarUpdown.SetAllowNegativeValues(AValue: boolean);
+var
+  changeVal: Boolean;
+begin
+  if FAllowNegativeValues=AValue then Exit;
+  FAllowNegativeValues:=AValue;
+  if not FAllowNegativeValues then
+  begin
+    if (FMinValue < 0) or (FValue < 0) or (FMaxValue < 0) then
+    begin
+      if FMinValue < 0 then FMinValue := 0;
+      if FValue < 0 then
+      begin
+        FValue := 0;
+        changeVal := true;
+      end else changeVal := false;
+      if FMaxValue < 0 then FMaxValue:= 0;
+      Invalidate;
+      if changeVal then NotifyChange;
+    end;
+  end;
 end;
 
 function TCustomBCTrackbarUpdown.GetValue: integer;
@@ -395,7 +425,7 @@ begin
     FBarHeight := (bounds.bottom-bounds.top+3) div 5+1;
     FBarWidth := bounds.right-FUpDownWidth-FBarHeight+1-FBarLeft;
     if (Rounding.RoundX > 1) and (Rounding.RoundY > 1) then
-      FBarLeft += FBarHeight+1;
+      FBarLeft := FBarLeft +FBarHeight+1;
   end else
   begin
     FBarWidth := 0;
@@ -404,6 +434,7 @@ begin
   FBarTop := bounds.bottom-FBarHeight;
 
   midy := ABitmap.Height div 2;
+  FDownButtonTop := midy;
 
   ABitmap.ClipRect := rect(fullbounds.left,fullbounds.top,FUpDownLeft+1,fullbounds.bottom);
   RenderBackgroundAndBorder(fullbounds, Background, ABitmap, Rounding, Border);
@@ -436,7 +467,7 @@ begin
   ABitmap.FontName := Font.Name;
   ABitmap.FontStyle := Font.Style;
   ABitmap.FontHeight := ((ty-FBarHeight+1)*8+4) div 9;
-  fgcolor := ColorToBGRA(ColorToRGB(Font.Color));
+  fgcolor := Font.Color;
 
   x := FTextLeft;
   y := bounds.top+1;
@@ -463,8 +494,8 @@ begin
     else
     begin
       s := ABitmap.TextSize(inSel);
-      ABitmap.FillRect(x,y+1,x+s.cx,y+s.cy,ColorToBGRA(ColorToRGB(clHighlight)),dmSet);
-      ABitmap.TextOut(x,y,inSel,ColorToBGRA(ColorToRGB(clHighlightText)));
+      ABitmap.FillRect(x,y+1,x+s.cx,y+s.cy,ColorToRGB(clHighlight),dmSet);
+      ABitmap.TextOut(x,y,inSel,ColorToRGB(clHighlightText));
       inc(x,s.cx);
     end;
     ABitmap.TextOut(x,y,afterSel,fgcolor);
@@ -481,7 +512,7 @@ begin
     ABitmap.FillPolyAntialias([PointF(barx,FBarTop),PointF(barx+FBarHeight,FBarTop+FBarHeight),
       PointF(barx-FBarHeight,FBarTop+FBarHeight)],fgcolor);
   midx := FUpDownLeft+(FUpDownWidth-1)/2;
-  btntext := ColorToBGRA(ColorToRGB(FArrowColor));
+  btntext := FArrowColor;
   ABitmap.FillPolyAntialias([PointF(FUpDownLeft+2,midy*4/5),PointF(midx,midy/5),PointF(FUpDownLeft+FUpDownWidth-3,midy*4/5)],btntext);
   ABitmap.FillPolyAntialias([PointF(FUpDownLeft+2,midy*6/5),PointF(midx,ABitmap.Height-midy/5),PointF(FUpDownLeft+FUpDownWidth-3,midy*6/5)],btntext);
 end;
@@ -517,12 +548,14 @@ end;
 procedure TCustomBCTrackbarUpdown.MouseDown(Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
+  X := round(X*FCanvasScaling);
+  Y := round(Y*FCanvasScaling);
   if Button = mbLeft then
   begin
     FHandlingUserInput:= true;
     if X >= FUpDownLeft then
     begin
-      if Y > Height div 2 then
+      if Y > FDownButtonTop then
       begin
         FDownClick:= true;
         Value := Value-Increment;
@@ -530,7 +563,7 @@ begin
         FTimer.Interval := LongTimeInterval;
         FTimer.Enabled:= true;
       end else
-      if Y < Height div 2 then
+      if Y < FDownButtonTop then
       begin
         FUpClick:= true;
         Value := Value+Increment;
@@ -557,6 +590,8 @@ end;
 procedure TCustomBCTrackbarUpdown.MouseMove(Shift: TShiftState; X, Y: Integer);
 begin
   inherited MouseMove(Shift, X, Y);
+  X := round(X*FCanvasScaling);
+  Y := round(Y*FCanvasScaling);
   if FBarClick and (FBarWidth>1) then
   begin
     FHandlingUserInput:= true;
@@ -569,6 +604,8 @@ procedure TCustomBCTrackbarUpdown.MouseUp(Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
   inherited MouseUp(Button, Shift, X, Y);
+  X := round(X*FCanvasScaling);
+  Y := round(Y*FCanvasScaling);
   if Button = mbLeft then
   begin
     if FBarClick then FBarClick:= false else
@@ -587,7 +624,22 @@ begin
   end;
 end;
 
-procedure TCustomBCTrackbarUpdown.UTF8KeyPress(var UTF8Key: TUTF8Char);
+function TCustomBCTrackbarUpdown.DoMouseWheel(Shift: TShiftState;
+  WheelDelta: Integer; MousePos: TPoint): Boolean;
+begin
+  if Assigned(OnMouseWheel) or Assigned(OnMouseWheelDown) or Assigned(OnMouseWheelUp) then
+  begin
+    result := inherited DoMouseWheel(Shift, WheelDelta, MousePos);
+    exit;
+  end;
+  FHandlingUserInput:= true;
+  Value := Value + Increment*WheelDelta div 120;
+  FHandlingUserInput := false;
+  Invalidate;
+  result := true;
+end;
+
+procedure TCustomBCTrackbarUpdown.UTF8KeyPress(var UTF8Key: {$IFDEF FPC}TUTF8Char{$ELSE}String{$ENDIF});
 var tempText: string;
 begin
   FHandlingUserInput:= true;
@@ -603,7 +655,7 @@ begin
     end;
     UTF8Key:= #0;
   end else
-  if (length(UTF8Key)=1) and (UTF8Key[1] in['0'..'9']) then
+  if (length(UTF8Key)=1) and ((UTF8Key[1] in['0'..'9']) or ((UTF8Key[1]='-') and (SelStart = 0))) then
   begin
     RemoveSelection;
     tempText := Text;
@@ -625,31 +677,40 @@ end;
 procedure TCustomBCTrackbarUpdown.DoExit;
 begin
   inherited DoExit;
-  FEmptyText:= false;
+  if FValue > FMaxValue then FValue := FMaxValue;
   if FValue < FMinValue then FValue := FMinValue;
+  if FEmptyText then
+  begin
+    FEmptyText:= false;
+    SelectAll;
+  end;
   Invalidate;
 end;
 
 procedure TCustomBCTrackbarUpdown.DrawControl;
 var bmp: TBGRABitmap;
 begin
-  bmp := TBGRABitmap.Create(Width,Height);
+  FCanvasScaling:= GetCanvasScaleFactor;
+  bmp := TBGRABitmap.Create(round(Width*FCanvasScaling),round(Height*FCanvasScaling));
   RenderOnBitmap(bmp);
-  bmp.Draw(Canvas,0,0,False);
+  bmp.Draw(Canvas,rect(0,0,Width,Height),False);
   bmp.Free;
 end;
 
 constructor TCustomBCTrackbarUpdown.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
+  with GetControlClassDefaultSize do
+    SetInitialBounds(0, 0, CX, CY);
   FMinValue:= 0;
   FMaxValue := 100;
   FValue := 50;
   FIncrement := 1;
   FBarExponent:= 1;
+  FCanvasScaling:= 1;
   FTimer := TTimer.Create(self);
   FTimer.Enabled := false;
-  FTimer.OnTimer:=@Timer;
+  FTimer.OnTimer:=Timer;
   FLongTimeInterval:= 400;
   FShortTimeInterval:= 100;
   FHasTrackBar:= true;
@@ -657,15 +718,15 @@ begin
   FBCBorder.Color := clWindowText;
   FBCBorder.Width := 1;
   FBCBorder.Style := bboSolid;
-  FBCBorder.OnChange := @OnChangeProperty;
+  FBCBorder.OnChange := OnChangeProperty;
   FBCRounding := TBCRounding.Create(self);
   FBCRounding.RoundX := 1;
   FBCRounding.RoundY := 1;
-  FBCRounding.OnChange := @OnChangeProperty;
+  FBCRounding.OnChange := OnChangeProperty;
   FBCBackground := TBCBackground.Create(self);
   FBCBackground.Style := bbsColor;
   FBCBackground.Color := clWindow;
-  FBCBackground.OnChange := @OnChangeProperty;
+  FBCBackground.OnChange := OnChangeProperty;
   FBCButtonBackground := TBCBackground.Create(self);
   FBCButtonBackground.Style := bbsGradient;
   FBCButtonBackground.Gradient1EndPercent := 50;
@@ -677,11 +738,11 @@ begin
   FBCButtonBackground.Gradient2.Point2YPercent := 150;
   FBCButtonBackground.Gradient2.StartColor := clBtnFace;
   FBCButtonBackground.Gradient2.EndColor := clBtnShadow;
-  FBCButtonBackground.OnChange := @OnChangeProperty;
+  FBCButtonBackground.OnChange := OnChangeProperty;
   FBCButtonDownBackground := TBCBackground.Create(self);
   FBCButtonDownBackground.Style := bbsColor;
   FBCButtonDownBackground.Color := clBtnShadow;
-  FBCButtonDownBackground.OnChange := @OnChangeProperty;
+  FBCButtonDownBackground.OnChange := OnChangeProperty;
   FArrowColor:= clBtnText;
   Font.Color := clWindowText;
   Font.Name := 'Arial';

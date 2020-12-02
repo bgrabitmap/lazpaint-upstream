@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-linking-exception
 { Equivalent of standard lazarus TLabel but using BGRA Controls framework for text
   render.
 
@@ -6,43 +7,23 @@
   - Customizable border (rounding etc.)
   - FontEx (shadow, word wrap, etc.)
 
-  Copyright (C) 2012 Krzysztof Dibowski dibowski at interia.pl
-
-  This library is free software; you can redistribute it and/or modify it
-  under the terms of the GNU Library General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or (at your
-  option) any later version with the following modification:
-
-  As a special exception, the copyright holders of this library give you
-  permission to link this library with independent modules to produce an
-  executable, regardless of the license terms of these independent modules,and
-  to copy and distribute the resulting executable under terms of your choice,
-  provided that you also meet, for each linked independent module, the terms
-  and conditions of the license of that module. An independent module is a
-  module which is not derived from or based on this library. If you modify
-  this library, you may extend this exception to your version of the library,
-  but you are not obligated to do so. If you do not wish to do so, delete this
-  exception statement from your version.
-
-  This program is distributed in the hope that it will be useful, but WITHOUT
-  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
-  for more details.
-
-  You should have received a copy of the GNU Library General Public License
-  along with this library; if not, write to the Free Software Foundation,
-  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+  originally written in 2012 by Krzysztof Dibowski dibowski at interia.pl
 }
+{******************************* CONTRIBUTOR(S) ******************************
+- Edivando S. Santos Brasil | mailedivando@gmail.com
+  (Compatibility with delphi VCL 11/2018)
 
+***************************** END CONTRIBUTOR(S) *****************************}
 unit BCLabel;
 
-{$mode objfpc}{$H+}
+{$I bgracontrols.inc}
 
 interface
 
 uses
-  Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs,
-  BCBasectrls, BGRABitmap, BGRABitmapTypes, BCTypes, types;
+  Classes, SysUtils,{$IFDEF FPC}LResources,{$ENDIF}
+  types, Forms, Controls, Graphics, Dialogs,
+  BCBasectrls, BGRABitmap, BGRABitmapTypes, BCTypes;
 
 type
 
@@ -51,7 +32,7 @@ type
   TCustomBCLabel = class(TBCStyleGraphicControl)
   private
     { Private declarations }
-    {$IFDEF DEBUG}
+    {$IFDEF INDEBUG}
     FRenderCount: Integer;
     {$ENDIF}
     FBackground: TBCBackground;
@@ -67,15 +48,15 @@ type
     procedure SetBackground(AValue: TBCBackground);
     procedure SetBorder(AValue: TBCBorder);
     procedure SetFontEx(AValue: TBCFont);
-    procedure OnChangeProperty(Sender: TObject; {%H-}Data: PtrInt);
-    procedure OnChangeFont(Sender: TObject; {%H-}AData: PtrInt);
+    procedure OnChangeProperty(Sender: TObject; {%H-}Data: BGRAPtrInt);
+    procedure OnChangeFont({%H-}Sender: TObject; {%H-}AData: BGRAPtrInt);
   protected
     procedure CalculatePreferredSize(var PreferredWidth, PreferredHeight: integer;
       {%H-}WithThemeSpace: boolean); override;
     class function GetControlClassDefaultSize: TSize; override;
     procedure TextChanged; override;
   protected
-    {$IFDEF DEBUG}
+    {$IFDEF INDEBUG}
     function GetDebugText: String; override;
     {$ENDIF}
     procedure DrawControl; override;
@@ -96,8 +77,10 @@ type
     procedure UpdateControl; override; // Called by EndUpdate
   public
     { Streaming }
-    procedure SaveToFile(AFileName: string);
-    procedure LoadFromFile(AFileName: string);
+    {$IFDEF FPC}
+    procedure SaveToFile(AFileName: string); override;
+    procedure LoadFromFile(AFileName: string); override;
+    {$ENDIF}
     procedure OnFindClass({%H-}Reader: TReader; const AClassName: string;
       var ComponentClass: TComponentClass);
   end;
@@ -144,24 +127,25 @@ type
     property OnMouseWheelUp;
   end;
 
-procedure Register;
+{$IFDEF FPC}procedure Register;{$ENDIF}
 
 implementation
 
 uses BCTools;
 
-procedure Register;
+{$IFDEF FPC}procedure Register;
 begin
-  {$I icons\bclabel_icon.lrs}
+  //{$I icons\bclabel_icon.lrs}
   RegisterComponents('BGRA Controls',[TBCLabel]);
 end;
+{$ENDIF}
 
 { TCustomBCLabel }
 
 procedure TCustomBCLabel.Render;
 var r: TRect;
 begin
-  if (csCreating in FControlState) or IsUpdating then
+  if (csCreating in ControlState) or IsUpdating then
     Exit;
 
   FBGRA.NeedRender := False;
@@ -174,8 +158,11 @@ begin
   RenderBackgroundAndBorder(FBGRA.ClipRect, FBackground, TBGRABitmap(FBGRA), FRounding, FBorder, FInnerMargin);
   RenderText(FBGRA.ClipRect, FFontEx, Caption, TBGRABitmap(FBGRA));
 
-  {$IFDEF DEBUG}
-  FRenderCount += 1;
+  {$IFDEF INDEBUG}
+  FRenderCount := FRenderCount +1;
+  {$ENDIF}
+  {$IFNDEF FPC}//# //@  IN DELPHI NEEDRENDER NEED TO BE TRUE. IF FALSE COMPONENT IN BGRANORMAL BE BLACK AFTER INVALIDATE.
+  FBGRA.NeedRender := True;
   {$ENDIF}
 end;
 
@@ -226,7 +213,7 @@ begin
   Invalidate;
 end;
 
-procedure TCustomBCLabel.OnChangeProperty(Sender: TObject; Data: PtrInt);
+procedure TCustomBCLabel.OnChangeProperty(Sender: TObject; Data: BGRAPtrInt);
 begin
   RenderControl;
   if (Sender = FBorder) and AutoSize then
@@ -234,7 +221,7 @@ begin
   Invalidate;
 end;
 
-procedure TCustomBCLabel.OnChangeFont(Sender: TObject; AData: PtrInt);
+procedure TCustomBCLabel.OnChangeFont(Sender: TObject; AData: BGRAPtrInt);
 begin
   RenderControl;
   UpdateSize;
@@ -270,7 +257,7 @@ begin
   Invalidate;
 end;
 
-{$IFDEF DEBUG}
+{$IFDEF INDEBUG}
 function TCustomBCLabel.GetDebugText: String;
 begin
   Result := 'R: '+IntToStr(FRenderCount);
@@ -283,6 +270,9 @@ begin
   if FBGRA.NeedRender then
     Render;
   FBGRA.Draw(Self.Canvas,0,0,False);
+  {$IFNDEF FPC}//# //@  IN DELPHI RenderControl NEDD. IF NO RenderControl BE BLACK AFTER INVALIDATE.
+  FBGRA.NeedRender := True;
+  {$ENDIF}
 end;
 
 procedure TCustomBCLabel.RenderControl;
@@ -302,7 +292,7 @@ begin
   RenderControl;
   inherited UpdateControl; // invalidate
 end;
-
+{$IFDEF FPC}
 procedure TCustomBCLabel.SaveToFile(AFileName: string);
 var
   AStream: TMemoryStream;
@@ -323,11 +313,12 @@ begin
   AStream := TMemoryStream.Create;
   try
     AStream.LoadFromFile(AFileName);
-    ReadComponentFromTextStream(AStream, TComponent(Self), @OnFindClass);
+    ReadComponentFromTextStream(AStream, TComponent(Self), OnFindClass);
   finally
     AStream.Free;
   end;
 end;
+ {$ENDIF}
 
 procedure TCustomBCLabel.OnFindClass(Reader: TReader; const AClassName: string;
   var ComponentClass: TComponentClass);
@@ -339,11 +330,15 @@ end;
 constructor TCustomBCLabel.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  {$IFDEF DEBUG}
+  {$IFDEF INDEBUG}
   FRenderCount := 0;
   {$ENDIF}
+  {$IFDEF FPC}
   DisableAutoSizing;
   Include(FControlState, csCreating);
+  {$ELSE} //#
+
+  {$ENDIF}
   BeginUpdate;
   try
     with GetControlClassDefaultSize do
@@ -354,21 +349,26 @@ begin
     FFontEx             := TBCFont.Create(Self);
     ParentColor         := True;
 
-    FBackground.OnChange := @OnChangeProperty;
-    FBorder.OnChange     := @OnChangeProperty;
-    FFontEx.OnChange     := @OnChangeFont;
+    FBackground.OnChange := OnChangeProperty;
+    FBorder.OnChange     := OnChangeProperty;
+    FFontEx.OnChange     := OnChangeFont;
 
     FBackground.Style   := bbsClear;
     FBorder.Style       := bboNone;
 
     FRounding           := TBCRounding.Create(Self);
-    FRounding.OnChange  := @OnChangeProperty;
+    FRounding.OnChange  := OnChangeProperty;
 
     AutoSize := True;
   finally
+    {$IFDEF FPC}
     EnableAutoSizing;
+    {$ENDIF}
     EndUpdate;
+    {$IFDEF FPC}
     Exclude(FControlState, csCreating);
+    {$ELSE} //#
+    {$ENDIF}
   end;
 end;
 

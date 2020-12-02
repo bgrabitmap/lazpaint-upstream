@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-linking-exception
 unit BGRACompressableBitmap;
 
 {$mode objfpc}{$H+}
@@ -26,7 +27,7 @@ interface
   at a time. }
 
 uses
-  Classes, SysUtils, BGRABitmapTypes, BGRABitmap, zstream;
+  BGRAClasses, SysUtils, BGRABitmapTypes, BGRABitmap, zstream;
 
 type
 
@@ -46,10 +47,10 @@ type
      procedure Init;
    public
      CompressionLevel: Tcompressionlevel;
-     constructor Create;
-     constructor Create(Source: TBGRABitmap);
+     constructor Create; overload;
+     constructor Create(Source: TBGRABitmap); overload;
      function GetBitmap: TBGRABitmap;
-     
+
      //call Compress as many times as necessary
      //when it returns false, it means that
      //the image compression is finished
@@ -67,6 +68,8 @@ type
    end;
 
 implementation
+
+uses BGRAUTF8;
 
 // size of each chunk treated by Compress function
 const maxPartSize = 524288;
@@ -117,6 +120,7 @@ begin
   end else
   begin
     FUncompressedData.Read(result.Data^,result.NbPixels*Sizeof(TBGRAPixel));
+    if result.LineOrder <> FLineOrder then result.VerticalFlip;
     If TBGRAPixel_RGBAOrder then result.SwapRedBlue;
   end;
 end;
@@ -127,8 +131,8 @@ var i: integer;
 begin
   result := 0;
   for i := 0 to high(FCompressedDataArray) do
-    result += FCompressedDataArray[i].Size;
-  if FUncompressedData <> nil then result += FUncompressedData.Size;
+    inc(result, FCompressedDataArray[i].Size);
+  if FUncompressedData <> nil then inc(result, FUncompressedData.Size);
 end;
 
 { Do one compress step or return false }
@@ -152,7 +156,7 @@ begin
         partSize := integer(FUncompressedData.Size - FCompressionProgress);
 
     comp := Tcompressionstream.Create(CompressionLevel,FCompressedDataArray[high(FCompressedDataArray)],true);
-    comp.write(partSize,sizeof(partSize));
+    LEWriteLongint(comp, partSize);
     comp.CopyFrom(FUncompressedData,partSize);
     comp.Free;
     inc(FCompressionProgress, partSize);
@@ -162,41 +166,27 @@ begin
   result := true;
 end;
 
-{$hints off}
-function WinReadLongint(Stream: TStream): longint;
-begin
-  stream.Read(Result, sizeof(Result));
-  Result := LEtoN(Result);
-end;
-{$hints on}
-
-procedure WinWriteLongint(Stream: TStream; AValue: LongInt);
-begin
-  AValue := NtoLE(AValue);
-  stream.Write(AValue, sizeof(AValue));
-end;
-
 procedure TBGRACompressableBitmap.WriteToStream(AStream: TStream);
 var i:integer;
 begin
   repeat
   until not Compress;
-  WinWriteLongint(AStream,FWidth);
-  WinWriteLongint(AStream,FHeight);
-  WinWriteLongint(AStream,length(FCaption));
+  LEWriteLongint(AStream,FWidth);
+  LEWriteLongint(AStream,FHeight);
+  LEWriteLongint(AStream,length(FCaption));
   AStream.Write(FCaption[1],length(FCaption));
   if (FWidth=0) or (FHeight = 0) then exit;
 
-  WinWriteLongint(AStream,FBounds.Left);
-  WinWriteLongint(AStream,FBounds.Top);
-  WinWriteLongint(AStream,FBounds.Right);
-  WinWriteLongint(AStream,FBounds.Bottom);
-  WinWriteLongint(AStream,ord(FLineOrder));
+  LEWriteLongint(AStream,FBounds.Left);
+  LEWriteLongint(AStream,FBounds.Top);
+  LEWriteLongint(AStream,FBounds.Right);
+  LEWriteLongint(AStream,FBounds.Bottom);
+  LEWriteLongint(AStream,ord(FLineOrder));
 
-  WinWriteLongint(AStream,length(FCompressedDataArray));
+  LEWriteLongint(AStream,length(FCompressedDataArray));
   for i := 0 to high(FCompressedDataArray) do
   begin
-    WinWriteLongint(AStream,FCompressedDataArray[i].Size);
+    LEWriteLongint(AStream,FCompressedDataArray[i].Size);
     FCompressedDataArray[i].Position := 0;
     AStream.CopyFrom(FCompressedDataArray[i],FCompressedDataArray[i].Size);
   end;
@@ -206,9 +196,9 @@ procedure TBGRACompressableBitmap.ReadFromStream(AStream: TStream);
 var size,i: integer;
 begin
   FreeData;
-  FWidth := WinReadLongint(AStream);
-  FHeight := WinReadLongint(AStream);
-  setlength(FCaption,WinReadLongint(AStream));
+  FWidth := LEReadLongint(AStream);
+  FHeight := LEReadLongint(AStream);
+  setlength(FCaption,LEReadLongint(AStream));
   AStream.Read(FCaption[1],length(FCaption));
   if (FWidth=0) or (FHeight = 0) then
   begin
@@ -216,16 +206,16 @@ begin
     exit;
   end;
 
-  FBounds.Left := WinReadLongint(AStream);
-  FBounds.Top := WinReadLongint(AStream);
-  FBounds.Right := WinReadLongint(AStream);
-  FBounds.Bottom := WinReadLongint(AStream);
-  FLineOrder := TRawImageLineOrder(WinReadLongint(AStream));
+  FBounds.Left := LEReadLongint(AStream);
+  FBounds.Top := LEReadLongint(AStream);
+  FBounds.Right := LEReadLongint(AStream);
+  FBounds.Bottom := LEReadLongint(AStream);
+  FLineOrder := TRawImageLineOrder(LEReadLongint(AStream));
 
-  setlength(FCompressedDataArray,WinReadLongint(AStream));
+  setlength(FCompressedDataArray,LEReadLongint(AStream));
   for i := 0 to high(FCompressedDataArray) do
   begin
-    size := WinReadLongint(AStream);
+    size := LEReadLongint(AStream);
     FCompressedDataArray[i] := TMemoryStream.Create;
     FCompressedDataArray[i].CopyFrom(AStream,size);
   end;
@@ -245,9 +235,7 @@ begin
   begin
     FCompressedDataArray[i].Position := 0;
     decomp := Tdecompressionstream.Create(FCompressedDataArray[i],true);
-    {$hints off}
-    decomp.read(partSize,sizeof(partSize));
-    {$hints on}
+    partSize := LEReadLongint(decomp);
     FUncompressedData.CopyFrom(decomp,partSize);
     decomp.Free;
     FreeAndNil(FCompressedDataArray[i]);
@@ -305,7 +293,7 @@ begin
   if (FBounds.Left <> 0) or (FBounds.Top <> 0)
     or (FBounds.Right <> Source.Width) or (FBounds.Bottom <> Source.Height) then
   begin
-    UsedPart := Source.GetPart(FBounds) as TBGRABitmap;
+    UsedPart := Source.GetPart(FBounds);
     If TBGRAPixel_RGBAOrder then UsedPart.SwapRedBlue;
     FUncompressedData.Write(UsedPart.Data^,NbUsedPixels*Sizeof(TBGRAPixel));
     FLineOrder := UsedPart.LineOrder;

@@ -1,23 +1,10 @@
+// SPDX-License-Identifier: LGPL-3.0-linking-exception
 unit BGRAImageManipulation;
 
 { ============================================================================
   BGRAImageManipulation Unit
 
-  Copyright (C) 2011 - Emerson Cavalcanti <emersoncavalcanti at googlesites>
-
-  This library is free software; you can redistribute it and/or modify it
-  under the terms of the GNU Library General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or (at your
-  option) any later version.
-
-  This program is distributed in the hope that it will be useful, but WITHOUT
-  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
-  for more details.
-
-  You should have received a copy of the GNU Library General Public License
-  along with this library; if not, write to the Free Software Foundation,
-  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+  originally written in 2011 by - Emerson Cavalcanti <emersoncavalcanti at googlesites>
 
   ============================================================================
   Description:
@@ -70,13 +57,39 @@ unit BGRAImageManipulation;
   ============================================================================
 }
 
-{$mode objfpc}{$H+}
+{******************************* CONTRIBUTOR(S) ******************************
+- Edivando S. Santos Brasil | mailedivando@gmail.com
+  (Compatibility with delphi VCL 11/2018)
+
+***************************** END CONTRIBUTOR(S) *****************************}
+{$I bgracontrols.inc}
 
 interface
 
 uses
-  Classes, Contnrs, SysUtils, LResources, Forms, Controls, BGRABitmap, BGRABitmapTypes,
-  Graphics, Dialogs, LCLIntf, BGRAGradientScanner;
+  Classes, Contnrs, SysUtils, {$IFDEF FPC}LCLIntf, LResources,{$ENDIF}
+  Forms, Controls, Graphics, Dialogs,
+  {$IFNDEF FPC}Windows, Messages, BGRAGraphics, GraphType, FPImage, {$ENDIF}
+  BCBaseCtrls, BGRABitmap, BGRABitmapTypes, BGRAGradientScanner;
+
+  {$IFNDEF FPC}
+const
+  crSizeNW      = TCursor(-23);
+  crSizeN       = TCursor(-24);
+  crSizeNE      = TCursor(-25);
+  crSizeW       = TCursor(-26);
+  crSizeE       = TCursor(-27);
+  crSizeSW      = TCursor(-28);
+  crSizeS       = TCursor(-29);
+  crSizeSE      = TCursor(-30);
+  crUpArrow     = TCursor(-10);
+  crHourGlass   = TCursor(-11);
+  crDrag        = TCursor(-12);
+  crNoDrop      = TCursor(-13);
+  crHSplit      = TCursor(-14);
+  crVSplit      = TCursor(-15);
+  crMultiDrag   = TCursor(-16);
+  {$ENDIF}
 
 type
   TCoord = packed record
@@ -140,7 +153,7 @@ type
 
   { TBGRAImageManipulation }
 
-  TBGRAImageManipulation = class(TGraphicControl)
+  TBGRAImageManipulation = class(TBGRAGraphicCtrl)
   private
     { Private declarations }
 
@@ -241,7 +254,7 @@ type
     property Empty: boolean Read getEmpty;
   end;
 
-procedure Register;
+{$IFDEF FPC}procedure Register;{$ENDIF}
 
 implementation
 
@@ -588,7 +601,7 @@ begin
       end;
 
       // Apply calculated dimensions of width on height
-      if (RecalculatesOtherAxis) then
+      if {%H-}(RecalculatesOtherAxis) then
       begin
         if (calcHeight > 0) then
           calcHeight := Trunc(calcWidth * (fRatio.Vertical / fRatio.Horizontal))
@@ -1085,7 +1098,7 @@ begin
           rCropArea :=rCropAreas[i];
           rCropRectI :=rCropArea.Area;
           InflateRect(rCropRectI, AnchorSize, AnchorSize);
-          if (PtInRect(rCropRectI, APoint)) then
+          if ({$IFNDEF FPC}BGRAGraphics.{$ENDIF}PtInRect(rCropRectI, APoint)) then
           begin
                rCropRect :=rCropArea.Area;
                // Verifies that is positioned on an anchor
@@ -1323,9 +1336,9 @@ begin
 
   // Draw 3D border
   fBackground.CanvasBGRA.Frame3D(Border, 1, bvLowered,
-    ColorToBGRA(ColorToRGB(clBtnHighlight)), ColorToBGRA(ColorToRGB(cl3DDkShadow)));
+    clBtnHighlight, cl3DDkShadow);
   fBackground.CanvasBGRA.Frame3D(Border, 1, bvLowered,
-    ColorToBGRA(ColorToRGB(cl3DLight)), ColorToBGRA(ColorToRGB(clBtnShadow)));
+    cl3DLight, clBtnShadow);
 
   DrawCheckers(fBackground, Border);
 end;
@@ -2112,7 +2125,6 @@ end;
 procedure TBGRAImageManipulation.setKeepAspectRatio(const Value: boolean);
 Var
    i           :Integer;
-   curCropArea :TCropArea;
 
 begin
   if (Value <> fKeepAspectRatio) then
@@ -2157,7 +2169,6 @@ var
   Count, XValue, YValue: integer;
   AspectRatioText: string;
    i           :Integer;
-   curCropArea :TCropArea;
 
 begin
   if (Value <> fAspectRatio) then
@@ -2337,7 +2348,7 @@ begin
     fMouseCaught := True;
     fStartPoint  := Point(X - WorkRect.Left, Y - WorkRect.Top);
 
-    rSelectedCropArea :=Self.isOverAnchor(fStartPoint, fAnchorSelected, ACursor);
+    rSelectedCropArea :=Self.isOverAnchor(fStartPoint, fAnchorSelected, {%H-}ACursor);
 
     if (fAnchorSelected <> []) then
     begin
@@ -2370,7 +2381,7 @@ var
   Direction: TDirection;
   Bounds: TRect;
   overControl: boolean;
-  overCropArea :TCropArea;
+  {%H-}overCropArea :TCropArea;
   ACursor      :TCursor;
 
 begin
@@ -2571,6 +2582,7 @@ begin
       fEndPoint := Point(X - WorkRect.Left, Y - WorkRect.Top);
 
       // Verifies that is positioned on an anchor
+      ACursor := crDefault;
       overCropArea :=Self.isOverAnchor(fEndPoint, fAnchorSelected, ACursor);
       Cursor :=ACursor;
     end;
@@ -2622,25 +2634,25 @@ begin
       begin
         rSelectedCropArea :=rNewCropArea;
         rNewCropArea :=Nil;
-      end;
 
-      if (rSelectedCropArea.Area.Left > rSelectedCropArea.Area.Right) then
-      begin
-        // Swap left and right coordinates
-        temp := rSelectedCropArea.Area.Left;
-        rSelectedCropArea.Area.Left := rSelectedCropArea.Area.Right;
-        rSelectedCropArea.Area.Right := temp;
-      end;
+        if (rSelectedCropArea.Area.Left > rSelectedCropArea.Area.Right) then
+        begin
+          // Swap left and right coordinates
+          temp := rSelectedCropArea.Area.Left;
+          rSelectedCropArea.Area.Left := rSelectedCropArea.Area.Right;
+          rSelectedCropArea.Area.Right := temp;
+        end;
 
-      if (rSelectedCropArea.Area.Top > rSelectedCropArea.Area.Bottom) then
-      begin
-        // Swap left and right coordinates
-        temp := rSelectedCropArea.Area.Top;
-        rSelectedCropArea.Area.Top := rSelectedCropArea.Area.Bottom;
-        rSelectedCropArea.Area.Bottom := temp;
-      end;
+        if (rSelectedCropArea.Area.Top > rSelectedCropArea.Area.Bottom) then
+        begin
+          // Swap left and right coordinates
+          temp := rSelectedCropArea.Area.Top;
+          rSelectedCropArea.Area.Top := rSelectedCropArea.Area.Bottom;
+          rSelectedCropArea.Area.Bottom := temp;
+        end;
 
-      needRepaint := True;
+        needRepaint := True;
+      end;
     end;
 
     fAnchorSelected := [];
@@ -2660,10 +2672,14 @@ end;
  { =====[ Register Function ]================================================== }
  { ============================================================================ }
 
+{$IFDEF FPC}
 procedure Register;
 begin
+  {$IFDEF FPC}
   {$I icons\BGRAImageManipulation_icon.lrs}
+  {$ENDIF}
   RegisterComponents('BGRA Controls', [TBGRAImageManipulation]);
 end;
+{$ENDIF}
 
 end.

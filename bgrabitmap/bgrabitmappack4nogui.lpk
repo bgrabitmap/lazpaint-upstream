@@ -26,11 +26,17 @@
           <GenerateDebugInfo Value="False"/>
         </Debugging>
       </Linking>
+      <Other>
+        <CustomOptions Value="-dBGRABITMAP_DONT_USE_LCL"/>
+        <OtherDefines Count="1">
+          <Define0 Value="$DEFINE BGRABITMAP_DONT_USE_LCL"/>
+        </OtherDefines>
+      </Other>
     </CompilerOptions>
     <Description Value="Drawing routines with alpha blending and antialiasing"/>
     <License Value="modified LGPL"/>
-    <Version Major="8" Minor="9" Release="2"/>
-    <Files Count="93">
+    <Version Major="11" Minor="3" Release="1"/>
+    <Files Count="108">
       <Item1>
         <Filename Value="bgraanimatedgif.pas"/>
         <UnitName Value="BGRAAnimatedGif"/>
@@ -403,6 +409,66 @@
         <Filename Value="bgracanvasgl.pas"/>
         <UnitName Value="BGRACanvasGL"/>
       </Item93>
+      <Item94>
+        <Filename Value="bgraphoxo.pas"/>
+        <UnitName Value="BGRAPhoxo"/>
+      </Item94>
+      <Item95>
+        <Filename Value="bgrafilterscanner.pas"/>
+        <UnitName Value="BGRAFilterScanner"/>
+      </Item95>
+      <Item96>
+        <Filename Value="bgrafiltertype.pas"/>
+        <UnitName Value="BGRAFilterType"/>
+      </Item96>
+      <Item97>
+        <Filename Value="bgrafilterblur.pas"/>
+        <UnitName Value="BGRAFilterBlur"/>
+      </Item97>
+      <Item98>
+        <Filename Value="bgramultifiletype.pas"/>
+        <UnitName Value="BGRAMultiFileType"/>
+      </Item98>
+      <Item99>
+        <Filename Value="bgrawinresource.pas"/>
+        <UnitName Value="BGRAWinResource"/>
+      </Item99>
+      <Item100>
+        <Filename Value="bgraunicode.pas"/>
+        <UnitName Value="BGRAUnicode"/>
+      </Item100>
+      <Item101>
+        <Filename Value="bezier.inc"/>
+        <Type Value="Include"/>
+      </Item101>
+      <Item102>
+        <Filename Value="bgraclasses.pas"/>
+        <UnitName Value="BGRAClasses"/>
+      </Item102>
+      <Item103>
+        <Filename Value="bgrascanner.inc"/>
+        <Type Value="Include"/>
+      </Item103>
+      <Item104>
+        <Filename Value="bgrapixel.inc"/>
+        <Type Value="Include"/>
+      </Item104>
+      <Item105>
+        <Filename Value="extendedcolorspace.inc"/>
+        <Type Value="Include"/>
+      </Item105>
+      <Item106>
+        <Filename Value="generatedcolorspace.inc"/>
+        <Type Value="Include"/>
+      </Item106>
+      <Item107>
+        <Filename Value="generatedunicode.inc"/>
+        <Type Value="Include"/>
+      </Item107>
+      <Item108>
+        <Filename Value="generatedutf8.inc"/>
+        <Type Value="Include"/>
+      </Item108>
     </Files>
     <RequiredPkgs Count="2">
       <Item1>
@@ -418,7 +484,6 @@
     </UsageOptions>
     <PublishOptions>
       <Version Value="2"/>
-      <IgnoreBinaries Value="False"/>
     </PublishOptions>
     <CustomOptions Items="ExternHelp" Version="2">
       <_ExternHelp Items="Count"/>

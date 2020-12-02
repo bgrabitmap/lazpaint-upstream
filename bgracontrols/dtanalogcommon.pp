@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-linking-exception
 {
   Part of BGRA Controls. Made by third party.
   For detailed information see readme.txt
@@ -5,31 +6,6 @@
   Site: https://sourceforge.net/p/bgra-controls/
   Wiki: http://wiki.lazarus.freepascal.org/BGRAControls
   Forum: http://forum.lazarus.freepascal.org/index.php/board,46.0.html
-
-  This library is free software; you can redistribute it and/or modify it
-  under the terms of the GNU Library General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or (at your
-  option) any later version with the following modification:
-
-  As a special exception, the copyright holders of this library give you
-  permission to link this library with independent modules to produce an
-  executable, regardless of the license terms of these independent modules,and
-  to copy and distribute the resulting executable under terms of your choice,
-  provided that you also meet, for each linked independent module, the terms
-  and conditions of the license of that module. An independent module is a
-  module which is not derived from or based on this library. If you modify
-  this library, you may extend this exception to your version of the library,
-  but you are not obligated to do so. If you do not wish to do so, delete this
-  exception statement from your version.
-
-  This program is distributed in the hope that it will be useful, but WITHOUT
-  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
-  for more details.
-
-  You should have received a copy of the GNU Library General Public License
-  along with this library; if not, write to the Free Software Foundation,
-  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 }
 
 unit DTAnalogCommon;
@@ -245,7 +221,7 @@ type
     procedure SetFaceSettings(AValue: TDTFaceSettings);
     procedure SetScaleSettings(AValue: TDTScaleSettings);
   protected
-    procedure DoChange(Sender: TObject);
+    procedure DoChange({%H-}Sender: TObject);
   public
     fGaugeBitmap: TBGRABitmap;
     FFrameBitmap: TBGRABitmap;
@@ -265,8 +241,6 @@ function Initializebitmap(var Bitmap: TBGRABitmap; Width, Height: integer): TDTO
 implementation
 
 function Initializebitmap(var Bitmap: TBGRABitmap; Width, Height: integer): TDTOrigin;
-var
-  x, y: integer;
 begin
 
   Bitmap.SetSize(Width, Height);
@@ -397,7 +371,7 @@ end;
 
 constructor TDTPointerSettings.Create;
 begin
-  FColor := BGRAToColor(BGRA(199, 199, 173));
+  FColor := BGRA(199, 199, 173);
   FLength := 100;
   FThickness := 3;
 end;
@@ -499,7 +473,7 @@ begin
   // Draw Bitmap frame
   FFrameBitmap.FillEllipseAntialias(Origin.CenterPoint.x,
     Origin.CenterPoint.y,
-    r, r, ColorToBGRA(FFaceSettings.ColorFrame));
+    r, r, FFaceSettings.ColorFrame);
 
   // Draw thin antialiased border to smooth against background
   FFrameBitmap.EllipseAntialias(Origin.CenterPoint.x,
@@ -522,7 +496,7 @@ begin
     fsGradient:
       FFaceBitmap.FillEllipseLinearColorAntialias(Origin.CenterPoint.x, Origin.CenterPoint.y, r, r, ColorToBGRA(FFaceSettings.ColorStart), ColorToBGRA(FFaceSettings.ColorEnd));
     fsnone:
-      FFaceBitmap.FillEllipseAntialias(Origin.CenterPoint.x, Origin.CenterPoint.y, r, r, ColorToBGRA(FFaceSettings.ColorStart));
+      FFaceBitmap.FillEllipseAntialias(Origin.CenterPoint.x, Origin.CenterPoint.y, r, r, FFaceSettings.ColorStart);
   end;
 
 end;
@@ -601,12 +575,12 @@ end;
 
 constructor TDTNeedleSettings.Create;
 begin
-  FCapColor := BGRAToColor(BGRA(63, 63, 63));
-  FCapEdgeColor := BGRAToColor(BGRA(220, 220, 204));
+  FCapColor := BGRA(63, 63, 63);
+  FCapEdgeColor := BGRA(220, 220, 204);
   FCapRadius := 10;
 
   FNeedleStyle := nsLine;
-  FNeedleColor := BGRAToColor(BGRA(255, 81, 81));
+  FNeedleColor := BGRA(255, 81, 81);
   FNeedleLength := 100;
 end;
 
@@ -619,8 +593,8 @@ end;
 
 constructor TDTScaleSettings.Create;
 begin
-  FTickColor := BGRAToColor(bgra(223, 196, 125));
-  FTextColor := BGRAToColor(bgra(140, 208, 211));
+  FTickColor := bgra(223, 196, 125);
+  FTextColor := bgra(140, 208, 211);
   FTextFont := 'Calibri';
   FTextSize := 15;
   FEnableMainTicks := True;
@@ -833,9 +807,9 @@ end;
 
 constructor TDTFaceSettings.Create;
 begin
-  FColorFrame := BGRAToColor(BGRA(35, 35, 35));
-  FColorStart := BGRAToColor(BGRA(63, 63, 63));
-  FColorEnd := BGRAToColor(BGRA(93, 93, 93));
+  FColorFrame := BGRA(35, 35, 35);
+  FColorStart := BGRA(63, 63, 63);
+  FColorEnd := BGRA(93, 93, 93);
   FFillStyle := fsGradient;
 end;
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 unit LazPaintType;
 
 {$mode objfpc}{$H+}
@@ -5,35 +6,28 @@ unit LazPaintType;
 interface
 
 uses
-  Classes, SysUtils, Inifiles, BGRABitmap, BGRABitmapTypes, uconfig, uimage, utool, Forms, BGRALayers, Graphics, Menus,
-  uscripting, Dialogs, Controls
+  Classes, SysUtils, Inifiles, BGRABitmap, BGRABitmapTypes, UConfig, UImage, UTool, Forms, BGRALayers, Graphics, Menus,
+  UScripting, Dialogs, Controls
   {$IFDEF LINUX}, InterfaceBase{$ENDIF};
 
 const
-  //Version Number (to increment at each release)
-  //Also increment in project options > information on version
-  LazPaintCurrentVersionOnly = '6.4.1';
+  LazPaintVersion = 7010600;
+
+  function LazPaintVersionStr: string;
 
   {
 
   Improvements accepted:
   ----------------------
   Mac:
-  - Combobox ownerdrawn (brush, arrow)
-  - update image preview when saving
-  - filename fix
-  - ctrl shortcut to change
+  - combobox dropdown rect without scrollbar
   Scripting
   Color picker
   - From final image
   - With radius
   Translation of curve modes (in dropdown)
   Lasso
-  Raccourcis clavier pour utiliser le bouton droit
   Utiliser les touches de direction
-  Indiquer l'outil actif
-  Rotation des objets des outils
-  Afficher les coordonnees des points (snap de la valeur en haut?)
   Mettre a jour le curseur quand on change d'outil (notamment avec Espace)
 
   Possible improvements:
@@ -41,7 +35,6 @@ const
   Integrate tools in window (partly done)
   Hue/color blend mode
   Acquisition (Twain)
-  Graphic tablet support : http://forum.lazarus.freepascal.org/index.php/topic,20489.0.html
 
   Format:
   - TIM image format
@@ -49,7 +42,6 @@ const
   - load/save RAW
 
   Filters:
-  - filtre de vagues concentriques
   - filtre de vagues en translation
   - filtre pontillisme
   - G'MIC filters
@@ -67,20 +59,19 @@ const
   }
 
 const
-  {$IFDEF CPU64}
-    LazPaintProcessorInfo = ' (64-bit)';
-  {$ELSE}
-    LazPaintProcessorInfo = ' (32-bit)';
-  {$ENDIF}
-  LazPaintCurrentVersion : String=LazPaintCurrentVersionOnly + LazPaintProcessorInfo;
   OriginalDPI = 96;
+  ToolWindowFixedSize = {$IFDEF LINUX}bsDialog{$ELSE}bsToolWindow{$ENDIF};
+  ToolWindowSizeable = {$IFDEF LINUX}bsSizeable{$ELSE}bsSizeToolWin{$ENDIF};
+  ToolWindowStyle = {$IF defined(LINUX) and defined(LCLqt5)}fsNormal{$ELSE}fsStayOnTop{$ENDIF};
+
+  function LazPaintCurrentVersion : String;
 
 type
   TPictureFilter = (pfNone,
                     pfBlurPrecise, pfBlurRadial, pfBlurFast, pfBlurBox, pfBlurCorona, pfBlurDisk, pfBlurMotion, pfBlurCustom,
                     pfSharpen, pfSmooth, pfMedian, pfNoise, pfPixelate, pfClearType, pfClearTypeInverse, pfFunction,
                     pfEmboss, pfPhong, pfContour, pfGrayscale, pfNegative, pfLinearNegative, pfComplementaryColor, pfNormalize,
-                    pfSphere, pfTwirl, pfCylinder, pfPlane,
+                    pfSphere, pfTwirl, pfWaveDisplacement, pfCylinder, pfPlane,
                     pfPerlinNoise,pfCyclicPerlinNoise,pfClouds,pfCustomWater,pfWater,pfRain,pfWood,pfWoodVertical,pfPlastik,pfMetalFloor,pfCamouflage,
                     pfSnowPrint,pfStone,pfRoundStone,pfMarble);
 
@@ -90,7 +81,7 @@ const
                     'BlurPrecise', 'BlurRadial', 'BlurFast', 'BlurBox', 'BlurCorona', 'BlurDisk', 'BlurMotion', 'BlurCustom',
                     'Sharpen', 'Smooth', 'Median', 'Noise', 'Pixelate', 'ClearType', 'ClearTypeInverse', 'Function',
                     'Emboss', 'Phong', 'Contour', 'Grayscale', 'Negative', 'LinearNegative', 'ComplementaryColor', 'Normalize',
-                    'Sphere', 'Twirl', 'Cylinder', 'Plane',
+                    'Sphere', 'Twirl', 'WaveDisplacement', 'Cylinder', 'Plane',
                     'PerlinNoise','CyclicPerlinNoise','Clouds','CustomWater','Water','Rain','Wood','WoodVertical','Plastik','MetalFloor','Camouflage',
                     'SnowPrint','Stone','RoundStone','Marble');
 
@@ -99,12 +90,11 @@ const
                     false, false, false, false, false, false, false, false,
                     false, false, false, false, false, true, true, true,
                     false, true, false, false, false, false, false, false,
-                    false, false, false, false,
+                    false, false, false, false, false,
                     false,false,true,true,true,true,true,true,true,true,true,
                     true,true,true,true);
 
 const
-  OutsideColor = TColor($00E8D1BB);
   MinZoomForGrid = 4;
 
 type
@@ -113,6 +103,7 @@ type
      c: TPointF;
      rx,ry: single;
   end;
+  ArrayOfLayerId = array of integer;
 
 const
   OnlyRenderChange : TRect = (left:-32768;top:-32768;right:0;bottom:0);
@@ -121,9 +112,25 @@ function IsOnlyRenderChange(const ARect:TRect): boolean;
 
 type
     ArrayOfBGRABitmap = array of TBGRABitmap;
-    TColorTarget = (ctForeColor, ctBackColor);
+    TColorTarget = (ctForeColorSolid, ctForeColorStartGrad, ctForeColorEndGrad,
+                    ctBackColorSolid, ctBackColorStartGrad, ctBackColorEndGrad,
+                    ctOutlineColorSolid, ctOutlineColorStartGrad, ctOutlineColorEndGrad);
     TFlipOption = (foAuto, foWholePicture, foSelection, foCurrentLayer);
 
+    PImageEntry = ^TImageEntry;
+
+    { TImageEntry }
+
+    TImageEntry = object
+      bmp: TBGRABitmap;
+      bpp: integer;
+      frameIndex, frameCount: integer;
+      isDuplicate: boolean;
+      class function Empty: TImageEntry; static;
+      class function NewFrameIndex: integer; static;
+      procedure FreeAndNil;
+    end;
+    ArrayOfImageEntry = array of TImageEntry;
 
 type
     TLatestVersionUpdateHandler = procedure(ANewVersion: string) of object;
@@ -138,12 +145,15 @@ type
      defined: boolean;
      toolboxHidden, choosecolorHidden, layerstackHidden, imagelistHidden: NativeInt;
   end;
+  TCheckFunction = function: boolean of object;
 
   { TLazPaintCustomInstance }
 
   TLazPaintCustomInstance = class(TInterfacedObject,IConfigProvider)
   private
     FBlackAndWhite: boolean;
+    function GetDarkTheme: boolean;
+    procedure SetDarkTheme(AValue: boolean);
   protected
     FRestartQuery: boolean;
     function QueryInterface({$IFDEF FPC_HAS_CONSTREF}constref{$ELSE}const{$ENDIF} IID: TGUID; out Obj): HResult; {$IF (not defined(WINDOWS)) AND (FPC_FULLVERSION>=20501)}cdecl{$ELSE}stdcall{$IFEND};
@@ -169,12 +179,18 @@ type
 
     function GetConfig: TLazPaintConfig; virtual; abstract;
     function GetImage: TLazPaintImage; virtual; abstract;
+    function GetImageAction: TObject; virtual; abstract;
     function GetToolManager: TToolManager; virtual; abstract;
     procedure SetBlackAndWhite(AValue: boolean); virtual;
     function GetZoomFactor: single; virtual;
 
+    function GetUpdateStackOnTimer: boolean; virtual; abstract;
+    procedure SetUpdateStackOnTimer(AValue: boolean); virtual; abstract;
+
     function GetChooseColorHeight: integer; virtual; abstract;
     function GetChooseColorWidth: integer; virtual; abstract;
+    procedure SetChooseColorHeight(AValue: integer); virtual; abstract;
+    procedure SetChooseColorWidth(AValue: integer); virtual; abstract;
     function GetChooseColorVisible: boolean; virtual; abstract;
     procedure SetChooseColorVisible(const AValue: boolean); virtual; abstract;
     function GetChooseColorTarget: TColorTarget; virtual; abstract;
@@ -207,47 +223,63 @@ type
 
     constructor Create; virtual; abstract;
     constructor Create(AEmbedded: boolean); virtual; abstract;
+    procedure RegisterThemeListener(AHandler: TNotifyEvent; ARegister: boolean); virtual; abstract;
+    procedure NotifyThemeChanged; virtual; abstract;
+    procedure StartLoadingImage(AFilename: string); virtual; abstract;
+    procedure EndLoadingImage; virtual; abstract;
+    procedure StartSavingImage(AFilename: string); virtual; abstract;
+    procedure EndSavingImage; virtual; abstract;
+    procedure ReportActionProgress(AProgressPercent: integer); virtual; abstract;
     procedure SaveMainWindowPosition; virtual; abstract;
     procedure RestoreMainWindowPosition; virtual; abstract;
     procedure Donate; virtual; abstract;
     procedure UseConfig(ini: TInifile); virtual; abstract;
     procedure AssignBitmap(bmp: TBGRABitmap); virtual; abstract;
     procedure EditBitmap(var bmp: TBGRABitmap; ConfigStream: TStream = nil; ATitle: String = ''; AOnRun: TLazPaintInstanceEvent = nil; AOnExit: TLazPaintInstanceEvent = nil; ABlackAndWhite : boolean = false); virtual; abstract;
-    procedure EditTexture; virtual; abstract;
+    function EditTexture(ASource: TBGRABitmap): TBGRABitmap; virtual; abstract;
     procedure EditSelection; virtual; abstract;
     function ProcessCommandLine: boolean; virtual; abstract;
     function ProcessCommands(commands: TStringList): boolean; virtual; abstract;
     procedure ChangeIconSize(size: integer); virtual; abstract;
     procedure Show; virtual; abstract;
-    procedure Hide; virtual; abstract;
+    function Hide: boolean; virtual; abstract;
     procedure Run; virtual; abstract;
     procedure Restart; virtual; abstract;
     procedure CancelRestart; virtual; abstract;
     procedure NotifyImageChange(RepaintNow: boolean; ARect: TRect); virtual; abstract;
     procedure NotifyImageChangeCompletely(RepaintNow: boolean); virtual; abstract;
+    procedure NotifyImagePaint; virtual; abstract;
     procedure NotifyStackChange; virtual; abstract;
-    function TryOpenFileUTF8(filename: string): boolean; virtual; abstract;
-    function ExecuteFilter(filter: TPictureFilter; skipDialog: boolean = false): boolean; virtual; abstract;
+    function TryOpenFileUTF8(filename: string; skipDialogIfSingleImage: boolean = false): boolean; virtual; abstract;
+    function ExecuteFilter(filter: TPictureFilter; skipDialog: boolean = false): TScriptResult; virtual; abstract;
+    function RunScript(AFilename: string; ACaption: string = ''): boolean; virtual; abstract;
+    procedure AdjustChooseColorHeight; virtual; abstract;
     procedure ColorFromFChooseColor; virtual; abstract;
     procedure ColorToFChooseColor; virtual; abstract;
-    function ShowSaveOptionDlg(AParameters: TVariableSet; AOutputFilenameUTF8: string): boolean; virtual; abstract;
-    function ShowColorIntensityDlg(AParameters: TVariableSet): boolean; virtual; abstract;
-    function ShowColorLightnessDlg(AParameters: TVariableSet): boolean; virtual; abstract;
-    function ShowShiftColorsDlg(AParameters: TVariableSet): boolean; virtual; abstract;
-    function ShowColorizeDlg(AParameters: TVariableSet): boolean; virtual; abstract;
-    function ShowColorCurvesDlg(AParameters: TVariableSet): boolean; virtual; abstract;
-    function ShowRadialBlurDlg(AFilterConnector: TObject;blurType:TRadialBlurType; ACaption: string = ''):boolean; virtual; abstract;
-    function ShowMotionBlurDlg(AFilterConnector: TObject):boolean; virtual; abstract;
-    function ShowCustomBlurDlg(AFilterConnector: TObject):boolean; virtual; abstract;
-    function ShowEmbossDlg(AFilterConnector: TObject):boolean; virtual; abstract;
-    function ShowRainDlg(AFilterConnector: TObject):boolean; virtual; abstract;
-    function ShowPixelateDlg(AFilterConnector: TObject):boolean; virtual; abstract;
-    function ShowNoiseFilterDlg(AFilterConnector: TObject):boolean; virtual; abstract;
-    function ShowTwirlDlg(AFilterConnector: TObject):boolean; virtual; abstract;
-    function ShowPhongFilterDlg(AFilterConnector: TObject): boolean; virtual; abstract;
-    function ShowFunctionFilterDlg(AFilterConnector: TObject): boolean; virtual; abstract;
-    function ShowSharpenDlg(AFilterConnector: TObject):boolean; virtual; abstract;
-    function ShowPosterizeDlg(AParameters: TVariableSet):boolean; virtual; abstract;
+    procedure ExitColorEditor; virtual; abstract;
+    function ColorEditorActive: boolean; virtual; abstract;
+    function GetColor(ATarget: TColorTarget): TBGRAPixel;
+    procedure SetColor(ATarget: TColorTarget; AColor: TBGRAPixel);
+    function ShowSaveOptionDlg(AParameters: TVariableSet; AOutputFilenameUTF8: string;
+                               ASkipOptions: boolean; AExport: boolean): boolean; virtual; abstract;
+    function ShowColorIntensityDlg(AParameters: TVariableSet): TScriptResult; virtual; abstract;
+    function ShowColorLightnessDlg(AParameters: TVariableSet): TScriptResult; virtual; abstract;
+    function ShowShiftColorsDlg(AParameters: TVariableSet): TScriptResult; virtual; abstract;
+    function ShowColorizeDlg(AParameters: TVariableSet): TScriptResult; virtual; abstract;
+    function ShowColorCurvesDlg(AParameters: TVariableSet): TScriptResult; virtual; abstract;
+    function ShowRadialBlurDlg(AFilterConnector: TObject; blurType:TRadialBlurType; ACaption: string = ''): TScriptResult; virtual; abstract;
+    function ShowMotionBlurDlg(AFilterConnector: TObject): TScriptResult; virtual; abstract;
+    function ShowCustomBlurDlg(AFilterConnector: TObject): TScriptResult; virtual; abstract;
+    function ShowEmbossDlg(AFilterConnector: TObject): TScriptResult; virtual; abstract;
+    function ShowRainDlg(AFilterConnector: TObject): TScriptResult; virtual; abstract;
+    function ShowPixelateDlg(AFilterConnector: TObject): TScriptResult; virtual; abstract;
+    function ShowNoiseFilterDlg(AFilterConnector: TObject): TScriptResult; virtual; abstract;
+    function ShowTwirlDlg(AFilterConnector: TObject): TScriptResult; virtual; abstract;
+    function ShowWaveDisplacementDlg(AFilterConnector: TObject): TScriptResult; virtual; abstract;
+    function ShowPhongFilterDlg(AFilterConnector: TObject): TScriptResult; virtual; abstract;
+    function ShowFunctionFilterDlg(AFilterConnector: TObject): TScriptResult; virtual; abstract;
+    function ShowSharpenDlg(AFilterConnector: TObject): TScriptResult; virtual; abstract;
+    function ShowPosterizeDlg(AParameters: TVariableSet): TScriptResult; virtual; abstract;
     procedure ShowPrintDlg; virtual; abstract;
     function OpenImage (FileName: string; AddToRecent: Boolean= True): boolean; virtual; abstract;
     procedure AddToImageList(const FileNames: array of String); virtual; abstract;
@@ -264,14 +296,16 @@ type
     function ShowNewImageDlg(out bitmap: TBGRABitmap):boolean; virtual; abstract;
     function ShowResampleDialog(AParameters: TVariableSet):boolean; virtual; abstract;
     procedure UpdateWindows; virtual; abstract;
-    procedure ApplyDocking; virtual; abstract;
+    procedure Wait(ACheckActive: TCheckFunction; ADelayMs: integer); virtual; abstract;
     procedure AddColorToPalette(AColor: TBGRAPixel); virtual; abstract;
     procedure RemoveColorFromPalette(AColor: TBGRAPixel); virtual; abstract;
 
     property BlackAndWhite: boolean read FBlackAndWhite write SetBlackAndWhite;
 
-    procedure ScrollLayerStackOnItem(AIndex: integer); virtual; abstract;
-    function MakeNewBitmapReplacement(AWidth, AHeight: integer): TBGRABitmap; virtual; abstract;
+    procedure ScrollLayerStackOnItem(AIndex: integer; ADelayedUpdate: boolean = true); virtual; abstract;
+    procedure InvalidateLayerStack; virtual; abstract;
+    procedure UpdateLayerStackOnTimer; virtual; abstract;
+    function MakeNewBitmapReplacement(AWidth, AHeight: integer; AColor: TBGRAPixel): TBGRABitmap; virtual; abstract;
     procedure ChooseTool(Tool : TPaintToolType); virtual; abstract;
     function GetOnlineUpdater: TLazPaintCustomOnlineUpdater; virtual;
 
@@ -285,8 +319,8 @@ type
 
     procedure MoveChooseColorTo(X,Y: integer); virtual; abstract;
     property ChooseColorVisible: boolean read GetChooseColorVisible write SetChooseColorVisible;
-    property ChooseColorWidth: integer read GetChooseColorWidth;
-    property ChooseColorHeight: integer read GetChooseColorHeight;
+    property ChooseColorWidth: integer read GetChooseColorWidth write SetChooseColorWidth;
+    property ChooseColorHeight: integer read GetChooseColorHeight write SetChooseColorHeight;
 
     procedure MoveLayerWindowTo(X,Y: integer); virtual; abstract;
     property LayerWindowWidth: integer read GetLayerWindowWidth write SetLayerWindowWidth;
@@ -302,6 +336,7 @@ type
     property ChooseColorTarget: TColorTarget read GetChooseColorTarget write setChooseColorTarget;
     property Config: TLazPaintConfig read GetConfig;
     property Image: TLazPaintImage read GetImage;
+    property ImageAction: TObject read GetImageAction;
     property ZoomFactor: single read GetZoomFactor;
     property ToolManager: TToolManager read GetToolManager;
     property Embedded: boolean read GetEmbedded;
@@ -315,12 +350,13 @@ type
     property DockLayersAndColors: boolean read GetDockLayersAndColors write SetDockLayersAndColors;
     property Fullscreen: boolean read GetFullscreen write SetFullscreen;
     property RestartQuery: boolean read FRestartQuery;
+    property DarkTheme: boolean read GetDarkTheme write SetDarkTheme;
+    property UpdateStackOnTimer: boolean read GetUpdateStackOnTimer write SetUpdateStackOnTimer;
 
     property Icons[ASize: integer]: TImageList read GetIcons;
   end;
 
 function StrToPictureFilter(const s: ansistring): TPictureFilter;
-function ConvertToUTF8IfNeeded(const s: ansistring): ansistring;
 procedure SafeSetFocus(AControl: TWinControl);
 function WindowBorderWidth(AForm: TForm): integer;
 function WindowBorderTopHeight(AForm: TForm; {%H-}AIncludeTitle: boolean): integer;
@@ -334,10 +370,41 @@ procedure SetWindowFullHeight(AForm: TForm; AHeight: integer);
 procedure SetWindowFullSize(AForm: TForm; AWidth,AHeight: integer);
 procedure SetWindowTopLeftCorner(AForm: TForm; X,Y: integer);
 function GetWindowTopLeftCorner(AForm: TForm): TPoint;
+function PascalToCSSCase(AIdentifier: string): string;
+function CSSToPascalCase(AIdentifier: string): string;
 
 implementation
 
-uses LCLType, LCLProc, LCLIntf, FileUtil, UResourceStrings{$if FPC_FULLVERSION>=030001}, LazUTF8{$endif};
+uses LCLType, BGRAUTF8, LCLIntf, FileUtil, UResourceStrings, LCVectorialFill;
+
+function LazPaintVersionStr: string;
+var numbers: TStringList;
+  i,remaining: cardinal;
+begin
+  numbers := TStringList.Create;
+  remaining := LazPaintVersion;
+  for i := 1 to 4 do
+  begin
+    numbers.Insert(0, IntToStr(remaining mod 100));
+    remaining := remaining div 100;
+  end;
+  while (numbers.Count > 1) and (numbers[numbers.Count-1]='0') do
+    numbers.Delete(numbers.Count-1);
+  numbers.Delimiter:= '.';
+  result := numbers.DelimitedText;
+  numbers.Free;
+end;
+
+function LazPaintCurrentVersion: String;
+const
+{$IFDEF CPU64}
+  LazPaintProcessorInfo = ' (64-bit)';
+{$ELSE}
+  LazPaintProcessorInfo = ' (32-bit)';
+{$ENDIF}
+begin
+  result := LazPaintVersionStr {$IFDEF DEBUG} + ' Beta'{$ENDIF} + LazPaintProcessorInfo;
+end;
 
 function IsOnlyRenderChange(const ARect: TRect): boolean;
 begin
@@ -359,14 +426,6 @@ begin
       result := pf;
       break;
     end;
-end;
-
-function ConvertToUTF8IfNeeded(const s: ansistring): ansistring;
-begin
-  if FindInvalidUTF8Character(pchar(s),length(s)) = -1 then
-    result := s
-  else
-    result := SysToUtf8(s);
 end;
 
 procedure SafeSetFocus(AControl: TWinControl);
@@ -496,6 +555,74 @@ begin
   result := Point(AForm.Left,AForm.Top);
 end;
 
+function PascalToCSSCase(AIdentifier: string): string;
+var
+  i: Integer;
+begin
+  result := AIdentifier;
+  for i := length(result) downto 1 do
+    if result[i] <> lowercase(result[i]) then
+    begin
+      result[i] := lowercase(result[i]);
+      if i > 1 then Insert('-', result, i);
+    end;
+end;
+
+function CSSToPascalCase(AIdentifier: string): string;
+var
+  i: Integer;
+begin
+  result := AIdentifier;
+  for i := length(result) downto 1 do
+  begin
+    if (i = 1) or (result[i-1] = '-') then
+      result[i] := upcase(result[i]) else
+    if result[i] = '-' then delete(result, i, 1);
+  end;
+end;
+
+{ TImageEntry }
+
+class function TImageEntry.Empty: TImageEntry;
+begin
+  result.bmp := nil;
+  result.bpp := 0;
+  result.frameIndex := -1;
+  result.frameCount := 0;
+  result.isDuplicate:= false;
+end;
+
+class function TImageEntry.NewFrameIndex: integer;
+begin
+  result := -1;
+end;
+
+procedure TImageEntry.FreeAndNil;
+begin
+  SysUtils.FreeAndNil(bmp);
+  bpp := 0;
+end;
+
+function TLazPaintCustomInstance.GetDarkTheme: boolean;
+begin
+  if Assigned(Config) then
+    result := Config.GetDarkTheme
+  else
+    result := false;
+end;
+
+procedure TLazPaintCustomInstance.SetDarkTheme(AValue: boolean);
+begin
+  if Assigned(Config) then
+  begin
+    if AValue <> Config.GetDarkTheme then
+    begin
+      Config.SetDarkTheme(AValue);
+      NotifyThemeChanged;
+    end;
+  end;
+end;
+
 { Interface gateway }
 function TLazPaintCustomInstance.QueryInterface({$IFDEF FPC_HAS_CONSTREF}constref{$ELSE}const{$ENDIF} IID: TGUID; out Obj): HResult; {$IF (not defined(WINDOWS)) AND (FPC_FULLVERSION>=20501)}cdecl{$ELSE}stdcall{$IFEND};
 begin
@@ -534,6 +661,63 @@ begin
   result := 1;
 end;
 
+function TLazPaintCustomInstance.GetColor(ATarget: TColorTarget): TBGRAPixel;
+  function GetStartColor(AFill: TVectorialFill): TBGRAPixel;
+  begin
+    if AFill.FillType = vftGradient then
+      result := AFill.Gradient.StartColor
+      else result := AFill.AverageColor;
+  end;
+  function GetEndColor(AFill: TVectorialFill): TBGRAPixel;
+  begin
+    if AFill.FillType = vftGradient then
+      result := AFill.Gradient.EndColor
+      else result := AFill.AverageColor;
+  end;
+
+begin
+  case ATarget of
+    ctForeColorSolid: result := ToolManager.ForeFill.AverageColor;
+    ctForeColorStartGrad: result := GetStartColor(ToolManager.ForeFill);
+    ctForeColorEndGrad: result := GetEndColor(ToolManager.ForeFill);
+    ctBackColorSolid: result := ToolManager.BackFill.AverageColor;
+    ctBackColorStartGrad: result := GetStartColor(ToolManager.BackFill);
+    ctBackColorEndGrad: result := GetEndColor(ToolManager.BackFill);
+    ctOutlineColorSolid: result := ToolManager.OutlineFill.AverageColor;
+    ctOutlineColorStartGrad: result := GetStartColor(ToolManager.OutlineFill);
+    ctOutlineColorEndGrad: result := GetEndColor(ToolManager.OutlineFill);
+  else
+    result := BGRAPixelTransparent;
+  end;
+  if BlackAndWhite then result := BGRAToGrayscale(result);
+end;
+
+procedure TLazPaintCustomInstance.SetColor(ATarget: TColorTarget;
+  AColor: TBGRAPixel);
+begin
+  if BlackAndWhite then AColor := BGRAToGrayscale(AColor);
+  case ATarget of
+    ctForeColorSolid: if ToolManager.ForeFill.FillType = vftSolid then
+                        ToolManager.ForeColor := AColor;
+    ctForeColorStartGrad: if ToolManager.ForeFill.FillType = vftGradient then
+                            ToolManager.ForeFill.Gradient.StartColor := AColor;
+    ctForeColorEndGrad: if ToolManager.ForeFill.FillType = vftGradient then
+                          ToolManager.ForeFill.Gradient.EndColor := AColor;
+    ctBackColorSolid: if ToolManager.BackFill.FillType = vftSolid then
+                        ToolManager.BackColor := AColor;
+    ctBackColorStartGrad: if ToolManager.BackFill.FillType = vftGradient then
+                            ToolManager.BackFill.Gradient.StartColor := AColor;
+    ctBackColorEndGrad: if ToolManager.BackFill.FillType = vftGradient then
+                          ToolManager.BackFill.Gradient.EndColor := AColor;
+    ctOutlineColorSolid: if ToolManager.OutlineFill.FillType = vftSolid then
+                        ToolManager.OutlineColor := AColor;
+    ctOutlineColorStartGrad: if ToolManager.OutlineFill.FillType = vftGradient then
+                            ToolManager.OutlineFill.Gradient.StartColor := AColor;
+    ctOutlineColorEndGrad: if ToolManager.OutlineFill.FillType = vftGradient then
+                          ToolManager.OutlineFill.Gradient.EndColor := AColor;
+  end;
+end;
+
 procedure TLazPaintCustomInstance.SetBlackAndWhite(AValue: boolean);
 begin
   if FBlackAndWhite=AValue then Exit;
@@ -542,9 +726,21 @@ end;
 
 procedure TLazPaintCustomInstance.ShowMessage(ACaption: string; AMessage: string; ADlgType: TMsgDlgType = mtInformation);
 var top: TTopMostInfo;
+  elems: TStringList;
+  res: TModalResult;
 begin
   top := HideTopmost;
-  QuestionDlg(ACaption,AMessage,ADlgType,[mrOk,rsOkay],'');
+  elems := TStringList.Create;
+  elems.Delimiter:= #9;
+  elems.StrictDelimiter:= true;
+  elems.DelimitedText:= AMessage;
+  if (elems.Count = 3) and (elems[1] = rsDownload) then
+  begin
+    res := QuestionDlg(ACaption,elems[0],ADlgType,[mrOk,rsDownload,mrCancel,rsCancel],'');
+    if res = mrOk then OpenURL(elems[2]);
+  end else
+    QuestionDlg(ACaption,AMessage,ADlgType,[mrOk,rsOkay],'');
+  elems.Free;
   ShowTopmost(top);
 end;
 

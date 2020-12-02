@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-linking-exception
 unit BGRAGifFormat;
 
 {$mode objfpc}{$H+}
@@ -5,7 +6,7 @@ unit BGRAGifFormat;
 interface
 
 uses
-  Classes, SysUtils, BGRAGraphics, BGRABitmap, BGRABitmapTypes,
+  BGRAClasses, SysUtils, BGRAGraphics, BGRABitmap, BGRABitmapTypes,
   BGRAPalette;
 
 type
@@ -71,6 +72,7 @@ type
     Width, Height: integer;
     AspectRatio: single;
     BackgroundColor: TColor;
+    LoopCount: Word;
     Images: array of TGifSubImage;
   end;
 
@@ -88,6 +90,7 @@ const
   GIFImageIntroducer     = $2c;
   GIFExtensionIntroducer = $21;
   GIFBlockTerminator     = $00;
+  GIFFileTerminator      = $3B;
 
   GIFGraphicControlExtension_TransparentFlag = $01;  //transparent color index is provided
   GIFGraphicControlExtension_UserInputFlag = $02;    //wait for user input at this frame (ignored)
@@ -103,10 +106,14 @@ const
 
   GIFCodeTableSize = 4096;
 
+  NetscapeApplicationIdentifier = 'NETSCAPE2.0';
+  NetscapeSubBlockIdLoopCount = 1;
+  NetscapeSubBlockIdBuffering = 2;
+
 function CeilLn2(AValue: Integer): integer;
 function BGRAToPackedRgbTriple(color: TBGRAPixel): TPackedRGBTriple;
 function PackedRgbTribleToBGRA(rgb: TPackedRGBTriple): TBGRAPixel;
-function GIFLoadFromStream(stream: TStream): TGIFData;
+function GIFLoadFromStream(stream: TStream; MaxImageCount: integer = maxLongint): TGIFData;
 procedure GIFSaveToStream(AData: TGifData; Stream: TStream; AQuantizerFactory: TBGRAColorQuantizerAny;
           ADitheringAlgorithm: TDitheringAlgorithm);
 procedure GIFDecodeLZW(AStream: TStream; AImage: TBGRACustomBitmap;
@@ -116,7 +123,7 @@ procedure GIFDecodeLZW(AStream: TStream; AImage: TBGRACustomBitmap;
 //Encode an image supplied as an sequence of bytes, from left to right and top to bottom.
 //Adapted from the work of Udo Schmal, http://www.gocher.me/FPWriteGIF
 procedure GIFEncodeLZW(AStream: TStream; AImageData: PByte;
-          AImageWidth, AImageHeight: integer; ABitDepth: integer);
+          AImageWidth, AImageHeight: integer; ABitDepth: byte);
 
 implementation
 
@@ -182,7 +189,7 @@ var
     clearcode := 1 shl codesize;
     endcode   := clearcode + 1;
     stridx    := endcode + 1;
-    codelen   := codesize + 1;
+    codelen   := CeilLn2(stridx+1);
     codemask  := (1 shl codelen) - 1;
     for i := 0 to clearcode - 1 do
     begin
@@ -203,7 +210,7 @@ var
     clearcode := 1 shl codesize;
     endcode   := clearcode + 1;
     stridx    := endcode + 1;
-    codelen   := codesize + 1;
+    codelen   := CeilLn2(stridx+1);
     codemask  := (1 shl codelen) - 1;
     for i := clearcode to GIFCodeTableSize-1 do
     begin
@@ -223,9 +230,15 @@ var
     begin
       if (bytinbuf = 0) then
       begin
-        AStream.Read(bytinbuf, 1);
+        if AStream.Read(bytinbuf, 1) <> 1 then
+          raise exception.Create('Unexpected end of stream');
+
         if (bytinbuf = 0) then
+        begin
           endofsrc := True;
+          result := endcode;
+          exit;
+        end;
         AStream.Read(bytbuf, bytinbuf);
         bytbufidx := 0;
       end;
@@ -237,6 +250,7 @@ var
     Result := bitbuf and codemask;
     bitbuf := bitbuf shr codelen;
     Dec(bitsinbuf, codelen);
+    //write(inttostr(result)+'@'+inttostr(codelen)+' ');
   end;
 
   procedure AddStr2Tab(prefix: Pstr; suffix: longint);
@@ -245,20 +259,9 @@ var
     strtab^[stridx].prefix := prefix;
     strtab^[stridx].suffix := suffix;
     Inc(stridx);
-    case stridx of
-      0..1: codelen      := 1;
-      2..3: codelen      := 2;
-      4..7: codelen      := 3;
-      8..15: codelen     := 4;
-      16..31: codelen    := 5;
-      32..63: codelen    := 6;
-      64..127: codelen   := 7;
-      128..255: codelen  := 8;
-      256..511: codelen  := 9;
-      512..1023: codelen := 10;
-      1024..2047: codelen := 11;
-      2048..4096: codelen := 12;
-    end;
+    if (stridx = 1 shl codelen)
+      and (stridx < GIFCodeTableSize) then
+        inc(codelen);
     codemask := (1 shl codelen) - 1;
   end;
 
@@ -272,18 +275,24 @@ var
     colorIndex: integer;
   begin
     if (s^.prefix <> nil) then
+    begin
+      if s^.prefix = s then
+        raise exception.Create('Circular reference in prefix');
       WriteStr(s^.prefix);
+    end;
     if (ycnt >= yd) then
     begin
       if interlaced then
       begin
-        while (ycnt >= yd) and (pass < 5) do
+        while ycnt >= yd do
         begin
+          if pass >= 5 then exit;
+
           Inc(pass);
           ycnt  := GIFInterlacedStart[pass];
           ystep := GIFInterlacedStep[pass];
         end;
-      end;
+      end else exit;
     end;
 
     colorIndex := s^.suffix;
@@ -344,44 +353,52 @@ begin
   codesize  := 0;
   AStream.Read(codesize, 1);
   InitStringTable;
-  curcode := getnextcode;
-  while (curcode <> endcode) and (pass < 5) and not endofsrc do
-  begin
-    if (curcode = clearcode) then
+  try
+    curcode := getnextcode;
+    //Write('Reading ');
+    while (curcode <> endcode) and (pass < 5) and not endofsrc do
     begin
-      ClearStringTable;
-      repeat
-        curcode := getnextcode;
-      until (curcode <> clearcode);
-      if (curcode = endcode) then
-        break;
-      WriteStr(code2str(curcode));
-      oldcode := curcode;
-    end
-    else
-    begin
-      if (curcode < stridx) then
+      if (curcode = clearcode) then
       begin
-        WriteStr(Code2Str(curcode));
-        AddStr2Tab(Code2Str(oldcode), firstchar(Code2Str(curcode)));
+        ClearStringTable;
+        repeat
+          curcode := getnextcode;
+        until (curcode <> clearcode);
+        if (curcode = endcode) then
+          break;
+        WriteStr(code2str(curcode));
         oldcode := curcode;
       end
       else
       begin
-        if (curcode > stridx) then
-          break;
-        AddStr2Tab(Code2Str(oldcode), firstchar(Code2Str(oldcode)));
-        WriteStr(Code2Str(stridx - 1));
-        oldcode := curcode;
+        if (curcode < stridx) then
+        begin
+          WriteStr(Code2Str(curcode));
+          AddStr2Tab(Code2Str(oldcode), firstchar(Code2Str(curcode)));
+          oldcode := curcode;
+        end
+        else
+        begin
+          if (curcode > stridx) then
+          begin
+            //write('!Invalid! ');
+            break;
+          end;
+          AddStr2Tab(Code2Str(oldcode), firstchar(Code2Str(oldcode)));
+          WriteStr(Code2Str(stridx - 1));
+          oldcode := curcode;
+        end;
       end;
+      curcode := getnextcode;
     end;
-    curcode := getnextcode;
+  finally
+    DoneStringTable;
   end;
-  DoneStringTable;
+  //Writeln;
   if not endofsrc then
   begin
     bytinbuf:= 0;
-    AStream.Read(bytinbuf, 1);
+    AStream.ReadBuffer(bytinbuf, 1);
     if bytinbuf <> 0 then
       raise exception.Create('Invalid GIF format: expecting block terminator');
   end;
@@ -390,230 +407,216 @@ end;
 //Encode an image supplied as an sequence of bytes, from left to right and top to bottom.
 //Adapted from the work of Udo Schmal, http://www.gocher.me/FPWriteGIF
 procedure GIFEncodeLZW(AStream: TStream; AImageData: PByte;
-          AImageWidth, AImageHeight: integer; ABitDepth: integer);
-var
-   LZWSize: byte;
-   OutputBufferSize: NativeInt;
-   OutputBuffer: packed array[0..255] of byte;
+          AImageWidth, AImageHeight: integer; ABitDepth: byte);
 
-   rPrefix: array[0..GIFCodeTableSize-1] of integer; // string prefixes
-   rSuffix: array[0..GIFCodeTableSize-1] of integer; // string suffixes
-   rCodeStack: array[0..GIFCodeTableSize-1] of byte; // encoded pixels
-   rSP: integer; // pointer into CodeStack
-   rClearCode: integer; // reset decode params
-   rEndCode: integer; // last code in input stream
-   rCurSize: integer; // current code size
-   rBitString: integer; // steady stream of bits to be decoded
-   rBits: integer; // number of valid bits in BitString
-   rMaxVal: boolean; // max code value found?
-   rCurX: integer; // position of next pixel
-   rCurY: integer; // position of next pixel
-   rCurScan: PByte;
-   rFirstSlot: integer; // for encoding an image
-   rNextSlot: integer; // for encoding
-   rRowsLeft: integer; // rows left to do
-   rLast: integer; // last byte read in
-   rUnget: boolean; // read a new byte, or use zLast?
+var  //input position
+  PInput, PInputEnd: PByte;
 
-   procedure FlushOutput;
-   begin
-     if OutputBufferSize > 0 then
-     begin
-       OutputBuffer[0] := OutputBufferSize;
-       AStream.WriteBuffer(OutputBuffer, OutputBufferSize+1);
-       OutputBufferSize := 0;
-     end;
-   end;
+  // get the next pixel from the bitmap
+  function ReadValue: byte;
+  begin
+    result := PInput^;
+    Inc(PInput);
+  end;
 
-   procedure OutputByte(AValue: byte);
-   begin
-     if OutputBufferSize = 255 then FlushOutput;
-     inc(OutputBufferSize);
-     OutputBuffer[OutputBufferSize] := AValue;
-   end;
+var // GIF buffer can be up to 255 bytes long
+  OutputBufferSize: Int32or64;
+  OutputBuffer: packed array[0..255] of byte;
 
-   procedure LZWReset;
-   var i: integer;
-   begin
-     for i := 0 to (GIFCodeTableSize - 1) do
-     begin
-       rPrefix[i] := 0;
-       rSuffix[i] := 0;
-     end;
-     rCurSize := LZWSize + 1;
-     rClearCode := (1 shl LZWSize);
-     rEndCode := rClearCode + 1;
-     rFirstSlot := (1 shl (rCurSize - 1)) + 2;
-     rNextSlot := rFirstSlot;
-     rMaxVal := false;
-   end;
+  procedure FlushByteOutput;
+  begin
+    if OutputBufferSize > 0 then
+    begin
+      OutputBuffer[0] := OutputBufferSize;
+      AStream.WriteBuffer(OutputBuffer, OutputBufferSize+1);
+      OutputBufferSize := 0;
+    end;
+  end;
 
-   // save a code value on the code stack
-   procedure LZWSaveCode(Code: integer);
-   begin
-     rCodeStack[rSP] := Code;
-     inc(rSP);
-   end;
+  procedure OutputByte(AValue: byte);
+  begin
+    if OutputBufferSize = 255 then FlushByteOutput;
+    inc(OutputBufferSize);
+    OutputBuffer[OutputBufferSize] := AValue;
+  end;
 
-   // save the code in the output data stream
-   procedure LZWPutCode(code: integer);
-   var
-     n: integer;
-     b: byte;
-   begin
-     // write out finished bytes
-     // a literal "8" for 8 bits per byte
-     while (rBits >= 8) do
-     begin
-       b := (rBitString and $ff);
-       rBitString := (rBitString shr 8);
-       rBits := rBits - 8;
-       OutputByte(b);
-     end;
-     // make sure no junk bits left above the first byte
-     rBitString := (rBitString and $ff);
-     // and save out-going code
-     n := (code shl rBits);
-     rBitString := (rBitString or n);
-     rBits := rBits + rCurSize;
-   end;
-
-   // get the next pixel from the bitmap, and return it as an index into the colormap
-   function LZWReadBitmap: integer;
-   begin
-     if rUnget then
-     begin
-       result := rLast;
-       rUnget := false;
-     end
-     else
-     begin
-       if rCurScan = nil then
-         rCurScan := AImageData + rCurY*AImageWidth;
-       result := (rCurScan+rCurX)^;
-       inc(rCurX); // inc X position
-       if (rCurX >= AImageWidth) then // bumping Y ?
-       begin
-         rCurX := 0;
-         inc(rCurY);
-         rCurScan := nil;
-         dec(rRowsLeft);
-       end;
-     end;
-     rLast := result;
-   end;
+type TCode = Word;
 
 var
-   i,n,
-   cc: integer; // current code to translate
-   oc: integer; // last code encoded
-   found: boolean; // decoded string in prefix table?
-   pixel: byte; // lowest code to search for
-   ldx: integer; // last index found
-   fdx: integer; // current index found
-   b: byte;
+  BitBuffer       : LongWord; // steady stream of bit output
+  BitBufferLen    : Byte;  // number of bits in buffer
+  CurCodeSize     : byte;  // current code size
+
+  // save the code in the output data stream
+  procedure WriteCode(Code: TCode);
+  begin
+    //Write(IntToStr(Code)+'@'+IntToStr(CurCodeSize)+' ');
+
+    // append code to bit buffer
+    BitBuffer := BitBuffer or (Code shl BitBufferLen);
+    BitBufferLen := BitBufferLen + CurCodeSize;
+    // output whole bytes
+    while BitBufferLen >= 8 do
+    begin
+      OutputByte(BitBuffer and $ff);
+      BitBuffer := BitBuffer shr 8;
+      dec(BitBufferLen, 8);
+    end;
+  end;
+
+  procedure CloseBitOutput;
+  begin
+    // write out the rest of the bit string
+    // and add padding bits if necessary
+    while BitBufferLen > 0 do
+    begin
+      OutputByte(BitBuffer and $ff);
+      BitBuffer := BitBuffer shr 8;
+      if BitBufferLen >= 8 then
+        dec(BitBufferLen, 8)
+      else
+        BitBufferLen := 0;
+    end;
+  end;
+
+type
+  PCodeTableEntry = ^TCodeTableEntry;
+  TCodeTableEntry = packed record
+               Prefix: TCode;
+               LongerFirst, LongerLast: TCode;
+               Suffix, Padding: Byte;
+               NextWithPrefix: TCode;
+             end;
+
+var
+  ClearCode     : TCode;   // reset decode params
+  EndStreamCode : TCode;   // last code in input stream
+  FirstCodeSlot : TCode;   // first slot when table is empty
+  NextCodeSlot  : TCode;   // next slot to be used
+
+  PEntry: PCodeTableEntry;
+  CodeTable: array of TCodeTableEntry;
+  CurrentCode   : TCode; // code representing current string
+
+  procedure DoClearCode;
+  var
+    i: Word;
+  begin
+    for i := 0 to (1 shl ABitDepth)-1 do
+    with CodeTable[i] do
+    begin
+      LongerFirst:= 0;
+      LongerLast:= 0;
+    end;
+
+    WriteCode(ClearCode);
+    CurCodeSize := CeilLn2(FirstCodeSlot+1);
+    NextCodeSlot := FirstCodeSlot;
+  end;
+
+var
+  CurValue: Byte;
+  i: TCode;
+  found: boolean; // decoded string in prefix table?
 begin
-   LZWSize := ABitDepth;
-   AStream.WriteBuffer(LZWSize, 1);
+   if ABitDepth > 8 then
+     raise exception.Create('Maximum bit depth is 8');
+
+   //most readers won't handle less than 2 bits
+   if ABitDepth < 2 then ABitDepth := 2;
+
+   //output
+   AStream.WriteByte(ABitDepth);
+   ClearCode := 1 shl ABitDepth;
+   EndStreamCode := ClearCode + 1;
+   FirstCodeSlot := ClearCode + 2;
+   CurCodeSize := CeilLn2(FirstCodeSlot+1);
+
    OutputBufferSize := 0;
+   BitBuffer := 0;
+   BitBufferLen := 0;
 
-   // init data block
-   fillchar(rCodeStack, sizeof(rCodeStack), 0);
-   rBitString := 0;
-   rBits := 0;
-   rCurX := 0;
-   rCurY := 0;
-   rCurScan := nil;
-   rLast := 0;
-   rUnget:= false;
+   //input
+   PInput := AImageData;
+   PInputEnd := AImageData + PtrInt(AImageWidth)*AImageHeight;
 
-   LZWReset;
-   // all within the data record
-   // always save the clear code first ...
-   LZWPutCode(rClearCode);
-   // and first pixel
-   oc := LZWReadBitmap;
-   LZWPutCode(oc);
-   // nothing found yet (but then, we haven't searched)
-   ldx := 0;
-   fdx := 0;
-   // and the rest of the pixels
-   rRowsLeft := AImageHeight;
-   while (rRowsLeft > 0) do
+   setlength(CodeTable, GIFCodeTableSize);
+   DoClearCode;
+   //write('Writing ');
+
+   while PInput < PInputEnd do
    begin
-     rSP := 0; // empty the stack of old data
-     n := LZWReadBitmap; // next pixel from the bitmap
-     LZWSaveCode(n);
-     cc := rCodeStack[0]; // beginning of the string
-     // add new encode table entry
-     rPrefix[rNextSlot] := oc;
-     rSuffix[rNextSlot] := cc;
-     inc(rNextSlot);
-     if (rNextSlot >= GIFCodeTableSize) then
-       rMaxVal := true
-     else if (rNextSlot > (1 shl rCurSize)) then
-       inc(rCurSize);
-     // find the running string of matching codes
-     ldx := cc;
-     found := true;
-     while (found and (rRowsLeft > 0)) do
+     CurrentCode := ReadValue;
+     if CurrentCode >= ClearCode then
+       raise exception.Create('Internal error');
+
+     //try to match the longest string
+     while PInput < PInputEnd do
      begin
-       n := LZWReadBitmap;
-       LZWSaveCode(n);
-       cc := rCodeStack[0];
-       if (ldx < rFirstSlot) then
-         i := rFirstSlot
-       else
-         i := ldx + 1;
-       pixel := rCodeStack[rSP - 1];
+       CurValue := ReadValue;
+
        found := false;
-       while ((not found) and (i < rNextSlot)) do
+
+       i := CodeTable[CurrentCode].LongerFirst;
+       while i <> 0 do
        begin
-         found := ((rPrefix[i] = ldx) and (rSuffix[i] = pixel));
-         inc(i);
+         PEntry := @CodeTable[i];
+         if PEntry^.Suffix = CurValue then
+         begin
+           found := true;
+           CurrentCode := i;
+           break;
+         end;
+         i := PEntry^.NextWithPrefix;
        end;
-       if (found) then
+
+       if not found then
        begin
-         ldx := i - 1;
-         fdx := i - 1;
+         PEntry := @CodeTable[CurrentCode];
+         if PEntry^.LongerFirst = 0 then
+         begin
+           //store the first and last code being longer
+           PEntry^.LongerFirst := NextCodeSlot;
+           PEntry^.LongerLast := NextCodeSlot;
+         end else
+         begin
+           //link next entry having the same prefix
+           CodeTable[PEntry^.LongerLast].NextWithPrefix:= NextCodeSlot;
+           PEntry^.LongerLast := NextCodeSlot;
+         end;
+
+         // add new encode table entry
+         PEntry := @CodeTable[NextCodeSlot];
+         PEntry^.Prefix := CurrentCode;
+         PEntry^.Suffix := CurValue;
+         PEntry^.LongerFirst := 0;
+         PEntry^.LongerLast := 0;
+         PEntry^.NextWithPrefix := 0;
+         inc(NextCodeSlot);
+
+         Dec(PInput);
+         break;
        end;
      end;
-     // if not found, save this index, and get the same code again
-     if (not found) then
-     begin
-       rUnget := true;
-       rLast := rCodeStack[rSP-1];
-       dec(rSP);
-       cc := ldx;
-     end
-     else
-       cc := fdx;
-     // whatever we got, write it out as current table entry
-     LZWPutCode(cc);
-     if (rMaxVal and (rRowsLeft > 0)) then
-     begin
-       LZWPutCode(rClearCode);
-       LZWReset;
-       cc := LZWReadBitmap;
-       LZWPutCode(cc);
-     end;
-     oc := cc;
+
+     // write the code of the longest entry found
+     WriteCode(CurrentCode);
+
+     if NextCodeSlot >= GIFCodeTableSize then
+       DoClearCode
+     else if NextCodeSlot > 1 shl CurCodeSize then
+       inc(CurCodeSize);
    end;
-   LZWPutCode(rEndCode);
-   // write out the rest of the bit string
-   while (rBits > 0) do
-   begin
-     b := (rBitString and $ff);
-     rBitString := (rBitString shr 8);
-     rBits := rBits - 8;
-     OutputByte(b);
-   end;
-   FlushOutput;
-   b := 0;
-   AStream.Write(b, 1);
+
+   WriteCode(EndStreamCode);
+   CloseBitOutput;
+   FlushByteOutput;
+
+   AStream.WriteByte(0); //GIF block terminator
+   //Writeln;
 end;
 
-function GIFLoadFromStream(stream: TStream): TGIFData;
+function GIFLoadFromStream(stream: TStream; MaxImageCount: integer = maxLongint): TGIFData;
 
   procedure DumpData;
   var
@@ -624,6 +627,16 @@ function GIFLoadFromStream(stream: TStream): TGIFData;
       stream.Read(Count, 1);
       stream.position := stream.position + Count;
     until (Count = 0) or (stream.position >= stream.size);
+  end;
+
+  function ReadString: string;
+  var Count: byte;
+  begin
+    Count := 0;
+    stream.Read(Count, 1);
+    setlength(result, Count);
+    if Count > 0 then
+      stream.ReadBuffer(result[1], length(result));
   end;
 
 var
@@ -714,12 +727,13 @@ var
   var
     GIFExtensionBlock: TGIFExtensionBlock;
     GIFGraphicControlExtension: TGIFGraphicControlExtension;
-    mincount, Count:   byte;
+    mincount, Count, SubBlockId:   byte;
+    app: String;
 
   begin
     stream.ReadBuffer({%H-}GIFExtensionBlock, sizeof(GIFExtensionBlock));
     case GIFExtensionBlock.FunctionCode of
-      $F9:
+      $F9: //graphic control extension
       begin
         Count := 0;
         stream.Read(Count, 1);
@@ -744,11 +758,46 @@ var
         stream.Position := Stream.Position + Count - mincount;
         DumpData;
       end;
+      $ff: //application extension
+      begin
+        app := ReadString;
+        if app <> '' then
+        begin
+          if app = NetscapeApplicationIdentifier then
+          begin
+            repeat
+              Count := 0;
+              stream.Read(Count,1);
+              if Count = 0 then break;
+              stream.ReadBuffer({%H-}SubBlockId,1);
+              Dec(Count);
+              if (SubBlockId = NetscapeSubBlockIdLoopCount) and (Count >= 2) then
+              begin
+                stream.ReadBuffer(result.LoopCount, 2);
+                dec(Count,2);
+                result.LoopCount := LEtoN(result.LoopCount);
+                if result.LoopCount > 0 then inc(result.LoopCount);
+              end;
+              stream.Position:= stream.Position+Count;
+            until false;
+          end else
+            DumpData;
+        end;
+      end
       else
       begin
         DumpData;
       end;
     end;
+  end;
+
+  procedure DiscardImages;
+  var
+    i: Integer;
+  begin
+    for i := 0 to NbImages-1 do
+      FreeAndNil(result.Images[i].Image);
+    NbImages:= 0;
   end;
 
 begin
@@ -757,6 +806,7 @@ begin
   result.BackgroundColor := clNone;
   result.Images := nil;
   result.AspectRatio := 1;
+  result.LoopCount := 1;
   if stream = nil then exit;
 
   NbImages  := 0;
@@ -764,43 +814,54 @@ begin
   DelayMs     := 100;
   disposeMode := dmErase;
 
-  FillChar({%H-}GIFSignature,sizeof(GIFSignature),0);
-  stream.Read(GIFSignature, sizeof(GIFSignature));
-  if (GIFSignature[1] = 'G') and (GIFSignature[2] = 'I') and (GIFSignature[3] = 'F') then
-  begin
-    stream.ReadBuffer({%H-}GIFScreenDescriptor, sizeof(GIFScreenDescriptor));
-    GIFScreenDescriptor.Width := LEtoN(GIFScreenDescriptor.Width);
-    GIFScreenDescriptor.Height := LEtoN(GIFScreenDescriptor.Height);
-    result.Width  := GIFScreenDescriptor.Width;
-    result.Height := GIFScreenDescriptor.Height;
-    if GIFScreenDescriptor.AspectRatio64 = 0 then
-      result.AspectRatio:= 1
-    else
-      result.AspectRatio:= (GIFScreenDescriptor.AspectRatio64+15)/64;
-    if (GIFScreenDescriptor.flags and GIFScreenDescriptor_GlobalColorTableFlag =
-      GIFScreenDescriptor_GlobalColorTableFlag) then
+  try
+    FillChar({%H-}GIFSignature,sizeof(GIFSignature),0);
+    stream.Read(GIFSignature, sizeof(GIFSignature));
+    if (GIFSignature[1] = 'G') and (GIFSignature[2] = 'I') and (GIFSignature[3] = 'F') then
     begin
-      LoadGlobalPalette;
-      if GIFScreenDescriptor.BackgroundColorIndex < length(globalPalette) then
-        result.BackgroundColor :=
-          BGRAToColor(globalPalette[GIFScreenDescriptor.BackgroundColorIndex]);
-    end;
-    repeat
-      stream.ReadBuffer({%H-}GIFBlockID, sizeof(GIFBlockID));
-      case GIFBlockID of
-        ';': ;
-        ',': LoadImage;
-        '!': ReadExtension;
-        else
-        begin
-          raise Exception.Create('TBGRAAnimatedGif: unexpected block type');
-          break;
-        end;
+      stream.ReadBuffer({%H-}GIFScreenDescriptor, sizeof(GIFScreenDescriptor));
+      GIFScreenDescriptor.Width := LEtoN(GIFScreenDescriptor.Width);
+      GIFScreenDescriptor.Height := LEtoN(GIFScreenDescriptor.Height);
+      result.Width  := GIFScreenDescriptor.Width;
+      result.Height := GIFScreenDescriptor.Height;
+      if GIFScreenDescriptor.AspectRatio64 = 0 then
+        result.AspectRatio:= 1
+      else
+        result.AspectRatio:= (GIFScreenDescriptor.AspectRatio64+15)/64;
+      if (GIFScreenDescriptor.flags and GIFScreenDescriptor_GlobalColorTableFlag =
+        GIFScreenDescriptor_GlobalColorTableFlag) then
+      begin
+        LoadGlobalPalette;
+        if GIFScreenDescriptor.BackgroundColorIndex < length(globalPalette) then
+          result.BackgroundColor :=
+            BGRAToColor(globalPalette[GIFScreenDescriptor.BackgroundColorIndex]);
       end;
-    until (GIFBlockID = ';') or (stream.Position >= stream.size);
-  end
-  else
-    raise Exception.Create('TBGRAAnimatedGif: invalid header');
+      repeat
+        stream.ReadBuffer({%H-}GIFBlockID, sizeof(GIFBlockID));
+        case GIFBlockID of
+          ';': ;
+          ',': begin
+                 if NbImages >= MaxImageCount then break;
+                 LoadImage;
+               end;
+          '!': ReadExtension;
+          else
+          begin
+            raise Exception.Create('GIF format: unexpected block type');
+            break;
+          end;
+        end;
+      until (GIFBlockID = ';') or (stream.Position >= stream.size);
+    end
+    else
+      raise Exception.Create('GIF format: invalid header');
+  except
+    on ex: Exception do
+    begin
+      DiscardImages;
+      raise Exception.Create('GIF format: '+ ex.Message);
+    end;
+  end;
   setlength(result.Images, NbImages);
 end;
 
@@ -867,7 +928,7 @@ var
       if not AData.Images[i].HasLocalPalette then
         AddColorsToPalette(AData.Images[i].Image, globalPalette);
     if AData.BackgroundColor <> clNone then
-      globalPalette.AddColor(ColorToBGRA(ColorToRGB(AData.BackgroundColor)));
+      globalPalette.AddColor(ColorToBGRA(AData.BackgroundColor));
 
     if globalPalette.Count > 256 then
     begin
@@ -891,7 +952,7 @@ var
 
     globalTranspIndex:= globalPalette.IndexOfColor(BGRAPixelTransparent);
     if AData.BackgroundColor <> clNone then
-      screenDescriptor.BackgroundColorIndex:= IndexOfGlobalColor(ColorToBGRA(ColorToRGB(AData.BackgroundColor))) and 255;
+      screenDescriptor.BackgroundColorIndex:= IndexOfGlobalColor(ColorToBGRA(AData.BackgroundColor)) and 255;
 
     bitDepth := CeilLn2(globalPalette.Count);
     if bitDepth > 8 then bitDepth:= 8;
@@ -914,7 +975,7 @@ var
     try
       for i := 0 to numberFromPal-1 do
         rgbs[i] := BGRAToPackedRgbTriple(pal.Color[i]);
-      black := BGRAToPackedRgbTriple(ColorToBGRA(clBlack));
+      black := BGRAToPackedRgbTriple(BGRABlack);
       for i := numberFromPal to numberToWrite-1 do
         rgbs[i] := black;
       Stream.WriteBuffer(rgbs^,sizeof(TPackedRGBTriple)*numberToWrite);
@@ -992,7 +1053,7 @@ var
     procedure DitherAndCompressImage(AFrame: integer; APalette: TBGRAPalette; AQuantizer: TBGRACustomColorQuantizer);
     var ImageData: Pointer;
       Image: TBGRABitmap;
-      y,x: NativeInt;
+      y,x: Int32or64;
       psource: PBGRAPixel;
       pdest: PByte;
     begin
@@ -1008,7 +1069,10 @@ var
           psource := Image.ScanLine[y];
           for x := 0 to Image.Width -1 do
           begin
-            pdest^ := APalette.IndexOfColor(psource^);
+            if psource^.alpha < 128 then
+              pdest^ := APalette.IndexOfColor(BGRAPixelTransparent)
+            else
+              pdest^ := APalette.IndexOfColor(BGRA(psource^.red,psource^.green,psource^.blue,255));
             inc(psource);
             inc(pdest);
           end;
@@ -1088,6 +1152,30 @@ var
       WriteImage(i);
   end;
 
+  procedure WriteLoopExtension;
+  var
+    app: shortstring;
+    w: Word;
+  begin
+    if AData.LoopCount = 1 then exit;
+
+    Stream.WriteByte(GIFExtensionIntroducer);
+    Stream.WriteByte($ff);
+    app := NetscapeApplicationIdentifier;
+    Stream.WriteBuffer(app[0], length(app)+1);
+
+    Stream.WriteByte(3);
+    Stream.WriteByte(NetscapeSubBlockIdLoopCount);
+    if AData.LoopCount = 0 then
+      w := 0
+    else
+      w := AData.LoopCount-1;
+    w := NtoLE(w);
+    Stream.WriteWord(w);
+
+    Stream.WriteByte(0);
+  end;
+
 begin
   globalPalette := nil;
   globalQuantizer := nil;
@@ -1105,8 +1193,10 @@ begin
     Stream.WriteBuffer(screenDescriptor, sizeof(screenDescriptor));
     WriteGlobalPalette;
 
+    WriteLoopExtension;
+
     WriteImages;
-    Stream.WriteByte($3B); //end of file
+    Stream.WriteByte(GIFFileTerminator); //end of file
 
   finally
     FreeGlobalPalette;

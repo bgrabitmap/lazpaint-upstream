@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 unit UCursors;
 
 {$mode objfpc}{$H+}
@@ -21,7 +22,7 @@ var useCustomCursors: boolean = true;
 
 initialization
 
-  {$I cursors\paintcursors.lrs}
+  {$I tools\cursors\paintcursors.lrs}
 
   if useCustomCursors then
   begin

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-linking-exception
 {
  /**************************************************************************\
                                 bgrabitmaptypes.pas
@@ -7,20 +8,6 @@
 
        --> Include BGRABitmap and BGRABitmapTypes in the 'uses' clause.
 	       If you are using LCL types, add also BGRAGraphics unit.
-
- ****************************************************************************
- *                                                                          *
- *  This file is part of BGRABitmap library which is distributed under the  *
- *  modified LGPL.                                                          *
- *                                                                          *
- *  See the file COPYING.modifiedLGPL.txt, included in this distribution,   *
- *  for details about the copyright.                                        *
- *                                                                          *
- *  This program is distributed in the hope that it will be useful,         *
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of          *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                    *
- *                                                                          *
- ****************************************************************************
 }
 
 unit BGRABitmapTypes;
@@ -31,12 +18,22 @@ unit BGRABitmapTypes;
 interface
 
 uses
-  Classes, Types, BGRAGraphics,
-  FPImage, FPImgCanv{$IFDEF BGRABITMAP_USE_LCL}, GraphType{$ENDIF};
+  BGRAClasses, BGRAGraphics, BGRAUnicode,
+  FPImage{$IFDEF BGRABITMAP_USE_FPCANVAS}, FPImgCanv{$ENDIF}
+  {$IFDEF BGRABITMAP_USE_LCL}, LCLType, GraphType, LResources{$ENDIF},
+  BGRAMultiFileType;
+
+
+const
+  BGRABitmapVersion = 11030100;
+
+  function BGRABitmapVersionStr: string;
 
 type
-  Int32or64 = {$IFDEF CPU64}Int64{$ELSE}LongInt{$ENDIF};
-  UInt32or64 = {$IFDEF CPU64}UInt64{$ELSE}LongWord{$ENDIF};
+  TMultiFileContainer = BGRAMultiFileType.TMultiFileContainer;
+  Int32or64 = BGRAClasses.Int32or64;
+  UInt32or64 = BGRAClasses.UInt32or64;
+  HDC = {$IFDEF BGRABITMAP_USE_LCL}LCLType.HDC{$ELSE}PtrUInt{$ENDIF};
 
 {=== Miscellaneous types ===}
 
@@ -47,6 +44,10 @@ type
     fmSet,
     {** Pixels that are filled are drawn upon with the fill color }
     fmDrawWithTransparency,
+    {** Pixels that are filled are drawn without gamma correction upon with the fill color }
+    fmLinearBlend,
+    {** Pixels that are XORed with the fill color}
+    fmXor,
     {** Pixels that are filled are drawn upon to the extent that the color underneath is similar to
         the start color. The more different the different is, the less it is drawn upon }
     fmProgressive);
@@ -73,6 +74,85 @@ type
 
   TEmbossOption = (eoTransparent, eoPreserveHue);
   TEmbossOptions = set of TEmbossOption;
+
+  {* List of image formats }
+  TBGRAImageFormat = (
+    {** Unknown format }
+    ifUnknown,
+    {** JPEG format, opaque, lossy compression }
+    ifJpeg,
+    {** PNG format, transparency, lossless compression }
+    ifPng,
+    {** GIF format, single transparent color, lossless in theory but only low number of colors allowed }
+    ifGif,
+    {** BMP format, transparency, no compression. Note that transparency is
+        not supported by all BMP readers so it is recommended to avoid
+        storing images with transparency in this format }
+    ifBmp,
+    {** iGO BMP (16-bit, rudimentary lossless compression) }
+    ifBmpMioMap,
+    {** ICO format, contains different sizes of the same image }
+    ifIco,
+    {** CUR format, has hotspot, contains different sizes of the same image }
+    ifCur,
+    {** PCX format, opaque, rudimentary lossless compression }
+    ifPcx,
+    {** Paint.NET format, layers, lossless compression }
+    ifPaintDotNet,
+    {** LazPaint format, layers, lossless compression }
+    ifLazPaint,
+    {** OpenRaster format, layers, lossless compression }
+    ifOpenRaster,
+    {** Phoxo format, layers }
+    ifPhoxo,
+    {** Photoshop format, layers, rudimentary lossless compression }
+    ifPsd,
+    {** Targa format (TGA), transparency, rudimentary lossless compression }
+    ifTarga,
+    {** TIFF format, limited support }
+    ifTiff,
+    {** X-Window capture, limited support }
+    ifXwd,
+    {** X-Pixmap, text encoded image, limited support }
+    ifXPixMap,
+    {** text or binary encoded image, no compression, extension PBM, PGM, PPM }
+    ifPortableAnyMap,
+    {** Scalable Vector Graphic, vectorial, read-only as raster }
+    ifSvg,
+    {** Lossless or lossy compression using V8 algorithm (need libwebp library) }
+    ifWebP);
+
+  {* Options when loading an image }
+  TBGRALoadingOption = (
+     {** Do not clear RGB channels when alpha is zero (not recommended) }
+     loKeepTransparentRGB,
+     {** Consider BMP to be opaque if no alpha value is provided (for compatibility) }
+     loBmpAutoOpaque,
+     {** Load JPEG quickly however with a lower quality }
+     loJpegQuick);
+  TBGRALoadingOptions = set of TBGRALoadingOption;
+
+  TTextLayout = BGRAGraphics.TTextLayout;
+  TFontBidiMode = BGRAUnicode.TFontBidiMode;
+  TBidiTextAlignment = (btaNatural, btaOpposite, btaLeftJustify, btaRightJustify, btaCenter);
+
+const
+  fbmAuto = BGRAUnicode.fbmAuto;
+  fbmLeftToRight = BGRAUnicode.fbmLeftToRight;
+  fbmRightToLeft = BGRAUnicode.fbmRightToLeft;
+
+  function AlignmentToBidiTextAlignment(AAlign: TAlignment; ARightToLeft: boolean): TBidiTextAlignment; overload;
+  function AlignmentToBidiTextAlignment(AAlign: TAlignment): TBidiTextAlignment; overload;
+  function BidiTextAlignmentToAlignment(ABidiAlign: TBidiTextAlignment; ARightToLeft: boolean): TAlignment;
+
+const
+  RadialBlurTypeToStr: array[TRadialBlurType] of string =
+  ('Normal','Disk','Corona','Precise','Fast','Box');
+
+
+  tlTop = BGRAGraphics.tlTop;
+  tlCenter = BGRAGraphics.tlCenter;
+  tlBottom = BGRAGraphics.tlBottom;
 
   // checks the bounds of an image in the given clipping rectangle
   function CheckPutImageBounds(x, y, tx, ty: integer; out minxb, minyb, maxxb, maxyb, ignoreleft: integer; const cliprect: TRect): boolean;
@@ -153,8 +233,14 @@ type
 {$DEFINE INCLUDE_INTERFACE}
 {$i csscolorconst.inc}
 
-{$DEFINE INCLUDE_SCANNER_INTERFACE }
-{$I bgracustombitmap.inc}
+{$DEFINE INCLUDE_INTERFACE}
+{$I bgrascanner.inc}
+
+{$DEFINE INCLUDE_INTERFACE}
+{$I unibitmap.inc}
+
+{$DEFINE INCLUDE_INTERFACE}
+{$I unibitmapgeneric.inc}
 
 {==== Integer math ====}
 
@@ -194,11 +280,16 @@ type
     fqSystemClearType,
     {** Garanties a high quality antialiasing. }
     fqFineAntialiasing,
-    {** Fine antialiasing with ClearType in assuming an LCD display in red/green/blue order }
+    {** Fine antialiasing with ClearType assuming an LCD display in red/green/blue order }
     fqFineClearTypeRGB,
-    {** Fine antialiasing with ClearType in assuming an LCD display in blue/green/red order }
+    {** Fine antialiasing with ClearType assuming an LCD display in blue/green/red order }
     fqFineClearTypeBGR);
 
+  TGetFineClearTypeAutoFunc = function(): TBGRAFontQuality;
+var
+  fqFineClearType : TGetFineClearTypeAutoFunc;
+
+type
   {* Measurements of a font }
   TFontPixelMetric = record
     {** The values have been computed }
@@ -213,6 +304,22 @@ type
     DescentLine,
     {** Total line height including line spacing defined by the font }
     Lineheight: integer;
+  end;
+
+  {* Measurements of a font in floating point values }
+  TFontPixelMetricF = record
+    {** The values have been computed }
+    Defined: boolean;
+    {** Position of the baseline, where most letters lie }
+    Baseline,
+    {** Position of the top of the small letters (x being one of them) }
+    xLine,
+    {** Position of the top of the UPPERCASE letters }
+    CapLine,
+    {** Position of the bottom of letters like g and p }
+    DescentLine,
+    {** Total line height including line spacing defined by the font }
+    Lineheight: single;
   end;
 
   {* Vertical anchoring of the font. When text is drawn, a start coordinate
@@ -250,6 +357,13 @@ type
   { TBGRACustomFontRenderer }
   {* Abstract class for all font renderers }
   TBGRACustomFontRenderer = class
+  protected
+    {** Specifies the height of the font without taking into account additional line spacing.
+        A negative value means that it is the full height instead }
+    FFontEmHeightF: single;
+    function GetFontEmHeight: integer;
+    procedure SetFontEmHeight(AValue: integer);
+  public
     {** Specifies the font to use. Unless the font renderer accept otherwise,
         the name is in human readable form, like 'Arial', 'Times New Roman', ...  }
     FontName: string;
@@ -266,46 +380,62 @@ type
         It is expressed in tenth of degrees, positive values going counter-clockwise }
     FontOrientation: integer;
 
-    {** Specifies the height of the font without taking into account additional line spacing.
-        A negative value means that it is the full height instead }
-    FontEmHeight: integer;
-
     {** Returns measurement for the current font in pixels }
     function GetFontPixelMetric: TFontPixelMetric; virtual; abstract;
+    function GetFontPixelMetricF: TFontPixelMetricF; virtual;
+    function FontExists(AName: string): boolean; virtual; abstract;
 
     {** Returns the total size of the string provided using the current font.
         Orientation is not taken into account, so that the width is along the text }
-    function TextSize(sUTF8: string): TSize; virtual; abstract;
+    function TextSize(sUTF8: string): TSize; overload; virtual; abstract;
+    function TextSizeF(sUTF8: string): TPointF; overload; virtual;
+    function TextSize(sUTF8: string; AMaxWidth: integer; ARightToLeft: boolean): TSize; overload; virtual; abstract;
+    function TextSizeF(sUTF8: string; AMaxWidthF: single; ARightToLeft: boolean): TPointF; overload; virtual;
+    function TextSizeAngle(sUTF8: string; {%H-}orientationTenthDegCCW: integer): TSize; virtual;
+    function TextSizeAngleF(sUTF8: string; {%H-}orientationTenthDegCCW: integer): TPointF; virtual;
+
+    {** Returns the number of Unicode characters that fit into the specified size }
+    function TextFitInfo(sUTF8: string; AMaxWidth: integer): integer; virtual; abstract;
+    function TextFitInfoF(sUTF8: string; AMaxWidthF: single): integer; virtual;
 
     {** Draws the UTF8 encoded string, with color ''c''.
         If align is taLeftJustify, (''x'',''y'') is the top-left corner.
         If align is taCenter, (''x'',''y'') is at the top and middle of the text.
         If align is taRightJustify, (''x'',''y'') is the top-right corner.
         The value of ''FontOrientation'' is taken into account, so that the text may be rotated }
-    procedure TextOut(ADest: TBGRACustomBitmap; x, y: single; sUTF8: string; c: TBGRAPixel; align: TAlignment); virtual; abstract;
+    procedure TextOut(ADest: TBGRACustomBitmap; x, y: single; sUTF8: string; c: TBGRAPixel; align: TAlignment); overload; virtual; abstract;
+    procedure TextOut(ADest: TBGRACustomBitmap; x, y: single; sUTF8: string; c: TBGRAPixel; align: TAlignment; {%H-}ARightToLeft: boolean); overload; virtual;
 
     {** Same as above functions, except that the text is filled using texture.
         The value of ''FontOrientation'' is taken into account, so that the text may be rotated }
-    procedure TextOut(ADest: TBGRACustomBitmap; x, y: single; sUTF8: string; texture: IBGRAScanner; align: TAlignment); virtual; abstract;
+    procedure TextOut(ADest: TBGRACustomBitmap; x, y: single; sUTF8: string; texture: IBGRAScanner; align: TAlignment); overload; virtual; abstract;
+    procedure TextOut(ADest: TBGRACustomBitmap; x, y: single; sUTF8: string; texture: IBGRAScanner; align: TAlignment; {%H-}ARightToLeft: boolean); overload; virtual;
 
     {** Same as above, except that the orientation is specified, overriding the value of the property ''FontOrientation'' }
-    procedure TextOutAngle(ADest: TBGRACustomBitmap; x, y: single; orientationTenthDegCCW: integer; sUTF8: string; c: TBGRAPixel; align: TAlignment); virtual; abstract;
+    procedure TextOutAngle(ADest: TBGRACustomBitmap; x, y: single; orientationTenthDegCCW: integer; sUTF8: string; c: TBGRAPixel; align: TAlignment); overload; virtual; abstract;
+    procedure TextOutAngle(ADest: TBGRACustomBitmap; x, y: single; orientationTenthDegCCW: integer; sUTF8: string; c: TBGRAPixel; align: TAlignment; {%H-}ARightToLeft: boolean); overload; virtual;
     {** Same as above, except that the orientation is specified, overriding the value of the property ''FontOrientation'' }
-    procedure TextOutAngle(ADest: TBGRACustomBitmap; x, y: single; orientationTenthDegCCW: integer; sUTF8: string; texture: IBGRAScanner; align: TAlignment); virtual; abstract;
+    procedure TextOutAngle(ADest: TBGRACustomBitmap; x, y: single; orientationTenthDegCCW: integer; sUTF8: string; texture: IBGRAScanner; align: TAlignment); overload; virtual; abstract;
+    procedure TextOutAngle(ADest: TBGRACustomBitmap; x, y: single; orientationTenthDegCCW: integer; sUTF8: string; texture: IBGRAScanner; align: TAlignment; {%H-}ARightToLeft: boolean); overload; virtual;
 
     {** Draw the UTF8 encoded string at the coordinate (''x'',''y''), clipped inside the rectangle ''ARect''.
         Additional style information is provided by the style parameter.
         The color ''c'' is used to fill the text. No rotation is applied. }
-    procedure TextRect(ADest: TBGRACustomBitmap; ARect: TRect; x, y: integer; sUTF8: string; style: TTextStyle; c: TBGRAPixel); virtual; abstract;
+    procedure TextRect(ADest: TBGRACustomBitmap; ARect: TRect; x, y: integer; sUTF8: string; style: TTextStyle; c: TBGRAPixel); overload; virtual; abstract;
 
     {** Same as above except a ''texture'' is used to fill the text }
-    procedure TextRect(ADest: TBGRACustomBitmap; ARect: TRect; x, y: integer; sUTF8: string; style: TTextStyle; texture: IBGRAScanner); virtual; abstract;
+    procedure TextRect(ADest: TBGRACustomBitmap; ARect: TRect; x, y: integer; sUTF8: string; style: TTextStyle; texture: IBGRAScanner); overload; virtual; abstract;
 
     {** Copy the path for the UTF8 encoded string into ''ADest''.
         If ''align'' is ''taLeftJustify'', (''x'',''y'') is the top-left corner.
         If ''align'' is ''taCenter'', (''x'',''y'') is at the top and middle of the text.
         If ''align'' is ''taRightJustify'', (''x'',''y'') is the top-right corner. }
     procedure CopyTextPathTo({%H-}ADest: IBGRAPath; {%H-}x, {%H-}y: single; {%H-}s: string; {%H-}align: TAlignment); virtual; //optional
+    procedure CopyTextPathTo({%H-}ADest: IBGRAPath; {%H-}x, {%H-}y: single; {%H-}s: string; {%H-}align: TAlignment; {%H-}ARightToLeft: boolean); virtual; //optional
+    function HandlesTextPath: boolean; virtual;
+
+    property FontEmHeight: integer read GetFontEmHeight write SetFontEmHeight;
+    property FontEmHeightF: single read FFontEmHeightF write FFontEmHeightF;
   end;
 
   {* Output mode for the improved renderer for readability. This is used by the font renderer based on LCL in ''BGRAText'' }
@@ -314,7 +444,7 @@ type
 {** Removes line ending and tab characters from a string (for a function
     like ''TextOut'' that does not handle this). this works with UTF8 strings
     as well }
-function CleanTextOutString(s: string): string;
+function CleanTextOutString(const s: string): string;
 {** Remove the line ending at the specified position or return False.
     This works with UTF8 strings however the index is the byte index }
 function RemoveLineEnding(var s: string; indexByte: integer): boolean;
@@ -322,7 +452,7 @@ function RemoveLineEnding(var s: string; indexByte: integer): boolean;
     The index is the character index, that may be different from the
     byte index }
 function RemoveLineEndingUTF8(var sUTF8: string; indexUTF8: integer): boolean;
-{** Default word break handler, that simply divide when there is a space }
+{** Default word break handler }
 procedure BGRADefaultWordBreakHandler(var ABefore, AAfter: string);
 
 {==== Images and resampling ====}
@@ -374,42 +504,35 @@ const
   function StrToResampleFilter(str: string): TResampleFilter;
 
 type
-  {* List of image formats }
-  TBGRAImageFormat = (
-    {** Unknown format }
-    ifUnknown,
-    {** JPEG format, opaque, lossy compression }
-    ifJpeg,
-    {** PNG format, transparency, lossless compression }
-    ifPng,
-    {** GIF format, single transparent color, lossless in theory but only low number of colors allowed }
-    ifGif,
-    {** BMP format, transparency, no compression. Note that transparency is
-        not supported by all BMP readers so it is not recommended to avoid
-        storing images with transparency in this format }
-    ifBmp,
-    {** ICO format, contains different sizes of the same image }
-    ifIco,
-    {** PCX format, opaque, rudimentary lossless compression }
-    ifPcx,
-    {** Paint.NET format, layers, lossless compression }
-    ifPaintDotNet,
-    {** LazPaint format, layers, lossless compression }
-    ifLazPaint,
-    {** OpenRaster format, layers, lossless compression }
-    ifOpenRaster,
-    {** Photoshop format, layers, rudimentary lossless compression }
-    ifPsd,
-    {** Targa format (TGA), transparency, rudimentary lossless compression }
-    ifTarga,
-    {** TIFF format, limited support }
-    ifTiff,
-    {** X-Window capture, limited support }
-    ifXwd,
-    {** X-Pixmap, text encoded image, limited support }
-    ifXPixMap,
-    {** iGO BMP, limited support }
-    ifBmpMioMap);
+  {* Image information from superficial analysis }
+  TQuickImageInfo = record
+    {** Width in pixels }
+    Width,
+    {** Height in pixels }
+    Height,
+    {** Bitdepth for colors (1, 2, 4, 8 for images with palette/grayscale, 16, 24 or 48 if each channel is present) }
+    ColorDepth,
+    {** Bitdepth for alpha (0 if no alpha channel, 1 if bit mask, 8 or 16 if alpha channel) }
+    AlphaDepth: integer;
+  end;
+
+  {* Bitmap reader with additional features }
+  TBGRAImageReader = class(TFPCustomImageReader)
+    {** Return bitmap information (size, bit depth) }
+    function GetQuickInfo(AStream: TStream): TQuickImageInfo; virtual; abstract;
+    {** Return a draft of the bitmap, the ratio may change compared to the original width and height (useful to make thumbnails) }
+    function GetBitmapDraft(AStream: TStream; AMaxWidth, AMaxHeight: integer; out AOriginalWidth,AOriginalHeight: integer): TBGRACustomBitmap; virtual; abstract;
+  end;
+
+  { TBGRACustomWriterPNG }
+
+  TBGRACustomWriterPNG = class(TFPCustomImageWriter)
+  protected
+    function GetUseAlpha: boolean; virtual; abstract;
+    procedure SetUseAlpha(AValue: boolean); virtual; abstract;
+  public
+    property UseAlpha : boolean read GetUseAlpha write SetUseAlpha;
+  end;
 
 var
   {** List of stream readers for images }
@@ -436,15 +559,55 @@ var
 {$DEFINE INCLUDE_INTERFACE}
 {$I bgracustombitmap.inc}
 
+operator =(const AGuid1, AGuid2: TGuid): boolean;
+
+type
+  { TBGRAResourceManager }
+
+  TBGRAResourceManager = class
+  protected
+    function GetWinResourceType(AExtension: string): pchar;
+  public
+    function GetResourceStream(AFilename: string): TStream; virtual;
+    function IsWinResource(AFilename: string): boolean; virtual;
+  end;
+
+var
+  BGRAResource : TBGRAResourceManager;
+
 implementation
 
 uses Math, SysUtils, BGRAUTF8,
-  FPReadTiff, FPReadXwd, FPReadXPM,
-  FPWriteTiff, FPWriteJPEG, BGRAWritePNG, FPWriteBMP, FPWritePCX,
-  FPWriteTGA, FPWriteXPM;
+  FPReadXwd, FPReadXPM,
+  FPWriteJPEG, FPWriteBMP, FPWritePCX,
+  FPWriteTGA, FPWriteXPM, FPReadPNM, FPWritePNM;
+
+function BGRABitmapVersionStr: string;
+var numbers: TStringList;
+  i,remaining: LongWord;
+begin
+  numbers := TStringList.Create;
+  remaining := BGRABitmapVersion;
+  for i := 1 to 4 do
+  begin
+    numbers.Insert(0, IntToStr(remaining mod 100));
+    remaining := remaining div 100;
+  end;
+  while (numbers.Count > 1) and (numbers[numbers.Count-1]='0') do
+    numbers.Delete(numbers.Count-1);
+  numbers.Delimiter:= '.';
+  result := numbers.DelimitedText;
+  numbers.Free;
+end;
 
 {$DEFINE INCLUDE_IMPLEMENTATION}
 {$I geometrytypes.inc}
+
+{$DEFINE INCLUDE_IMPLEMENTATION}
+{$I unibitmap.inc}
+
+{$DEFINE INCLUDE_IMPLEMENTATION}
+{$I unibitmapgeneric.inc}
 
 {$DEFINE INCLUDE_IMPLEMENTATION}
 {$I csscolorconst.inc}
@@ -453,9 +616,45 @@ uses Math, SysUtils, BGRAUTF8,
 {$I bgracustombitmap.inc}
 
 {$DEFINE INCLUDE_IMPLEMENTATION}
+{$I bgrascanner.inc}
+
+{$DEFINE INCLUDE_IMPLEMENTATION}
 {$I bgrapixel.inc}
 
-function CleanTextOutString(s: string): string;
+function AlignmentToBidiTextAlignment(AAlign: TAlignment; ARightToLeft: boolean): TBidiTextAlignment;
+begin
+  case AAlign of
+    taCenter: result := btaCenter;
+    taRightJustify: if ARightToLeft then result := btaNatural else result := btaOpposite;
+    else {taLeftJustify}
+      if ARightToLeft then result := btaOpposite else result := btaNatural;
+  end;
+end;
+
+function AlignmentToBidiTextAlignment(AAlign: TAlignment): TBidiTextAlignment;
+begin
+  case AAlign of
+    taCenter: result := btaCenter;
+    taRightJustify: result := btaRightJustify;
+    else {taLeftJustify}
+      result := btaLeftJustify;
+  end;
+end;
+
+function BidiTextAlignmentToAlignment(ABidiAlign: TBidiTextAlignment;
+  ARightToLeft: boolean): TAlignment;
+begin
+  case ABidiAlign of
+    btaCenter: result := taCenter;
+    btaLeftJustify: result := taLeftJustify;
+    btaRightJustify: result := taRightJustify;
+    btaOpposite: if ARightToLeft then result := taLeftJustify else result := taRightJustify;
+  else {btaNatural}
+    if ARightToLeft then result := taRightJustify else result := taLeftJustify;
+  end;
+end;
+
+function CleanTextOutString(const s: string): string;
 var idxIn, idxOut: integer;
 begin
   setlength(result, length(s));
@@ -491,7 +690,18 @@ begin //we can ignore UTF8 character length because #13 and #10 are always 1 byt
       end
         else
           delete(s,indexByte,1);
-    end;
+    end else
+    if (s[indexByte] = #$C2) and (length(s) >= indexByte+1) and (s[indexByte+1] = #$85) then
+    begin
+      result := true;
+      delete(s,indexByte,2);
+    end else
+    if (s[indexByte] = #$E2) and (length(s) >= indexByte+2) and (s[indexByte+1] = #$80) and
+       (s[indexByte+2] in[#$A8,#$A9]) then
+    begin
+      result := true;
+      delete(s,indexByte,3);
+    end
   end;
 end;
 
@@ -510,12 +720,69 @@ begin
 end;
 
 procedure BGRADefaultWordBreakHandler(var ABefore, AAfter: string);
-var p: integer;
+const spacingChars = [' '];
+  wordBreakChars = [' ',#9,'-','?','!'];
+var p, charLen: integer;
+  u: LongWord;
 begin
-  if (AAfter <> '') and (ABefore <> '') and (AAfter[1]<> ' ') and (ABefore[length(ABefore)] <> ' ') then
+  if (AAfter <> '') and (ABefore <> '') and not (AAfter[1] in spacingChars) and not (ABefore[length(ABefore)] in wordBreakChars) then
   begin
     p := length(ABefore);
-    while (p > 1) and (ABefore[p-1] <> ' ') do dec(p);
+    while (p > 1) and not (ABefore[p-1] in wordBreakChars) do dec(p);
+    while (p < length(ABefore)+1) and (ABefore[p] in [#$80..#$BF]) do inc(p); //do not split UTF8 char
+    //keep non-spacing mark together
+    while p <= length(ABefore) do
+    begin
+      charLen := UTF8CharacterLength(@ABefore[p]);
+      if p+charLen > length(ABefore)+1 then charLen := length(ABefore)+1-p;
+      u := UTF8CodepointToUnicode(@ABefore[p],charLen);
+      if (GetUnicodeBidiClassEx(u) in[ubcNonSpacingMark, ubcCombiningLeftToRight]) then
+        inc(p,charLen)
+      else
+        break;
+    end;
+
+    if p = 1 then
+    begin
+      //keep ideographic punctuation together
+      charLen := UTF8CharacterLength(@AAfter[p]);
+      if charLen > length(AAfter) then charLen := length(AAfter);
+      u := UTF8CodepointToUnicode(@AAfter[p],charLen);
+      case u of
+      UNICODE_IDEOGRAPHIC_COMMA,
+      UNICODE_IDEOGRAPHIC_FULL_STOP,
+      UNICODE_FULLWIDTH_COMMA,
+      UNICODE_HORIZONTAL_ELLIPSIS:
+        begin
+          p := length(ABefore)+1;
+          while p > 1 do
+          begin
+            charLen := 1;
+            dec(p);
+            while (p > 0) and (ABefore[p] in [#$80..#$BF]) do
+            begin
+              dec(p); //do not split UTF8 char
+              inc(charLen);
+            end;
+            if charLen <= 4 then
+              u := UTF8CodepointToUnicode(@ABefore[p],charLen)
+            else
+              u := ord('A');
+            case GetUnicodeBidiClass(u) of
+              ubcNonSpacingMark: ;   // include NSM
+              ubcOtherNeutrals, ubcWhiteSpace, ubcCommonSeparator, ubcEuropeanNumberSeparator:
+                begin
+                  p := 1;
+                  break;
+                end
+            else
+              break;
+            end;
+          end;
+        end;
+      end;
+    end;
+
     if p > 1 then //can put the word after
     begin
       AAfter := copy(ABefore,p,length(ABefore)-p+1)+AAfter;
@@ -525,8 +792,8 @@ begin
 
     end;
   end;
-  while (ABefore <> '') and (ABefore[length(ABefore)] =' ') do delete(ABefore,length(ABefore),1);
-  while (AAfter <> '') and (AAfter[1] =' ') do delete(AAfter,1,1);
+  while (ABefore <> '') and (ABefore[length(ABefore)] in spacingChars) do delete(ABefore,length(ABefore),1);
+  while (AAfter <> '') and (AAfter[1] in spacingChars) do delete(AAfter,1,1);
 end;
 
 
@@ -543,10 +810,112 @@ begin
     end;
 end;
 
+function GetFineClearTypeAuto: TBGRAFontQuality;
+begin
+  result := fqFineClearTypeRGB;
+end;
+
 { TBGRACustomFontRenderer }
+
+function TBGRACustomFontRenderer.GetFontEmHeight: integer;
+begin
+  result := round(FFontEmHeightF);
+end;
+
+procedure TBGRACustomFontRenderer.SetFontEmHeight(AValue: integer);
+begin
+  FFontEmHeightF:= AValue;
+end;
+
+function TBGRACustomFontRenderer.GetFontPixelMetricF: TFontPixelMetricF;
+begin
+  with GetFontPixelMetric do
+  begin
+    result.Defined := Defined;
+    result.Baseline := Baseline;
+    result.xLine := xLine;
+    result.CapLine := CapLine;
+    result.DescentLine := DescentLine;
+    result.Lineheight := LineHeight;
+  end;
+end;
+
+function TBGRACustomFontRenderer.TextSizeF(sUTF8: string): TPointF;
+begin
+  with TextSize(sUTF8) do
+    result := PointF(cx,cy);
+end;
+
+function TBGRACustomFontRenderer.TextSizeF(sUTF8: string; AMaxWidthF: single;
+  ARightToLeft: boolean): TPointF;
+begin
+  with TextSize(sUTF8, round(AMaxWidthF), ARightToLeft) do
+    result := PointF(cx,cy);
+end;
+
+function TBGRACustomFontRenderer.TextFitInfoF(sUTF8: string; AMaxWidthF: single): integer;
+begin
+  result := TextFitInfo(sUTF8, round(AMaxWidthF));
+end;
+
+function TBGRACustomFontRenderer.TextSizeAngle(sUTF8: string;
+  orientationTenthDegCCW: integer): TSize;
+begin
+  result := TextSize(sUTF8); //ignore orientation by default
+end;
+
+function TBGRACustomFontRenderer.TextSizeAngleF(sUTF8: string;
+  orientationTenthDegCCW: integer): TPointF;
+begin
+  result := TextSizeF(sUTF8); //ignore orientation by default
+end;
+
+procedure TBGRACustomFontRenderer.TextOut(ADest: TBGRACustomBitmap; x,
+  y: single; sUTF8: string; c: TBGRAPixel; align: TAlignment;
+  ARightToLeft: boolean);
+begin
+  //if RightToLeft is not handled
+  TextOut(ADest,x,y,sUTF8,c,align);
+end;
+
+procedure TBGRACustomFontRenderer.TextOut(ADest: TBGRACustomBitmap; x,
+  y: single; sUTF8: string; texture: IBGRAScanner; align: TAlignment;
+  ARightToLeft: boolean);
+begin
+  //if RightToLeft is not handled
+  TextOut(ADest,x,y,sUTF8,texture,align);
+end;
+
+procedure TBGRACustomFontRenderer.TextOutAngle(ADest: TBGRACustomBitmap; x,
+  y: single; orientationTenthDegCCW: integer; sUTF8: string; c: TBGRAPixel;
+  align: TAlignment; ARightToLeft: boolean);
+begin
+  //if RightToLeft is not handled
+  TextOutAngle(ADest,x,y,orientationTenthDegCCW,sUTF8,c,align);
+end;
+
+procedure TBGRACustomFontRenderer.TextOutAngle(ADest: TBGRACustomBitmap; x,
+  y: single; orientationTenthDegCCW: integer; sUTF8: string;
+  texture: IBGRAScanner; align: TAlignment; ARightToLeft: boolean);
+begin
+  //if RightToLeft is not handled
+  TextOutAngle(ADest,x,y,orientationTenthDegCCW,sUTF8,texture,align);
+end;
 
 procedure TBGRACustomFontRenderer.CopyTextPathTo(ADest: IBGRAPath; x, y: single; s: string; align: TAlignment);
 begin {optional implementation} end;
+
+procedure TBGRACustomFontRenderer.CopyTextPathTo(ADest: IBGRAPath; x,
+  y: single; s: string; align: TAlignment; ARightToLeft: boolean);
+begin
+  //if RightToLeft is not handled
+  CopyTextPathTo(ADest, x,y, s, align);
+end;
+
+function TBGRACustomFontRenderer.HandlesTextPath: boolean;
+begin
+  result := false;
+end;
 
 
 function CheckPutImageBounds(x, y, tx, ty: integer; out minxb, minyb, maxxb,
@@ -688,11 +1057,11 @@ var
   procedure DetectFromStream;
   var
     {%H-}magic: packed array[0..7] of byte;
-    {%H-}dwords: packed array[0..9] of DWORD;
-    magicAsText: string;
+    {%H-}dwords: packed array[0..9] of LongWord;
+    magicAsText, moreMagic: string;
 
     streamStartPos, maxFileSize: Int64;
-    expectedFileSize: DWord;
+    expectedFileSize: LongWord;
 
     procedure DetectTarga;
     var
@@ -718,7 +1087,7 @@ var
 
     procedure DetectLazPaint;
     var
-      w,h: dword;
+      w,h: LongWord;
       i: integer;
     begin
       if (copy(magicAsText,1,8) = 'LazPaint') then //with header
@@ -803,8 +1172,14 @@ var
       if (magic[2] in[0,1]) and (magic[3] = 0) then inc(scores[ifBmpMioMap]);
     end;
 
-    if (magic[0] = $00) and (magic[1] = $00) and (magic[2] in[$01,$02]) and (magic[3] = $00) and
-      (magic[4] + (magic[5] shl 8) > 0) then inc(scores[ifIco]);
+    if (magic[0] = $00) and (magic[1] = $00) and (magic[3] = $00) and
+      (magic[4] + (magic[5] shl 8) > 0) then
+    begin
+      if magic[2] = $01 then
+        inc(scores[ifIco])
+      else if magic[2] = $02 then
+        inc(scores[ifCur]);
+    end;
 
     if (copy(magicAsText,1,4) = 'PDN3') then
     begin
@@ -816,6 +1191,13 @@ var
       end;
     end;
 
+    if (copy(magicAsText,1,4) = 'oXo ') then
+    begin
+      inc(scores[ifPhoxo],1);
+      if (magic[4] = 1) and (magic[5] = 0) and (magic[6] = 0) and (magic[7] = 0) then
+        inc(scores[ifPhoxo],1);
+    end;
+
     DetectLazPaint;
 
     if (magic[0] = $50) and (magic[1] = $4b) and (magic[2] = $03) and (magic[3] = $04) then
@@ -823,6 +1205,7 @@ var
       if DefaultBGRAImageReader[ifOpenRaster] = nil then inc(scores[ifOpenRaster]) else
       with CreateBGRAImageReader(ifOpenRaster) do
         try
+          AStream.Position := streamStartPos;
           if CheckContents(AStream) then inc(scores[ifOpenRaster],2);
         finally
           Free;
@@ -837,6 +1220,20 @@ var
     if (copy(magicAsText,1,2)='MM') and (magic[2] = 0) and (magic[3]=42) then inc(scores[ifTiff]);
 
     if (copy(magicAsText,1,8) = '/* XPM *') or (copy(magicAsText,1,6) = '! XPM2') then inc(scores[ifXPixMap]);
+
+    if (copy(magicAsText,1,6) = '<?xml ') or (copy(magicAsText,1,5) = '<svg ') then inc(scores[ifSvg]);
+
+    if (length(magicAsText)>3) and (magicAsText[1]='P') and
+      (magicAsText[2] in['1'..'6']) and (magicAsText[3] = #10) then inc(scores[ifPortableAnyMap]);
+
+    if (copy(magicAsText,1,4) = 'RIFF') then
+    begin
+      AStream.Position:= streamStartPos+8;
+      setlength(moreMagic, 4);
+      if (AStream.Read(moreMagic[1],4) = 4)
+       and (moreMagic = 'WEBP') then
+        inc(scores[ifWebP], 2);
+    end;
 
     AStream.Position := streamStartPos;
   end;
@@ -871,11 +1268,14 @@ end;
 
 function SuggestImageFormat(AFilenameOrExtensionUTF8: string): TBGRAImageFormat;
 var ext: string;
+  posDot: integer;
 begin
   result := ifUnknown;
 
   ext := ExtractFileName(AFilenameOrExtensionUTF8);
-  if pos('.', ext) <> 0 then ext := ExtractFileExt(ext) else ext := '.'+ext;
+  posDot := LastDelimiter('.', ext);
+  if posDot <> 0 then ext := copy(ext,posDot,length(ext)-posDot+1)
+  else ext := '.'+ext;
   ext := UTF8LowerCase(ext);
 
   if (ext = '.jpg') or (ext = '.jpeg') then result := ifJpeg else
@@ -883,7 +1283,8 @@ begin
   if (ext = '.gif') then result := ifGif else
   if (ext = '.pcx') then result := ifPcx else
   if (ext = '.bmp') then result := ifBmp else
-  if (ext = '.ico') or (ext = '.cur') then result := ifIco else
+  if (ext = '.ico') then result := ifIco else
+  if (ext = '.cur') then result := ifCur else
   if (ext = '.pdn') then result := ifPaintDotNet else
   if (ext = '.lzp') then result := ifLazPaint else
   if (ext = '.ora') then result := ifOpenRaster else
@@ -891,7 +1292,11 @@ begin
   if (ext = '.tga') then result := ifTarga else
   if (ext = '.tif') or (ext = '.tiff') then result := ifTiff else
   if (ext = '.xwd') then result := ifXwd else
-  if (ext = '.xpm') then result := ifXPixMap;
+  if (ext = '.xpm') then result := ifXPixMap else
+  if (ext = '.oxo') then result := ifPhoxo else
+  if (ext = '.svg') then result := ifSvg else
+  if (ext = '.pbm') or (ext = '.pgm') or (ext = '.ppm') then result := ifPortableAnyMap else
+  if (ext = '.webp') then result := ifWebP;
 end;
 
 function SuggestImageExtension(AFormat: TBGRAImageFormat): string;
@@ -901,17 +1306,22 @@ begin
     ifPng: result := 'png';
     ifGif: result := 'gif';
     ifBmp: result := 'bmp';
+    ifBmpMioMap: result := 'bmp';
     ifIco: result := 'ico';
+    ifCur: result := 'ico';
     ifPcx: result := 'pcx';
     ifPaintDotNet: result := 'pdn';
     ifLazPaint: result := 'lzp';
     ifOpenRaster: result := 'ora';
+    ifPhoxo: result := 'oXo';
     ifPsd: result := 'psd';
     ifTarga: result := 'tga';
     ifTiff: result := 'tif';
     ifXwd: result := 'xwd';
     ifXPixMap: result := 'xpm';
-    ifBmpMioMap: result := 'bmp';
+    ifSvg: result := 'svg';
+    ifPortableAnyMap: result := 'ppm';
+    ifWebP: result := 'webp';
     else result := '?';
   end;
 end;
@@ -924,6 +1334,7 @@ begin
       ifUnknown: raise exception.Create('The image format is unknown.');
       ifOpenRaster: raise exception.Create('You need to call BGRAOpenRaster.RegisterOpenRasterFormat to read this image.');
       ifPaintDotNet: raise exception.Create('You need to call BGRAPaintNet.RegisterPaintNetFormat to read this image.');
+      ifSvg: raise exception.Create('You need to call BGRA.RegisterSvgFormat to read this image.');
     else
       raise exception.Create('The image reader is not registered for this image format.');
     end;
@@ -938,6 +1349,7 @@ begin
     case AFormat of
       ifUnknown: raise exception.Create('The image format is unknown');
       ifOpenRaster: raise exception.Create('You need to call BGRAOpenRaster.RegisterOpenRasterFormat to write with this image format.');
+      ifPhoxo: raise exception.Create('You need to call BGRAPhoxo.RegisterPhoxoFormat to write with this image format.');
     else
       raise exception.Create('The image writer is not registered for this image format.');
     end;
@@ -945,8 +1357,9 @@ begin
 
   if AFormat = ifPng then
   begin
-    result := TBGRAWriterPNG.Create;
-    TBGRAWriterPNG(result).UseAlpha := AHasTransparentPixels;
+    result := DefaultBGRAImageWriter[AFormat].Create;
+    if result is TBGRACustomWriterPNG then
+      TBGRACustomWriterPNG(result).UseAlpha := AHasTransparentPixels;
   end else
   if AFormat = ifBmp then
   begin
@@ -963,6 +1376,123 @@ begin
     result := DefaultBGRAImageWriter[AFormat].Create;
 end;
 
+operator =(const AGuid1, AGuid2: TGuid): boolean;
+begin
+  result := CompareMem(@AGuid1, @AGuid2, sizeof(TGuid));
+end;
+
+type
+  TResourceType = record
+    ext: string;
+    code: pchar;
+  end;
+
+{$IFNDEF BGRABITMAP_USE_LCL}{$IFDEF MSWINDOWS}
+const
+  RT_BITMAP = MAKEINTRESOURCE(2);
+  RT_RCDATA = MAKEINTRESOURCE(10);
+  RT_GROUP_CURSOR = MAKEINTRESOURCE(12);
+  RT_GROUP_ICON = MAKEINTRESOURCE(14);
+  RT_HTML = MAKEINTRESOURCE(23);
+{$ENDIF}{$ENDIF}
+
+const
+  ResourceTypes: array[1..7] of TResourceType =
+   ((ext: 'CUR'; code: RT_GROUP_CURSOR),
+    (ext: 'BMP'; code: RT_BITMAP),
+    (ext: 'ICO'; code: RT_GROUP_ICON),
+    (ext: 'DAT'; code: RT_RCDATA),
+    (ext: 'DATA'; code: RT_RCDATA),
+    (ext: 'HTM'; code: RT_HTML),
+    (ext: 'HTML'; code: RT_HTML));
+
+{ TBGRAResourceManager }
+
+function TBGRAResourceManager.GetWinResourceType(AExtension: string): pchar;
+var
+  i: Integer;
+begin
+  if (AExtension <> '') and (AExtension[1]='.') then delete(AExtension,1,1);
+  for i := low(ResourceTypes) to high(ResourceTypes) do
+    if AExtension = ResourceTypes[i].ext then
+      exit(ResourceTypes[i].code);
+
+  exit(RT_RCDATA);
+end;
+
+function TBGRAResourceManager.GetResourceStream(AFilename: string): TStream;
+var
+  name,ext: RawByteString;
+  rt: PChar;
+begin
+  ext := UpperCase(ExtractFileExt(AFilename));
+  name := ChangeFileExt(AFilename,'');
+  rt := GetWinResourceType(ext);
+
+  if (rt = RT_GROUP_CURSOR) or (rt = RT_GROUP_ICON) then
+    raise exception.Create('Not implemented');
+
+  result := TResourceStream.Create(HINSTANCE, name, rt);
+end;
+
+function TBGRAResourceManager.IsWinResource(AFilename: string): boolean;
+var
+  name,ext: RawByteString;
+  rt: PChar;
+begin
+  ext := UpperCase(ExtractFileExt(AFilename));
+  name := ChangeFileExt(AFilename,'');
+  rt := GetWinResourceType(ext);
+  result := FindResource(HINSTANCE, pchar(name), rt)<>0;
+end;
+
+{$IFDEF BGRABITMAP_USE_LCL}
+type
+
+  { TLCLResourceManager }
+
+  TLCLResourceManager = class(TBGRAResourceManager)
+  protected
+    function FindLazarusResource(AFilename: string): TLResource;
+  public
+    function GetResourceStream(AFilename: string): TStream; override;
+    function IsWinResource(AFilename: string): boolean; override;
+  end;
+
+function TLCLResourceManager.FindLazarusResource(AFilename: string): TLResource;
+var
+  name,ext: RawByteString;
+begin
+  ext := UpperCase(ExtractFileExt(AFilename));
+  if (ext<>'') and (ext[1]='.') then Delete(ext,1,1);
+  name := ChangeFileExt(AFilename,'');
+  if ext<>'' then
+    result := LazarusResources.Find(name,ext)
+  else
+    result := LazarusResources.Find(name);
+end;
+
+function TLCLResourceManager.GetResourceStream(AFilename: string): TStream;
+var
+  res: TLResource;
+begin
+  res := FindLazarusResource(AFilename);
+  if Assigned(res) then
+    result := TLazarusResourceStream.CreateFromHandle(res)
+  else
+    result := inherited GetResourceStream(AFilename);
+end;
+
+function TLCLResourceManager.IsWinResource(AFilename: string): boolean;
+begin
+  if FindLazarusResource(AFilename)<>nil then
+    result := false
+  else
+    Result:=inherited IsWinResource(AFilename);
+end;
+
+{$ENDIF}
+
 initialization
 
   {$DEFINE INCLUDE_INIT}
@@ -970,19 +1500,26 @@ initialization
 
   {$DEFINE INCLUDE_INIT}
   {$I csscolorconst.inc}
+
+  fqFineClearType := @GetFineClearTypeAuto;
   
   DefaultBGRAImageWriter[ifJpeg] := TFPWriterJPEG;
-  DefaultBGRAImageWriter[ifPng] := TBGRAWriterPNG;
   DefaultBGRAImageWriter[ifBmp] := TFPWriterBMP;
   DefaultBGRAImageWriter[ifPcx] := TFPWriterPCX;
   DefaultBGRAImageWriter[ifTarga] := TFPWriterTarga;
   DefaultBGRAImageWriter[ifXPixMap] := TFPWriterXPM;
-  DefaultBGRAImageWriter[ifTiff] := TFPWriterTiff;
+  DefaultBGRAImageWriter[ifPortableAnyMap] := TFPWriterPNM;
   //writing XWD not implemented
 
-  DefaultBGRAImageReader[ifTiff] := TFPReaderTiff;
   DefaultBGRAImageReader[ifXwd] := TFPReaderXWD;
+  DefaultBGRAImageReader[ifPortableAnyMap] := TFPReaderPNM;
   //the other readers are registered by their unit
+
+  {$IFDEF BGRABITMAP_USE_LCL}
+  BGRAResource := TLCLResourceManager.Create;
+  {$ELSE}
+  BGRAResource := TBGRAResourceManager.Create;
+  {$ENDIF}
 
 finalization
 
@@ -991,4 +1528,6 @@ finalization
 
   {$DEFINE INCLUDE_FINAL}
   {$I bgrapixel.inc}
+
+  BGRAResource.Free;
 end.

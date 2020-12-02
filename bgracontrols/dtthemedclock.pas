@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-linking-exception
 {
   Part of BGRA Controls. Made by third party.
   For detailed information see readme.txt
@@ -5,41 +6,21 @@
   Site: https://sourceforge.net/p/bgra-controls/
   Wiki: http://wiki.lazarus.freepascal.org/BGRAControls
   Forum: http://forum.lazarus.freepascal.org/index.php/board,46.0.html
-
-  This library is free software; you can redistribute it and/or modify it
-  under the terms of the GNU Library General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or (at your
-  option) any later version with the following modification:
-
-  As a special exception, the copyright holders of this library give you
-  permission to link this library with independent modules to produce an
-  executable, regardless of the license terms of these independent modules,and
-  to copy and distribute the resulting executable under terms of your choice,
-  provided that you also meet, for each linked independent module, the terms
-  and conditions of the license of that module. An independent module is a
-  module which is not derived from or based on this library. If you modify
-  this library, you may extend this exception to your version of the library,
-  but you are not obligated to do so. If you do not wish to do so, delete this
-  exception statement from your version.
-
-  This program is distributed in the hope that it will be useful, but WITHOUT
-  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
-  for more details.
-
-  You should have received a copy of the GNU Library General Public License
-  along with this library; if not, write to the Free Software Foundation,
-  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 }
+{******************************* CONTRIBUTOR(S) ******************************
+- Edivando S. Santos Brasil | mailedivando@gmail.com
+  (Compatibility with delphi VCL 11/2018)
 
+***************************** END CONTRIBUTOR(S) *****************************}
 unit dtthemedclock;
 
-{$mode objfpc}{$H+}
+{$I bgracontrols.inc}
 
 interface
 
 uses
-  Classes, SysUtils, ExtCtrls, LResources, Forms, Controls, Graphics, Dialogs, DTAnalogCommon,
+  Classes, SysUtils, ExtCtrls, {$IFDEF FPC}LResources,{$ENDIF} Forms, Controls, Graphics, Dialogs, DTAnalogCommon,
+  {$IFNDEF FPC}Types, BGRAGraphics, GraphType, FPImage, {$ENDIF}
   BGRABitmap, BGRABitmapTypes;
 
 type
@@ -57,7 +38,6 @@ type
     FPosition: integer;
     FSecondsPointerSettings: TDTPointerSettings;
     FTimer: TTimer;
-    procedure SetEnabled(AValue: boolean);
     procedure SetHoursPointerSettings(AValue: TDTPointerSettings);
     procedure SetMinutesPointerSettings(AValue: TDTPointerSettings);
     procedure SetPointerCapSettings(AValue: TDTPointerCapSettings);
@@ -65,6 +45,7 @@ type
     procedure SetSecondsPointerSettings(AValue: TDTPointerSettings);
     { Private declarations }
   protected
+    procedure SetEnabled(AValue: boolean); override;
     { Protected declarations }
     property SecondsPointerSettings: TDTPointerSettings read FSecondsPointerSettings write SetSecondsPointerSettings;
     property MinutesPointerSettings: TDTPointerSettings read FMinutesPointerSettings write SetMinutesPointerSettings;
@@ -72,7 +53,7 @@ type
     property PointerCapSettings: TDTPointerCapSettings read FPointerCapSettings write SetPointerCapSettings;
     property Position: integer read FPosition write SetPosition;
     property Enabled: boolean read FEnabled write SetEnabled;
-    procedure TimerEvent(Sender: TObject);
+    procedure TimerEvent({%H-}Sender: TObject);
   public
     { Public declarations }
     constructor Create(AOwner: TComponent); override;
@@ -100,15 +81,17 @@ type
     property Enabled;
   end;
 
-procedure Register;
+{$IFDEF FPC}procedure Register;{$ENDIF}
 
 implementation
 
+{$IFDEF FPC}
 procedure Register;
 begin
-  {$I icons\dtthemedclock_icon.lrs}
+  //{$I icons\dtthemedclock_icon.lrs}
   RegisterComponents('BGRA Controls', [TDTThemedClock]);
 end;
+{$ENDIF}
 
 { TDTCustomThemedClock }
 
@@ -179,34 +162,34 @@ begin
   inherited Create(AOwner);
 
   FSecondsPointerSettings := TDTPointerSettings.Create;
-  FSecondsPointerSettings.OnChange := @DoChange;
+  FSecondsPointerSettings.OnChange := DoChange;
   FMinutesPointerSettings := TDTPointerSettings.Create;
-  FMinutesPointerSettings.OnChange := @DoChange;
+  FMinutesPointerSettings.OnChange := DoChange;
   FHoursPointerSettings := TDTPointerSettings.Create;
-  FHoursPointerSettings.OnChange := @DoChange;
+  FHoursPointerSettings.OnChange := DoChange;
 
   FPointerCapSettings := TDTPointerCapSettings.Create;
-  FPointerCapSettings.OnChange := @DoChange;
+  FPointerCapSettings.OnChange := DoChange;
 
   FClockFace := TBGRABitmap.Create;
   FPointerBitmap := TBGRABitmap.Create;
 
-  FSecondsPointerSettings.Color := BGRAToColor(BGRA(255, 81, 81));
+  FSecondsPointerSettings.Color := BGRA(255, 81, 81);
   FSecondsPointerSettings.Length := 80;
   FSecondsPointerSettings.Thickness := 3;
 
-  FMinutesPointerSettings.Color := BGRAToColor(BGRA(199, 199, 173));
+  FMinutesPointerSettings.Color := BGRA(199, 199, 173);
   FMinutesPointerSettings.Length := 80;
   FMinutesPointerSettings.Thickness := 3;
 
-  FHoursPointerSettings.Color := BGRAToColor(BGRA(199, 199, 173));
+  FHoursPointerSettings.Color := BGRA(199, 199, 173);
   FHoursPointerSettings.Length := 60;
   FHoursPointerSettings.Thickness := 5;
 
   FTimer := TTimer.Create(Self);
   FTimer.Interval := 1000;
   FTimer.Enabled := FEnabled;
-  FTimer.OnTimer := @TimerEvent;
+  FTimer.OnTimer := TimerEvent;
 
 end;
 
@@ -265,7 +248,7 @@ begin
       xt := Origin.CenterPoint.x + Round((r - ScaleSettings.LengthSubTick) * sin(6 * i * Pi / 180));
       yt := Origin.CenterPoint.y - Round((r - ScaleSettings.LengthSubTick) * cos(6 * i * Pi / 180));
 
-      FClockFace.DrawLineAntialias(x, y, xt, yt, ColorToBGRA(ScaleSettings.TickColor), ScaleSettings.ThicknessSubTick);
+      FClockFace.DrawLineAntialias(x, y, xt, yt, ScaleSettings.TickColor, ScaleSettings.ThicknessSubTick);
     end;
   end;
 
@@ -282,7 +265,7 @@ begin
       xt := Origin.CenterPoint.x + Round((r - ScaleSettings.LengthMainTick) * sin(30 * i * Pi / 180));
       yt := Origin.CenterPoint.y - Round((r - ScaleSettings.LengthMainTick) * cos(30 * i * Pi / 180));
 
-      FClockFace.DrawLineAntialias(x, y, xt, yt, ColorToBGRA(ScaleSettings.TickColor), ScaleSettings.ThicknessMainTick);
+      FClockFace.DrawLineAntialias(x, y, xt, yt, ScaleSettings.TickColor, ScaleSettings.ThicknessMainTick);
 
       if ScaleSettings.EnableScaleText then
       begin
@@ -294,7 +277,7 @@ begin
         xt := Origin.CenterPoint.x + Round(ScaleSettings.TextRadius * sin(30 * i * Pi / 180));
         yt := Origin.CenterPoint.y - Round(ScaleSettings.TextRadius * cos(30 * i * Pi / 180));
 
-        FClockFace.TextOut(Xt, Yt - (FClockFace.FontHeight / 1.7), IntToStr(i), ColorToBGRA(ScaleSettings.TextColor), taCenter);
+        FClockFace.TextOut(Xt, Yt - (FClockFace.FontHeight / 1.7), IntToStr(i), ScaleSettings.TextColor, taCenter);
       end;
 
     end;
@@ -305,7 +288,7 @@ end;
 procedure TDTCustomThemedClock.DrawPointers;
 var
   Origin: TDTOrigin;
-  r, i, x, y, xt, yt: integer;
+  {%H-}r: integer;
   Xs, Ys, Xm, Ym, Xh, Yh: integer;
   th, tm, ts, tn: word;
 begin
@@ -329,12 +312,12 @@ begin
   Xh := Origin.CenterPoint.x + Round(HoursPointerSettings.Length * Sin((th * 30 + tm / 2) * Pi / 180));
   Yh := Origin.CenterPoint.y - Round(HoursPointerSettings.Length * Cos((th * 30 + tm / 2) * Pi / 180));
 
-  FPointerBitmap.DrawLineAntialias(Origin.CenterPoint.x, Origin.CenterPoint.y, xs, ys, ColorToBGRA(SecondsPointerSettings.Color), SecondsPointerSettings.Thickness);
-  FPointerBitmap.DrawLineAntialias(Origin.CenterPoint.x, Origin.CenterPoint.y, xm, ym, ColorToBGRA(MinutesPointerSettings.Color), MinutesPointerSettings.Thickness);
-  FPointerBitmap.DrawLineAntialias(Origin.CenterPoint.x, Origin.CenterPoint.y, xh, yh, ColorToBGRA(HoursPointerSettings.Color), HoursPointerSettings.Thickness);
+  FPointerBitmap.DrawLineAntialias(Origin.CenterPoint.x, Origin.CenterPoint.y, xs, ys, SecondsPointerSettings.Color, SecondsPointerSettings.Thickness);
+  FPointerBitmap.DrawLineAntialias(Origin.CenterPoint.x, Origin.CenterPoint.y, xm, ym, MinutesPointerSettings.Color, MinutesPointerSettings.Thickness);
+  FPointerBitmap.DrawLineAntialias(Origin.CenterPoint.x, Origin.CenterPoint.y, xh, yh, HoursPointerSettings.Color, HoursPointerSettings.Thickness);
 
   // Draw cap over needle
-  FPointerBitmap.EllipseAntialias(origin.CenterPoint.x, origin.CenterPoint.y, PointerCapSettings.Radius, PointerCapSettings.Radius, ColorToBGRA(PointerCapSettings.EdgeColor), 2, ColorToBGRA(PointerCapSettings.FillColor));
+  FPointerBitmap.EllipseAntialias(origin.CenterPoint.x, origin.CenterPoint.y, PointerCapSettings.Radius, PointerCapSettings.Radius, PointerCapSettings.EdgeColor, 2, ColorToBGRA(PointerCapSettings.FillColor));
 
 
 end;

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-linking-exception
 unit BGRANoGUIBitmap;
 
 {$mode objfpc}{$H+}
@@ -5,7 +6,7 @@ unit BGRANoGUIBitmap;
 interface
 
 uses
-  SysUtils, Classes, BGRAGraphics, BGRABitmapTypes, BGRADefaultBitmap,
+  SysUtils, BGRAClasses, BGRAGraphics, BGRABitmapTypes, BGRADefaultBitmap,
   BGRAFreeType, EasyLazFreeType, LazFreeTypeFontCollection,
   BGRACanvas;
 
@@ -28,8 +29,8 @@ type
     procedure NotAvailable;
   public
     destructor Destroy; override;
-    class procedure AddFreeTypeFontFolder(ADirectory: string; AUTF8: boolean = false); {$if FPC_FULLVERSION>=030100}static;{$endif}
-    class procedure AddFreeTypeFontFile(AFilename: string; AUTF8: boolean = false); {$if FPC_FULLVERSION>=030100}static;{$endif}
+    class procedure AddFreeTypeFontFolder(ADirectory: string; AUTF8: boolean = false); static;
+    class procedure AddFreeTypeFontFile(AFilename: string; AUTF8: boolean = false); static;
     procedure Draw(ACanvas: TCanvas; x, y: integer; {%H-}Opaque: boolean=True); override;
     procedure Draw(ACanvas: TCanvas; Rect: TRect; {%H-}Opaque: boolean=True); override;
     procedure GetImageFromCanvas({%H-}CanvasSource: TCanvas; {%H-}x, {%H-}y: integer); override; //not available
@@ -39,8 +40,8 @@ type
       {%H-}ALineOrder: TRawImageLineOrder; {%H-}AWidth, {%H-}AHeight: integer); override;
     procedure TakeScreenshot({%H-}ARect: TRect); override; //not available
     procedure TakeScreenshotOfPrimaryMonitor; override; //not available
-    procedure LoadFromDevice({%H-}DC: System.THandle); override; //not available
-    procedure LoadFromDevice({%H-}DC: System.THandle; {%H-}ARect: TRect); override; //not available
+    procedure LoadFromDevice({%H-}DC: HDC); override; //not available
+    procedure LoadFromDevice({%H-}DC: HDC; {%H-}ARect: TRect); override; //not available
     property Canvas: TBGRACanvas read GetPseudoCanvas;
   end;
 
@@ -148,12 +149,12 @@ begin
   NotAvailable;
 end;
 
-procedure TBGRANoGUIBitmap.LoadFromDevice(DC: System.THandle);
+procedure TBGRANoGUIBitmap.LoadFromDevice(DC: HDC);
 begin
   NotAvailable;
 end;
 
-procedure TBGRANoGUIBitmap.LoadFromDevice(DC: System.THandle; ARect: TRect);
+procedure TBGRANoGUIBitmap.LoadFromDevice(DC: HDC; ARect: TRect);
 begin
   NotAvailable;
 end;

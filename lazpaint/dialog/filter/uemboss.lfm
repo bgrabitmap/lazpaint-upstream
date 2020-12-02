@@ -1,0 +1,118 @@
+object FEmboss: TFEmboss
+  Left = 491
+  Height = 277
+  Top = 168
+  Width = 148
+  AutoSize = True
+  BorderIcons = [biSystemMenu]
+  BorderStyle = bsDialog
+  Caption = 'Emboss'
+  ChildSizing.LeftRightSpacing = 8
+  ChildSizing.TopBottomSpacing = 8
+  ChildSizing.HorizontalSpacing = 8
+  ChildSizing.VerticalSpacing = 8
+  ChildSizing.Layout = cclLeftToRightThenTopToBottom
+  ChildSizing.ControlsPerLine = 1
+  ClientHeight = 277
+  ClientWidth = 148
+  Font.Height = -12
+  OnCreate = FormCreate
+  OnShow = FormShow
+  Position = poMainFormCenter
+  LCLVersion = '1.6.0.4'
+  object Label_Direction: TLabel
+    Left = 8
+    Height = 15
+    Top = 8
+    Width = 112
+    Caption = 'Direction :'
+    ParentColor = False
+  end
+  object PaintBox1: TPaintBox
+    Left = 8
+    Height = 105
+    Top = 31
+    Width = 112
+    OnMouseDown = PaintBox1MouseDown
+    OnMouseMove = PaintBox1MouseMove
+    OnMouseUp = PaintBox1MouseUp
+    OnPaint = PaintBox1Paint
+  end
+  object CheckBox_Transparent: TCheckBox
+    Left = 8
+    Height = 23
+    Top = 144
+    Width = 112
+    Caption = 'Transparent'
+    OnChange = CheckBox_Change
+    TabOrder = 0
+  end
+  object CheckBox_PreserveColors: TCheckBox
+    Left = 8
+    Height = 23
+    Top = 175
+    Width = 112
+    Caption = 'Preserve colors'
+    Checked = True
+    OnChange = CheckBox_Change
+    State = cbChecked
+    TabOrder = 1
+  end
+  object Panel1: TPanel
+    Left = 8
+    Height = 25
+    Top = 206
+    Width = 112
+    BevelOuter = bvNone
+    ClientHeight = 25
+    ClientWidth = 112
+    TabOrder = 2
+    object TrackBar_Strength: TTrackBar
+      Left = 0
+      Height = 25
+      Top = 0
+      Width = 112
+      Frequency = 64
+      Max = 256
+      OnChange = TrackBar_StrengthChange
+      Position = 64
+      Align = alClient
+      TabOrder = 0
+    end
+  end
+  object Panel2: TPanel
+    Left = 8
+    Height = 25
+    Top = 239
+    Width = 112
+    BevelOuter = bvNone
+    ChildSizing.HorizontalSpacing = 8
+    ChildSizing.Layout = cclLeftToRightThenTopToBottom
+    ChildSizing.ControlsPerLine = 2
+    ClientHeight = 25
+    ClientWidth = 112
+    TabOrder = 3
+    object Button_OK: TButton
+      Left = 0
+      Height = 25
+      Top = 0
+      Width = 42
+      AutoSize = True
+      Caption = 'OK'
+      Default = True
+      OnClick = Button_OKClick
+      TabOrder = 0
+    end
+    object Button_Cancel: TButton
+      Left = 50
+      Height = 25
+      Top = 0
+      Width = 62
+      AutoSize = True
+      Cancel = True
+      Caption = 'Cancel'
+      ModalResult = 2
+      TabOrder = 1
+    end
+  end
+end

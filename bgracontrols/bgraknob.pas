@@ -1,47 +1,23 @@
+// SPDX-License-Identifier: LGPL-3.0-linking-exception
 {
-  Created by BGRA Controls Team
-  Dibo, Circular, lainz (007) and contributors.
-  For detailed information see readme.txt
-
-  Site: https://sourceforge.net/p/bgra-controls/
-  Wiki: http://wiki.lazarus.freepascal.org/BGRAControls
-  Forum: http://forum.lazarus.freepascal.org/index.php/board,46.0.html
-
-  This library is free software; you can redistribute it and/or modify it
-  under the terms of the GNU Library General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or (at your
-  option) any later version with the following modification:
-
-  As a special exception, the copyright holders of this library give you
-  permission to link this library with independent modules to produce an
-  executable, regardless of the license terms of these independent modules,and
-  to copy and distribute the resulting executable under terms of your choice,
-  provided that you also meet, for each linked independent module, the terms
-  and conditions of the license of that module. An independent module is a
-  module which is not derived from or based on this library. If you modify
-  this library, you may extend this exception to your version of the library,
-  but you are not obligated to do so. If you do not wish to do so, delete this
-  exception statement from your version.
-
-  This program is distributed in the hope that it will be useful, but WITHOUT
-  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
-  for more details.
-
-  You should have received a copy of the GNU Library General Public License
-  along with this library; if not, write to the Free Software Foundation,
-  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+  Iintially written by Circular.
 }
+{******************************* CONTRIBUTOR(S) ******************************
+- Edivando S. Santos Brasil | mailedivando@gmail.com
+  (Compatibility with delphi VCL 11/2018)
+
+***************************** END CONTRIBUTOR(S) *****************************}
 
 unit BGRAKnob;
 
-{$mode objfpc}{$H+}
+{$I bgracontrols.inc}
 
 interface
 
 uses
-  Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs,
-  BGRAGradients, BGRABitmap, BGRABitmapTypes;
+  Classes, SysUtils, {$IFDEF FPC}LResources,{$ENDIF} Forms, Controls, Graphics, Dialogs,
+  {$IFNDEF FPC}BGRAGraphics, GraphType, FPImage, {$ENDIF}
+  BCBaseCtrls, BGRAGradients, BGRABitmap, BGRABitmapTypes;
 
 type
   TBGRAKnobPositionType = (kptLineSquareCap, kptLineRoundCap, kptFilledCircle,
@@ -50,7 +26,7 @@ type
 
   { TBGRAKnob }
 
-  TBGRAKnob = class(TGraphicControl)
+  TBGRAKnob = class(TBGRAGraphicCtrl)
   private
     { Private declarations }
     FPhong: TPhongShading;
@@ -93,17 +69,19 @@ type
     procedure MouseMove(Shift: TShiftState; X, Y: integer); override;
     procedure Paint; override;
     procedure Resize; override;
-    function ValueCorrection(var AValue: single): boolean; virtual; overload;
-    function ValueCorrection: boolean; virtual; overload;
+    function ValueCorrection(var AValue: single): boolean; overload; virtual;
+    function ValueCorrection: boolean; overload; virtual;
   public
     { Public declarations }
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
   public
     { Streaming }
+    {$IFDEF FPC}
     procedure SaveToFile(AFileName: string);
     procedure LoadFromFile(AFileName: string);
-    procedure OnFindClass(Reader: TReader; const AClassName: string;
+    {$ENDIF}
+    procedure OnFindClass({%H-}Reader: TReader; const AClassName: string;
       var ComponentClass: TComponentClass);
   published
     { Published declarations }
@@ -126,18 +104,19 @@ type
     property StartFromBottom: boolean read FStartFromBottom write SetStartFromBottom;
   end;
 
-
-procedure Register;
+{$IFDEF FPC}procedure Register;{$ENDIF}
 
 implementation
 
 uses Math;
 
+{$IFDEF FPC}
 procedure Register;
 begin
-  {$I icons\bgraknob_icon.lrs}
+  //{$I icons\bgraknob_icon.lrs}
   RegisterComponents('BGRA Controls', [TBGRAKnob]);
 end;
+{$ENDIF}
 
 { TBGRAKnob }
 
@@ -164,7 +143,7 @@ begin
 
   FKnobBmp := TBGRABitmap.Create(tx, ty);
   center := PointF((tx - 1) / 2, (ty - 1) / 2);
-  BGRAKnobColor := ColorToBGRA(ColorToRGB(KnobColor));
+  BGRAKnobColor := KnobColor;
 
   if UsePhongLighting then
   begin
@@ -178,8 +157,8 @@ begin
         //compute vector between center and current pixel
         v := PointF(xb, yb) - center;
         //scale down to unit circle (with 1 pixel margin for soft border)
-        v.x /= tx / 2 + 1;
-        v.y /= ty / 2 + 1;
+        v.x := v.x /(tx / 2 + 1);
+        v.y := v.y / (ty / 2 + 1);
         //compute squared distance with scalar product
         d2 := v * v;
         //interpolate as quadratic curve and apply power function
@@ -216,10 +195,10 @@ function TBGRAKnob.GetValue: single;
 begin
   Result := FAngularPos * 180 / Pi;
   if Result < 0 then
-    Result += 360;
+    Result := Result +360;
   Result := 270 - Result;
   if Result < 0 then
-    Result += 360;
+    Result := Result +360;
 end;
 
 procedure TBGRAKnob.SetCurveExponent(const AValue: single);
@@ -265,9 +244,9 @@ begin
   ValueCorrection(AValue);
   NewAngularPos := 3 * Pi / 2 - AValue * Pi / 180;
   if NewAngularPos > Pi then
-    NewAngularPos -= 2 * Pi;
+    NewAngularPos := NewAngularPos -(2 * Pi);
   if NewAngularPos < -Pi then
-    NewAngularPos += 2 * Pi;
+    NewAngularPos := NewAngularPos +(2 * Pi);
   if NewAngularPos <> FAngularPos then
   begin
     FAngularPos := NewAngularPos;
@@ -489,8 +468,10 @@ end;
 constructor TBGRAKnob.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
+
   with GetControlClassDefaultSize do
     SetInitialBounds(0, 0, CX, CY);
+
   FPhong := TPhongShading.Create;
   FPhong.LightPositionZ := 100;
   FPhong.LightSourceIntensity := 300;
@@ -518,7 +499,7 @@ begin
   FKnobBmp.Free;
   inherited Destroy;
 end;
-
+{$IFDEF FPC}
 procedure TBGRAKnob.SaveToFile(AFileName: string);
 var
   AStream: TMemoryStream;
@@ -539,11 +520,12 @@ begin
   AStream := TMemoryStream.Create;
   try
     AStream.LoadFromFile(AFileName);
-    ReadComponentFromTextStream(AStream, TComponent(Self), @OnFindClass);
+    ReadComponentFromTextStream(AStream, TComponent(Self), OnFindClass);
   finally
     AStream.Free;
   end;
 end;
+{$ENDIF}
 
 procedure TBGRAKnob.OnFindClass(Reader: TReader; const AClassName: string;
   var ComponentClass: TComponentClass);

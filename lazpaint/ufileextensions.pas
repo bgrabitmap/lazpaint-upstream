@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 unit UFileExtensions;
 
 {$mode objfpc}{$H+}
@@ -29,6 +30,8 @@ function GetSelectedFilterExtensions(const Filter: string; FilterIndex: integer;
 function ApplySelectedFilterExtension(const FileName: string; const Filter: string; FilterIndex: integer): string;
 
 function GetExtensionFilter(AOption: TExtensionOptions; ADisplayPrefix: string = '*.'): string;
+function GetExtensionFilterIndex(AOption: TExtensionOptions; AExtensions: string): integer;
+function GetExtensionFilterByIndex(AOption: TExtensionOptions; AIndex: integer): string;
 
 procedure RegisterPicExt(AName: string; AExtensionsWithoutDot: string; AOptions: TExtensionOptions);
 
@@ -39,7 +42,9 @@ function GetImageFormatName(AFormat: TBGRAImageFormat): string;
 
 implementation
 
-uses Masks, LazUTF8, UResourceStrings;
+uses Masks, LazUTF8, UResourceStrings, BGRASVG,
+     BGRALayerOriginal, BGRASVGOriginal, BGRAGradientOriginal,
+     LCVectorOriginal, LCVectorShapes, URaw;
 
 function GetSelectedFilterExtensions(const Filter: string;
   FilterIndex: integer; ARemoveLeadingDot: boolean): TStringList;
@@ -137,6 +142,35 @@ begin
     result := rsAllSupportedFiletypes + ' (' + allExtWithoutDot + ')|' + allExtFilter + result;
 end;
 
+function GetExtensionFilterIndex(AOption: TExtensionOptions; AExtensions: string): integer;
+var
+  i: Integer;
+begin
+  result := 2;
+  for i := 0 to high(PictureFileExtensions) do
+    if (PictureFileExtensions[i].options * AOption = AOption) and
+     (PictureFileExtensions[i].filterForAllCases <> '') then
+    begin
+      if PictureFileExtensions[i].filterForAllCases = AExtensions then exit;
+      inc(result);
+    end;
+  result := 1;
+end;
+
+function GetExtensionFilterByIndex(AOption: TExtensionOptions; AIndex: integer): string;
+var curIndex, i: integer;
+begin
+  curIndex := 2;
+  for i := 0 to high(PictureFileExtensions) do
+    if (PictureFileExtensions[i].options * AOption = AOption) and
+     (PictureFileExtensions[i].filterForAllCases <> '') then
+    begin
+      if curIndex = AIndex then exit(PictureFileExtensions[i].filterForAllCases);
+      inc(curIndex);
+    end;
+  result := '*.*';
+end;
+
 function GetBit(Value: QWord; Index: Byte): Boolean;
 begin
   Result := ((Value shr Index) and 1) = 1;
@@ -148,49 +182,28 @@ begin
   if AUppercase then Result:=UTF8UpperCase(AStrUtf8) else Result:= UTF8LowerCase(AStrUtf8);
 end;
 
-{(en) Checks if a character is caseble}
-function IsCasable(AUtf8Char: string): Boolean;
-begin
-   Result:=not (UTF8LowerCase(AUtf8Char)=UTF8UpperCase(AUtf8Char));
-end;
-
-{(en) Generates all possible upper and lowercase combinations of a string}
+{(en) Generates various cases that may be encountered}
 function SingleExtAllCases (ASingleExtension: string; Delimiter: String=';'; Prefix: string=''; Suffix: String=''):string;
 var
-  FWord,FChar:integer;
-  Len: integer;
-  Count: integer;
-  LCArray: array of String;
-  CExt:string='';
-  Cased: Boolean;
-  CChar: String;
+  otherCase: String;
 begin
-  Result := '';
-  Len:= Length(ASingleExtension);
-  Len:=UTF8Length(ASingleExtension);
-  Count:=(1 shl len) - 1;
-  SetLength(LCArray,Len);
-  for FWord:=0 to Len -1 do
-     LCArray[FWord]:=Utf8Copy (ASingleExtension,FWord+1,1);
-  for FWord:=0 to Count do
-  begin
-    CExt:='';
-    Cased:=True;
-    for FChar:=0 to Len-1 do
-    begin
-      CChar:=LCArray[FChar];
-      if IsCasable(CChar) or not GetBit(FWord,FChar) then CExt += ULCaseUtf8 (CChar,GetBit(FWord,FChar))
-      else begin Cased:= False; Break; end;
-     end; //for FChar
-     if Cased then
-     begin
-        if length(Result) > 0 then result += Delimiter;
-        Result:= Result+ Prefix+ CExt + Suffix;
-     end;  //if
-    end; //for FWord
+  Result := Prefix + ASingleExtension + Suffix;
+
+  otherCase := UTF8LowerCase(ASingleExtension);
+  if otherCase <> ASingleExtension then
+    Result += Delimiter + Prefix + otherCase + Suffix;
+
+  otherCase := UTF8UpperCase(ASingleExtension);
+  if otherCase <> ASingleExtension then
+    Result += Delimiter + Prefix + otherCase + Suffix;
+
+  otherCase := UTF8UpperCase(UTF8Copy(ASingleExtension, 1, 1)) +
+               UTF8LowerCase(UTF8Copy(ASingleExtension, 2, UTF8Length(ASingleExtension) - 1));
+  if otherCase <> ASingleExtension then
+    Result += Delimiter + Prefix + otherCase + Suffix;
 end;
 
-{(en) Generates all possible upper and lowercase combinations of file extensions}
+{(en) Generates various cases of file extensions}
 function ExtensionsAllCases (AllExtensions: String; ADelimiter: string = ';'; APrefix:string = '*.'): String;
 var
   ExtList: TStringList;
@@ -222,7 +235,7 @@ begin
   with PictureFileExtensions[high(PictureFileExtensions)] do
   begin
     name := AName;
-    extensionsWithoutDot := UTF8LowerCase(AExtensionsWithoutDot);
+    extensionsWithoutDot := AExtensionsWithoutDot;
     filterForAllCases:= ExtensionsAllCases(extensionsWithoutDot, ';', '*.');
     fileFormat := ifUnknown;
     extList := TParseStringList.Create(extensionsWithoutDot,';');
@@ -255,7 +268,7 @@ begin
   if (ext<>'') and (ext[1]='.') then delete(ext,1,1);
   for i := 0 to high(PictureFileExtensions) do
   begin
-    if pos(';'+ext+';', ';'+PictureFileExtensions[i].extensionsWithoutDot+';')<> 0 then
+    if pos(';'+ext+';', UTF8LowerCase(';'+PictureFileExtensions[i].extensionsWithoutDot+';'))<> 0 then
     begin
       if PictureFileExtensions[i].options * AOptions = AOptions then
       begin
@@ -282,7 +295,7 @@ var i: integer;
 begin
   if AFormat = ifUnknown then
   begin
-    result := '';
+    result := 'Unknown';
     exit;
   end;
   for i := 0 to high(PictureFileExtensions) do
@@ -291,26 +304,33 @@ begin
       result := PictureFileExtensions[i].name;
       exit;
     end;
+  result := 'Error';
 end;
 
 initialization
 
-  RegisterPicExt(rsLayeredImage,'lzp;ora;pdn', [eoReadable]);
-  RegisterPicExt(rsLayeredImage,'lzp;ora', [eoWritable]);
+  RegisterPicExt(rsLayeredImage,'lzp;ora;pdn;oXo', [eoReadable]);
+  RegisterPicExt(rsLayeredImage,'lzp;ora;oXo', [eoWritable]);
   RegisterPicExt(rsBitmap,'bmp', [eoReadable,eoWritable]);
   RegisterPicExt(rsAnimatedGIF,'gif', [eoReadable,eoWritable]);
-  RegisterPicExt(rsIconOrCursor,'ico;cur', [eoReadable]);
+  RegisterPicExt(rsIconOrCursor,'ico;cur', [eoReadable,eoWritable]);
   RegisterPicExt('JPEG','jpg;jpeg', [eoReadable,eoWritable]);
   RegisterPicExt(rsLazPaint,'lzp', [eoReadable,eoWritable]);
   RegisterPicExt(rsOpenRaster,'ora', [eoReadable,eoWritable]);
   RegisterPicExt('PC eXchange','pcx', [eoReadable,eoWritable]);
   RegisterPicExt('Paint.NET','pdn', [eoReadable]);
+  RegisterPicExt('PhoXo','oXo', [eoReadable,eoWritable]);
   RegisterPicExt('Portable Network Graphic','png', [eoReadable,eoWritable]);
   RegisterPicExt(rsPhotoshop,'psd', [eoReadable]);
+  BGRASVG.RegisterSvgFormat;
+  RegisterPicExt('Scalable Vector Graphic','svg', [eoReadable, eoWritable]);
   RegisterPicExt('Targa','tga', [eoReadable,eoWritable]);
   RegisterPicExt('Tiff','tif;tiff', [eoReadable,eoWritable]);
+  RegisterPicExt('WebP','webp', [eoReadable,eoWritable]);
   RegisterPicExt('X PixMap','xpm', [eoReadable,eoWritable]);
+  RegisterPicExt('Portable Any Map', 'pbm;pgm;ppm', [eoReadable]);
   RegisterPicExt('X Window','xwd', [eoReadable]);
+  RegisterPicExt('Raw',AllRawExtensions, [eoReadable]);
 
 end.
 

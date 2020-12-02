@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-linking-exception
 { Useful tools for RTTI. Functions are used expecialy for save/load styles.
   Styles has construction similar to INI files:
 
@@ -13,36 +14,16 @@
   But instead of IniFiles unit, we have own functions for read and write styles.
 
   ------------------------------------------------------------------------------
-  Copyright (C) 2012 Krzysztof Dibowski dibowski at interia.pl
-
-  This library is free software; you can redistribute it and/or modify it
-  under the terms of the GNU Library General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or (at your
-  option) any later version with the following modification:
-
-  As a special exception, the copyright holders of this library give you
-  permission to link this library with independent modules to produce an
-  executable, regardless of the license terms of these independent modules,and
-  to copy and distribute the resulting executable under terms of your choice,
-  provided that you also meet, for each linked independent module, the terms
-  and conditions of the license of that module. An independent module is a
-  module which is not derived from or based on this library. If you modify
-  this library, you may extend this exception to your version of the library,
-  but you are not obligated to do so. If you do not wish to do so, delete this
-  exception statement from your version.
-
-  This program is distributed in the hope that it will be useful, but WITHOUT
-  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
-  for more details.
-
-  You should have received a copy of the GNU Library General Public License
-  along with this library; if not, write to the Free Software Foundation,
-  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+  originally written in 2012 by Krzysztof Dibowski dibowski at interia.pl
 }
+{******************************* CONTRIBUTOR(S) ******************************
+- Edivando S. Santos Brasil | mailedivando@gmail.com
+  (Compatibility with delphi VCL 11/2018)
+
+***************************** END CONTRIBUTOR(S) *****************************}
 unit BCRTTI;
 
-{$mode objfpc}{$H+}
+{$I bgracontrols.inc}
 
 interface
 
@@ -77,7 +58,7 @@ procedure SaveStyle(AControl: TObject; const AAuthor, ADescription: String;
 
 implementation
 
-uses typinfo, variants, sysutils, strutils;
+uses typinfo, variants, sysutils, {%H-}strutils;
 
 const
   tIGNORED_PROPS: array[0..5] of string =
@@ -86,6 +67,39 @@ const
   sSECTION_PROP_NAME   = 'PROPERTIES';
   sSECTION_HEADER = '['+sSECTION_HEADER_NAME+']';
   sSECTION_PROP   = '['+sSECTION_PROP_NAME+']';
+
+procedure RemovePadChars(var S: String; const CSet: TSysCharset);
+var
+  I,J,K: LONGINT;
+begin
+ I:=Length(S);
+ IF (I>0) Then
+  Begin
+   J:=I;
+   While (j>0) and (S[J] IN CSet) DO DEC(J);
+   if j=0 Then
+     begin
+       s:='';
+       exit;
+     end;
+   k:=1;
+   While (k<=I) And (S[k] IN CSet) DO
+     INC(k);
+   IF k>1 Then
+     begin
+       move(s[k],s[1],j-k+1);
+       setlength(s,j-k+1);
+     end
+   else
+     setlength(s,j);
+  end;
+end;
+
+function TrimSet(const S: String;const CSet:TSysCharSet): String;
+begin
+  result:=s;
+  RemovePadChars(result,cset);
+end;
 
 function IsPropIgnored(const AName: String): Boolean;
 var
@@ -258,7 +272,6 @@ function GetSectionData(const AFileName, ASectionName: String): TStrings;
 var
   f: TextFile;
   s: String;
-  sl: TStringList;
   bReading: Boolean;
 begin
   Result := TStringList.Create;

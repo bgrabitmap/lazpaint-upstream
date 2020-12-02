@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-linking-exception
 unit BGRASpriteGL;
 
 {$mode objfpc}{$H+}
@@ -5,7 +6,7 @@ unit BGRASpriteGL;
 interface
 
 uses
-  Classes, SysUtils, BGRAGraphics, BGRAOpenGLType,
+  BGRAClasses, SysUtils, BGRAOpenGLType,
   BGRABitmapTypes;
 
 type
@@ -31,6 +32,7 @@ type
     function GetH: Single; virtual; abstract;
     function GetLayer: Integer; virtual; abstract;
     function GetLocation: TPointF; virtual;
+    function GetVisible: Boolean; virtual;
     function GetW: Single; virtual; abstract;
     function GetX: Single; virtual; abstract;
     function GetY: Single; virtual; abstract;
@@ -45,6 +47,7 @@ type
     procedure SetLayer(AValue: Integer); virtual; abstract;
     procedure SetLocation(AValue: TPointF); virtual;
     procedure SetW(AValue: Single); virtual; abstract;
+    procedure SetVisible({%H-}AValue: boolean); virtual;
     procedure SetX(AValue: Single); virtual; abstract;
     procedure SetY(AValue: Single); virtual; abstract;
     procedure CreateHandle({%H-}ATexture: IBGLTexture; {%H-}ALayer: Integer); virtual;
@@ -53,6 +56,7 @@ type
     constructor Create(ATexture: IBGLTexture; ALayer: integer);
     destructor Destroy; override;
     procedure OnDraw; virtual;
+    procedure OnElapse({%H-}AElapsedMs: integer); virtual;
     procedure OnTimer; virtual;
     procedure QueryDestroy; virtual; abstract;
     property Layer   : Integer read GetLayer write SetLayer;
@@ -69,6 +73,7 @@ type
     property Color   : TBGRAPixel read GetColor write SetColor;
     property HorizontalAlign: TAlignment read GetHorizontalAlign write SetHorizontalAlign;
     property VerticalAlign: TTextLayout read GetVerticalAlign write SetVerticalAlign;
+    property Visible : Boolean read GetVisible write SetVisible;
     property Texture : IBGLTexture read GetTexture;
     property Handle  : Pointer read GetHandle;
   end;
@@ -84,6 +89,7 @@ type
     FVerticalAlign: TTextLayout;
     FQueryDestroy: boolean;
     FLayer: integer;
+    FHidden: boolean;
     function GetHorizontalAlign: TAlignment; override;
     function GetVerticalAlign: TTextLayout; override;
     procedure SetHorizontalAlign(AValue: TAlignment); override;
@@ -95,6 +101,7 @@ type
     function GetActualFrame: Single; override;
     function GetH: Single; override;
     function GetLayer: Integer; override;
+    function GetVisible: Boolean; override;
     function GetW: Single; override;
     function GetX: Single; override;
     function GetY: Single; override;
@@ -105,6 +112,7 @@ type
     procedure SetActualFrame(AValue: Single); override;
     procedure SetH(AValue: Single); override;
     procedure SetLayer(AValue: Integer); override;
+    procedure SetVisible(AValue: boolean); override;
     procedure SetW(AValue: Single); override;
     procedure SetX(AValue: Single); override;
     procedure SetY(AValue: Single); override;
@@ -124,6 +132,7 @@ type
     procedure Remove(ASprite: TBGLCustomSprite); virtual; abstract;
     procedure OnDraw; virtual; abstract;
     procedure OnTimer; virtual; abstract;
+    procedure OnElapse(AElapsedMs: integer); virtual; abstract;
     procedure Clear; virtual; abstract;
     procedure Delete(AIndex: integer); virtual; abstract;
     property Count: Integer read GetCount;
@@ -145,6 +154,7 @@ type
     procedure Remove(ASprite: TBGLCustomSprite); override;
     procedure OnDraw; override;
     procedure OnTimer; override;
+    procedure OnElapse(AElapsedMs: integer); override;
     procedure Clear; override;
     procedure Delete(AIndex: integer); override;
   end;
@@ -214,6 +224,29 @@ var i,j,k: integer;
 begin
   for i := 0 to Count-1 do
     FSprites[i].OnTimer;
+  for i := Count-1 downto 0 do
+    if FSprites[i].FQueryDestroy then
+      Delete(i);
+  for i := 1 to Count-1 do
+  begin
+    j := i;
+    while (j > 0) and (FSprites[j-1].Layer > FSprites[i].Layer) do dec(j);
+    if j <> i then
+      begin
+        temp := FSprites[i];
+        for k := i downto j+1 do
+          FSprites[k] := FSprites[k-1];
+        FSprites[j] := temp;
+      end;
+  end;
+end;
+
+procedure TBGLDefaultSpriteEngine.OnElapse(AElapsedMs: integer);
+var i,j,k: integer;
+    temp: TBGLDefaultSprite;
+begin
+  for i := 0 to Count-1 do
+    FSprites[i].OnElapse(AElapsedMs);
   for i := Count-1 downto 0 do
     if FSprites[i].FQueryDestroy then
       Delete(i);
@@ -315,6 +348,11 @@ begin
   result := FLayer;
 end;
 
+function TBGLDefaultSprite.GetVisible: Boolean;
+begin
+  Result:= not FHidden;
+end;
+
 function TBGLDefaultSprite.GetW: Single;
 begin
   result := FSize.X;
@@ -363,6 +401,11 @@ end;
 procedure TBGLDefaultSprite.SetLayer(AValue: Integer);
 begin
   FLayer:= AValue;
+end;
+
+procedure TBGLDefaultSprite.SetVisible(AValue: boolean);
+begin
+  FHidden := not AValue;
 end;
 
 procedure TBGLDefaultSprite.SetW(AValue: Single);
@@ -416,7 +459,7 @@ begin
             AValue := FrameLoopEnd+0.49
           else
           begin
-            AValue -= Trunc((AValue-(FrameLoopStart-0.5))/loopLength)*loopLength;
+            DecF(AValue, Trunc((AValue-(FrameLoopStart-0.5))/loopLength)*loopLength);
             if AValue > FrameLoopEnd+0.49 then AValue := FrameLoopStart-0.49;
             if AValue < FrameLoopStart-0.49 then AValue := FrameLoopStart-0.49;
           end;
@@ -427,7 +470,7 @@ begin
             AValue := FrameLoopStart-0.49
           else
           begin
-            AValue += Trunc((FrameLoopEnd+0.5-AValue)/loopLength)*loopLength;
+            IncF(AValue, Trunc((FrameLoopEnd+0.5-AValue)/loopLength)*loopLength);
             if AValue > FrameLoopEnd+0.49 then AValue := FrameLoopEnd+0.49;
             if AValue < FrameLoopStart-0.49 then AValue := FrameLoopEnd+0.49;
           end;
@@ -460,10 +503,20 @@ begin
   result := PointF(X,Y);
 end;
 
+function TBGLCustomSprite.GetVisible: Boolean;
+begin
+  result := true;
+end;
+
 procedure TBGLCustomSprite.SetLocation(AValue: TPointF);
 begin
   X := AValue.X;
   Y := AValue.Y;
+end;
+
+procedure TBGLCustomSprite.SetVisible(AValue: boolean);
+begin
+  raise ENotImplemented.Create('Not implemented in base class');
 end;
 
 procedure TBGLCustomSprite.CreateHandle(ATexture: IBGLTexture; ALayer: Integer);
@@ -509,7 +562,7 @@ end;
 procedure TBGLCustomSprite.OnDraw;
 var NumFrame: integer;
 begin
-  if Texture <> nil then
+  if Visible and (Texture <> nil) then
     begin
       NumFrame := Trunc(Frame+0.5);
       if Angle <> 0 then
@@ -519,9 +572,14 @@ begin
     end;
 end;
 
+procedure TBGLCustomSprite.OnElapse(AElapsedMs: integer);
+begin
+  //override if you want to handle time as continuous flow. It is recommended to use floating point positions in this case.
+end;
+
 procedure TBGLCustomSprite.OnTimer;
 begin
-  //nothing by default
+  //override if you want to handle time as discrete frames with fixed time interval
 end;
 
 end.

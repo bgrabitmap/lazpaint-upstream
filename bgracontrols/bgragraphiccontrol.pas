@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-linking-exception
 {
   Created by BGRA Controls Team
   Dibo, Circular, lainz (007) and contributors.
@@ -6,82 +7,67 @@
   Site: https://sourceforge.net/p/bgra-controls/
   Wiki: http://wiki.lazarus.freepascal.org/BGRAControls
   Forum: http://forum.lazarus.freepascal.org/index.php/board,46.0.html
-
-  This library is free software; you can redistribute it and/or modify it
-  under the terms of the GNU Library General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or (at your
-  option) any later version with the following modification:
-
-  As a special exception, the copyright holders of this library give you
-  permission to link this library with independent modules to produce an
-  executable, regardless of the license terms of these independent modules,and
-  to copy and distribute the resulting executable under terms of your choice,
-  provided that you also meet, for each linked independent module, the terms
-  and conditions of the license of that module. An independent module is a
-  module which is not derived from or based on this library. If you modify
-  this library, you may extend this exception to your version of the library,
-  but you are not obligated to do so. If you do not wish to do so, delete this
-  exception statement from your version.
-
-  This program is distributed in the hope that it will be useful, but WITHOUT
-  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
-  for more details.
-
-  You should have received a copy of the GNU Library General Public License
-  along with this library; if not, write to the Free Software Foundation,
-  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 }
+{******************************* CONTRIBUTOR(S) ******************************
+- Edivando S. Santos Brasil | mailedivando@gmail.com
+  (Compatibility with delphi VCL 11/2018)
 
+***************************** END CONTRIBUTOR(S) *****************************}
 unit BGRAGraphicControl;
 
-{$mode objfpc}{$H+}
+{$I bgracontrols.inc}
 
 interface
 
 uses
-  Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs,
-  ExtCtrls, BGRABitmap, BCTypes;
+  Classes, SysUtils, {$IFDEF FPC}LResources,{$ENDIF} Forms, Controls, Graphics, Dialogs, Types,
+  {$IFNDEF FPC}BGRAGraphics, GraphType, FPImage, {$ENDIF}
+  BCBaseCtrls, ExtCtrls, BGRABitmap, BCTypes;
 
 type
 
-  { TBGRAGraphicControl }
+  { TCustomBGRAGraphicControl }
 
-  TBGRAGraphicControl = class(TGraphicControl)
+  TCustomBGRAGraphicControl = class(TBGRAGraphicCtrl)
   private
     { Private declarations }
-    FBGRA:         TBGRABitmap;
     FOnRedraw:     TBGRARedrawEvent;
     FBevelInner, FBevelOuter: TPanelBevel;
     FBevelWidth:   TBevelWidth;
     FBorderWidth:  TBorderWidth;
     FAlignment:    TAlignment;
     FColorOpacity: byte;
+    function GetBitmapHeight: integer;
+    function GetBitmapScale: double;
+    function GetBitmapWidth: integer;
     procedure SetAlignment(const Value: TAlignment);
     procedure SetBevelInner(const AValue: TPanelBevel);
     procedure SetBevelOuter(const AValue: TPanelBevel);
     procedure SetBevelWidth(const AValue: TBevelWidth);
+    procedure SetBitmapAutoScale(AValue: boolean);
     procedure SetBorderWidth(const AValue: TBorderWidth);
     procedure SetColorOpacity(const AValue: byte);
   protected
     { Protected declarations }
+    FBGRA: TBGRABitmap;
+    FBitmapAutoScale: boolean;
     procedure Paint; override;
     procedure Resize; override;
-    procedure BGRASetSize(AWidth, AHeight: integer);
+    procedure BGRASetSize(AWidth, AHeight: integer); virtual;
     procedure RedrawBitmapContent; virtual;
     procedure SetColor(Value: TColor); override;
     procedure SetEnabled(Value: boolean); override;
     procedure TextChanged; override;
+    property BitmapAutoScale: boolean read FBitmapAutoScale write SetBitmapAutoScale default true;
+    property BitmapScale: double read GetBitmapScale;
+    property BitmapWidth: integer read GetBitmapWidth;
+    property BitmapHeight: integer read GetBitmapHeight;
   public
     { Public declarations }
     constructor Create(TheOwner: TComponent); override;
     procedure RedrawBitmap;
     procedure DiscardBitmap;
     destructor Destroy; override;
-  published
-    { Published declarations }
-    property Align;
-    property Anchors;
     property OnRedraw: TBGRARedrawEvent Read FOnRedraw Write FOnRedraw;
     property Bitmap: TBGRABitmap Read FBGRA;
     property BorderWidth: TBorderWidth Read FBorderWidth Write SetBorderWidth default 0;
@@ -89,9 +75,26 @@ type
     property BevelOuter: TPanelBevel
       Read FBevelOuter Write SetBevelOuter default bvRaised;
     property BevelWidth: TBevelWidth Read FBevelWidth Write SetBevelWidth default 1;
-    property Color;
     property ColorOpacity: byte Read FColorOpacity Write SetColorOpacity;
     property Alignment: TAlignment Read FAlignment Write SetAlignment;
+  end;
+
+  TBGRAGraphicControl = class(TCustomBGRAGraphicControl)
+  published
+    { Published declarations }
+    property Align;
+    property Anchors;
+    property OnRedraw;
+    property Bitmap;
+    property BitmapAutoscale;
+    property BitmapScale;
+    property BorderWidth;
+    property BevelInner;
+    property BevelOuter;
+    property BevelWidth;
+    property Color;
+    property ColorOpacity;
+    property Alignment;
     property OnClick;
     property OnDblClick;
     property OnMouseDown;
@@ -99,23 +102,27 @@ type
     property OnMouseLeave;
     property OnMouseMove;
     property OnMouseUp;
+    {$IFDEF FPC}
     property OnPaint;
+    {$ENDIF}
     property Caption;
   end;
 
-procedure Register;
+{$IFDEF FPC}procedure Register;{$ENDIF}
 
 implementation
 
-uses BGRABitmapTypes, Types;
+uses BGRABitmapTypes, LazVersion;
 
+{$IFDEF FPC}
 procedure Register;
 begin
-  {$I icons\bgragraphiccontrol_icon.lrs}
+  //{$I icons\bgragraphiccontrol_icon.lrs}
   RegisterComponents('BGRA Controls', [TBGRAGraphicControl]);
 end;
+{$ENDIF}
 
-procedure TBGRAGraphicControl.SetAlignment(const Value: TAlignment);
+procedure TCustomBGRAGraphicControl.SetAlignment(const Value: TAlignment);
 begin
   if FAlignment = Value then
     exit;
@@ -123,7 +130,29 @@ begin
   DiscardBitmap;
 end;
 
-procedure TBGRAGraphicControl.SetBevelInner(const AValue: TPanelBevel);
+function TCustomBGRAGraphicControl.GetBitmapHeight: integer;
+begin
+  result := round(ClientHeight * BitmapScale);
+end;
+
+function TCustomBGRAGraphicControl.GetBitmapScale: double;
+begin
+  {$if laz_fullversion >= 2000000}
+  if not FBitmapAutoScale then
+    result := GetCanvasScaleFactor
+  else
+    result := 1;
+  {$else}
+  result := 1;
+  {$endif}
+end;
+
+function TCustomBGRAGraphicControl.GetBitmapWidth: integer;
+begin
+  result := round(ClientWidth * BitmapScale);
+end;
+
+procedure TCustomBGRAGraphicControl.SetBevelInner(const AValue: TPanelBevel);
 begin
   if FBevelInner = AValue then
     exit;
@@ -131,7 +160,7 @@ begin
   DiscardBitmap;
 end;
 
-procedure TBGRAGraphicControl.SetBevelOuter(const AValue: TPanelBevel);
+procedure TCustomBGRAGraphicControl.SetBevelOuter(const AValue: TPanelBevel);
 begin
   if FBevelOuter = AValue then
     exit;
@@ -139,7 +168,7 @@ begin
   DiscardBitmap;
 end;
 
-procedure TBGRAGraphicControl.SetBevelWidth(const AValue: TBevelWidth);
+procedure TCustomBGRAGraphicControl.SetBevelWidth(const AValue: TBevelWidth);
 begin
   if FBevelWidth = AValue then
     exit;
@@ -147,7 +176,14 @@ begin
   DiscardBitmap;
 end;
 
-procedure TBGRAGraphicControl.SetBorderWidth(const AValue: TBorderWidth);
+procedure TCustomBGRAGraphicControl.SetBitmapAutoScale(AValue: boolean);
+begin
+  if FBitmapAutoScale=AValue then Exit;
+  FBitmapAutoScale:=AValue;
+  DiscardBitmap;
+end;
+
+procedure TCustomBGRAGraphicControl.SetBorderWidth(const AValue: TBorderWidth);
 begin
   if FBorderWidth = AValue then
     exit;
@@ -155,7 +191,7 @@ begin
   DiscardBitmap;
 end;
 
-procedure TBGRAGraphicControl.SetColorOpacity(const AValue: byte);
+procedure TCustomBGRAGraphicControl.SetColorOpacity(const AValue: byte);
 begin
   if FColorOpacity = AValue then
     exit;
@@ -163,20 +199,20 @@ begin
   DiscardBitmap;
 end;
 
-procedure TBGRAGraphicControl.Paint;
+procedure TCustomBGRAGraphicControl.Paint;
 begin
-  BGRASetSize(Width, Height);
+  BGRASetSize(BitmapWidth, BitmapHeight);
   inherited Paint;
-  FBGRA.Draw(Canvas, 0, 0, False);
+  FBGRA.Draw(Canvas, rect(0, 0, ClientWidth, ClientHeight), False);
 end;
 
-procedure TBGRAGraphicControl.Resize;
+procedure TCustomBGRAGraphicControl.Resize;
 begin
   inherited Resize;
   DiscardBitmap;
 end;
 
-procedure TBGRAGraphicControl.BGRASetSize(AWidth, AHeight: integer);
+procedure TCustomBGRAGraphicControl.BGRASetSize(AWidth, AHeight: integer);
 begin
   if (FBGRA <> nil) and (AWidth <> FBGRA.Width) and (AHeight <> FBGRA.Height) then
   begin
@@ -185,38 +221,49 @@ begin
   end;
 end;
 
-procedure TBGRAGraphicControl.RedrawBitmapContent;
+procedure TCustomBGRAGraphicControl.RedrawBitmapContent;
 var
   ARect: TRect;
   TS: TTextStyle;
+  scale: Double;
 begin
   if (FBGRA <> nil) and (FBGRA.NbPixels <> 0) then
   begin
     FBGRA.Fill(ColorToBGRA(ColorToRGB(Color), FColorOpacity));
 
+    scale := BitmapScale;
     ARect := GetClientRect;
+    ARect.Left := round(ARect.Left*scale);
+    ARect.Top := round(ARect.Top*scale);
+    ARect.Right := round(ARect.Right*scale);
+    ARect.Bottom := round(ARect.Bottom*scale);
 
     // if BevelOuter is set then draw a frame with BevelWidth
     if (BevelOuter <> bvNone) and (BevelWidth > 0) then
-      FBGRA.CanvasBGRA.Frame3d(ARect, BevelWidth, BevelOuter,
+      FBGRA.CanvasBGRA.Frame3d(ARect, round(BevelWidth*scale), BevelOuter,
         BGRA(255, 255, 255, 200), BGRA(0, 0, 0, 160)); // Note: Frame3D inflates ARect
 
-    InflateRect(ARect, -BorderWidth, -BorderWidth);
+    InflateRect(ARect, -round(BorderWidth*scale), -round(BorderWidth*scale));
 
     // if BevelInner is set then skip the BorderWidth and draw a frame with BevelWidth
     if (BevelInner <> bvNone) and (BevelWidth > 0) then
-      FBGRA.CanvasBGRA.Frame3d(ARect, BevelWidth, BevelInner,
+      FBGRA.CanvasBGRA.Frame3d(ARect, round(BevelWidth*scale), BevelInner,
         BGRA(255, 255, 255, 160), BGRA(0, 0, 0, 160)); // Note: Frame3D inflates ARect
 
     if Caption <> '' then
     begin
       FBGRA.CanvasBGRA.Font.Assign(Canvas.Font);
+      FBGRA.CanvasBGRA.Font.Height:= round(FBGRA.CanvasBGRA.Font.Height*scale);
+      {$IFDEF FPC}//#
       TS := Canvas.TextStyle;
+      {$ENDIF}
       TS.Alignment := Alignment;
       TS.Layout := tlCenter;
       TS.Opaque := False;
       TS.Clipping := False;
+      {$IFDEF FPC}//#
       TS.SystemFont := Canvas.Font.IsDefault;
+      {$ENDIF}
 
       FBGRA.CanvasBGRA.Font.Color := Color xor $FFFFFF;
       FBGRA.CanvasBGRA.Font.Opacity := 255;
@@ -234,29 +281,35 @@ begin
   end;
 end;
 
-procedure TBGRAGraphicControl.SetColor(Value: TColor);
+procedure TCustomBGRAGraphicControl.SetColor(Value: TColor);
 begin
   if Value <> Color then
     DiscardBitmap;
+
   inherited SetColor(Value);
 end;
 
-procedure TBGRAGraphicControl.SetEnabled(Value: boolean);
+procedure TCustomBGRAGraphicControl.SetEnabled(Value: boolean);
 begin
   if Value <> Enabled then
     DiscardBitmap;
   inherited SetEnabled(Value);
 end;
 
-procedure TBGRAGraphicControl.TextChanged;
+procedure TCustomBGRAGraphicControl.TextChanged;
 begin
   DiscardBitmap;
 end;
 
-constructor TBGRAGraphicControl.Create(TheOwner: TComponent);
+constructor TCustomBGRAGraphicControl.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
+
+  with GetControlClassDefaultSize do
+    SetInitialBounds(0, 0, CX, CY);
+
   FBGRA := TBGRABitmap.Create;
+  FBitmapAutoScale:= true;
   FBevelWidth := 1;
   FAlignment := taCenter;
   Color := clWhite;
@@ -265,13 +318,13 @@ begin
   FBevelInner := bvNone;
 end;
 
-procedure TBGRAGraphicControl.RedrawBitmap;
+procedure TCustomBGRAGraphicControl.RedrawBitmap;
 begin
   RedrawBitmapContent;
   Repaint;
 end;
 
-procedure TBGRAGraphicControl.DiscardBitmap;
+procedure TCustomBGRAGraphicControl.DiscardBitmap;
 begin
   if (FBGRA <> nil) and (FBGRA.NbPixels <> 0) then
   begin
@@ -280,7 +333,7 @@ begin
   end;
 end;
 
-destructor TBGRAGraphicControl.Destroy;
+destructor TCustomBGRAGraphicControl.Destroy;
 begin
   FBGRA.Free;
   inherited Destroy;

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-linking-exception
 {
   Created by BGRA Controls Team
   Dibo, Circular, lainz (007) and contributors.
@@ -6,41 +7,21 @@
   Site: https://sourceforge.net/p/bgra-controls/
   Wiki: http://wiki.lazarus.freepascal.org/BGRAControls
   Forum: http://forum.lazarus.freepascal.org/index.php/board,46.0.html
-
-  This library is free software; you can redistribute it and/or modify it
-  under the terms of the GNU Library General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or (at your
-  option) any later version with the following modification:
-
-  As a special exception, the copyright holders of this library give you
-  permission to link this library with independent modules to produce an
-  executable, regardless of the license terms of these independent modules,and
-  to copy and distribute the resulting executable under terms of your choice,
-  provided that you also meet, for each linked independent module, the terms
-  and conditions of the license of that module. An independent module is a
-  module which is not derived from or based on this library. If you modify
-  this library, you may extend this exception to your version of the library,
-  but you are not obligated to do so. If you do not wish to do so, delete this
-  exception statement from your version.
-
-  This program is distributed in the hope that it will be useful, but WITHOUT
-  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
-  for more details.
-
-  You should have received a copy of the GNU Library General Public License
-  along with this library; if not, write to the Free Software Foundation,
-  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 }
+{******************************* CONTRIBUTOR(S) ******************************
+- Edivando S. Santos Brasil | mailedivando@gmail.com
+  (Compatibility with delphi VCL 11/2018)
 
+***************************** END CONTRIBUTOR(S) *****************************}
 unit BCToolBar;
 
-{$mode objfpc}{$H+}
+{$I bgracontrols.inc}
 
 interface
 
 uses
-  Classes, LResources, Forms, Controls, Graphics, Dialogs, ComCtrls,
+  Classes, {$IFDEF FPC}LResources,{$ELSE}types, BGRAGraphics, GraphType, FPImage,{$ENDIF}
+  Forms, Controls, Graphics, Dialogs, ComCtrls,
   BGRABitmap, BGRABitmapTypes, BGRAGradients, BCTypes;
 
 type
@@ -56,7 +37,12 @@ type
     procedure SetLimitMemoryUsage(AValue: boolean);
   protected
     { Protected declarations }
-    procedure Paint; override;
+   {$IFDEF FPC}
+   procedure Paint; override;
+   {$ELSE}
+   procedure Paint; virtual;
+   procedure PaintWindow(DC: HDC); override;
+   {$ENDIF}
     procedure CheckMemoryUsage; virtual;
   public
     { Public declarations }
@@ -70,7 +56,7 @@ type
 
 procedure DrawWindows7ToolBar(Bitmap: TBGRABitmap; AColor: TColor = clDefault);
 
-procedure Register;
+{$IFDEF FPC}procedure Register;{$ENDIF}
 
 implementation
 
@@ -79,7 +65,7 @@ var hsla: THSLAPixel;
 begin
   if g_hue = -1 then result := AColor else
     begin
-      hsla := BGRAToGSBA(AColor);
+      hsla := BGRAToHSLA(AColor);
       hsla.hue := g_hue;
       result := GSBAToBGRA(hsla);
     end;
@@ -94,7 +80,7 @@ begin
   if AColor = clDefault then
     g_hue := -1
   else
-    g_hue := BGRAToGSBA(ColorToBGRA(ColorToRGB(AColor))).hue;
+    g_hue := BGRAToGSBA(AColor).hue;
   ARect := Rect(0, 0, Bitmap.Width, Bitmap.Height);
   // Font: RGBToColor(30,57,91)
 
@@ -123,11 +109,13 @@ begin
   Bitmap.HorizLine(ARect.Left, ARect.Bottom - 1, ARect.Right-1, SetHue(BGRA(160, 175, 195), g_hue), dmSet);
 end;
 
+{$IFDEF FPC}
 procedure Register;
 begin
-  {$I icons\bctoolbar_icon.lrs}
+  //{$I icons\bctoolbar_icon.lrs}
   RegisterComponents('BGRA Controls', [TBCToolBar]);
 end;
+{$ENDIF}
 
 { TBCToolBar }
 
@@ -149,6 +137,24 @@ begin
   FLimitMemoryUsage:=AValue;
   CheckMemoryUsage;
 end;
+
+{$IFNDEF FPC}
+procedure TBCToolBar.PaintWindow(DC: HDC);
+begin
+  Canvas.Lock;
+  try
+    Canvas.Handle := DC;
+    try
+      TControlCanvas(Canvas).UpdateTextFlags;
+      Paint;
+    finally
+      Canvas.Handle := 0;
+    end;
+  finally
+    Canvas.Unlock;
+  end;
+end;
+{$ENDIF}
 
 procedure TBCToolBar.Paint;
 begin

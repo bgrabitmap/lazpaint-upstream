@@ -4,6 +4,7 @@
 
 unit BGRABitmapPack4NoGUI;
 
+{$warn 5023 off : no warning about unused units}
 interface
 
 uses
@@ -21,7 +22,9 @@ uses
   BGRASVG, BGRASVGShapes, BGRASVGType, BGRAPalette, BGRAColorQuantization, 
   BGRADithering, BGRAFreeType, BGRACustomTextFX, BGRAWritePNG, BGRAGifFormat, 
   BGRANoGUIBitmap, BGRASceneTypes, BGRARenderer3D, BGRAWriteBmpMioMap, 
-  BGRASpriteGL, BGRAOpenGLType, BGRAOpenGL, BGRACanvasGL;
+  BGRASpriteGL, BGRAOpenGLType, BGRAOpenGL, BGRACanvasGL, BGRAPhoxo, 
+  BGRAFilterScanner, BGRAFilterType, BGRAFilterBlur, BGRAMultiFileType, 
+  BGRAWinResource, BGRAUnicode, BGRAClasses;
 
 implementation
 

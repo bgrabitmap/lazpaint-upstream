@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 unit UGraph;
 
 {$mode objfpc}{$H+}
@@ -6,17 +7,23 @@ interface
 
 uses
   Classes, SysUtils, bgrabitmap, bgrabitmaptypes, LazPaintType, Graphics, BGRALayers, LCLType,
-  BCButton;
+  BCComboBox;
 
-const FrameDashLength = 4;
-  NicePointMaxRadius = 4;
+var
+  NicePointMaxRadius: integer = 6;
+  FrameDashLength: integer = 4;
+  CanvasScale: integer = 1;
+
+function ComputeRatio(ARatio: string): single;
+function RatioToStr(ARatio: single): string;
 
 function RectUnion(const rect1,Rect2: TRect): TRect;
+function RectInter(const rect1,Rect2: TRect): TRect;
 function RectOfs(const ARect: TRect; ofsX,ofsY: integer): TRect;
 function GetShapeBounds(const pts: array of TPointF; width: single): TRect;
 function DoPixelate(source: TBGRABitmap; pixelSize: integer; quality: string): TBGRABitmap;
-procedure DrawCheckers(bmp : TBGRABitmap; ARect: TRect);
-procedure DrawGrid(bmp: TBGRABitmap; sizex,sizey: single);
+procedure DrawCheckers(bmp : TBGRABitmap; ARect: TRect; AScale: single = 1);
+procedure DrawGrid(bmp: TBGRABitmap; sizex,sizey: single; ofsx,ofsy: single);
 function ComputeAngle(dx,dy: single): single;
 function GetSelectionCenter(bmp: TBGRABitmap): TPointF;
 procedure ComputeSelectionMask(image: TBGRABitmap; destMask: TBGRABitmap; ARect: TRect);
@@ -27,7 +34,6 @@ function NicePoint(bmp: TBGRABitmap; ptF: TPointF; alpha: byte = 192):TRect; ove
 procedure NiceLine(bmp: TBGRABitmap; x1,y1,x2,y2: single; alpha: byte = 192);
 function NiceText(bmp: TBGRABitmap; x,y,bmpWidth,bmpHeight: integer; s: string; align: TAlignment = taLeftJustify; valign: TTextLayout = tlTop): TRect;
 function ComputeColorCircle(tx,ty: integer; light: word; hueCorrection: boolean = true): TBGRABitmap;
-function ChangeCanvasSize(bmp: TBGRABitmap; newWidth,newHeight: integer; anchor: string; background: TBGRAPixel; repeatImage: boolean; flipMode: boolean = false): TBGRABitmap; overload;
 
 procedure RenderCloudsOn(bmp: TBGRABitmap; color: TBGRAPixel);
 procedure RenderWaterOn(bmp: TBGRABitmap; waterColor, skyColor: TBGRAPixel);
@@ -45,93 +51,84 @@ function CreateVerticalWoodTexture(tx,ty: integer): TBGRABitmap;
 
 function ClearTypeFilter(source: TBGRACustomBitmap): TBGRACustomBitmap;
 function ClearTypeInverseFilter(source: TBGRACustomBitmap): TBGRACustomBitmap;
+function WaveDisplacementFilter(source: TBGRACustomBitmap;
+  ARect: TRect; ACenter: TPointF;
+  AWaveLength, ADisplacement, APhase: single): TBGRACustomBitmap;
 
 function DoResample(source :TBGRABitmap; newWidth, newHeight: integer; StretchMode: TResampleMode): TBGRABitmap;
-procedure DrawArrow(ACanvas: TCanvas; ARect: TRect; AStart: boolean; AKind: string; ALineCap: TPenEndCap; State: TOwnerDrawState);
-procedure ApplyArrowStyle(AStart: boolean; AKind: string; ABmp: TBGRABitmap; ASize: TPointF);
-procedure BCAssignSystemStyle(AButton: TBCButton);
+procedure DrawPenStyle(AComboBox: TBCComboBox; ARect: TRect; APenStyle: TPenStyle; State: TOwnerDrawState); overload;
+procedure DrawPenStyle(ABitmap: TBGRABitmap; ARect: TRect; APenStyle: TPenStyle; c: TBGRAPixel); overload;
+procedure DrawArrow(AComboBox: TBCComboBox; ARect: TRect; AStart: boolean; AKindStr: string; ALineCap: TPenEndCap; State: TOwnerDrawState); overload;
+procedure DrawArrow(ABitmap: TBGRABitmap; ARect: TRect; AStart: boolean; AKindStr: string; ALineCap: TPenEndCap; AColor: TBGRAPixel); overload;
 
 implementation
 
-uses GraphType, math, Types, LCLProc, FileUtil, dialogs, BGRAAnimatedGif,
-  BGRAGradients, BGRATextFX, uresourcestrings, uscaledpi, BCTypes
-  {$if FPC_FULLVERSION>=030001}, LazUTF8{$endif};
+uses GraphType, math, Types, FileUtil, dialogs, BGRAAnimatedGif,
+  BGRAGradients, BGRATextFX, uresourcestrings, LCScaleDPI,
+  BGRAThumbnail, LCVectorPolyShapes, BGRAPolygon;
 
-procedure BCAssignSystemState(AState: TBCButtonState; AFontColor, ATopColor, AMiddleTopColor, AMiddleBottomColor, ABottomColor, ABorderColor: TColor);
+function ComputeRatio(ARatio: string): single;
+var
+  idxCol,errPos: Integer;
+  num,denom: double;
 begin
-  with AState do
-  begin
-    Border.Style := bboSolid;
-    Border.Color := ABorderColor;
-    Border.ColorOpacity := 255;
-    FontEx.Color := AFontColor;
-    FontEx.Style := [];
-    FontEx.Shadow := True;
-    FontEx.ShadowColor := clBlack;
-    FontEx.ShadowColorOpacity := 192;
-    FontEx.ShadowOffsetX := 1;
-    FontEx.ShadowOffsetY := 1;
-    FontEx.ShadowRadius := 2;
-    Background.Gradient1EndPercent := 60;
-    Background.Style := bbsGradient;
-    // Gradient1
-    with Background.Gradient1 do
-    begin
-      GradientType := gtLinear;
-      StartColor := ATopColor;
-      EndColor := AMiddleTopColor;
-      Point1XPercent := 0;
-      Point1YPercent := 0;
-      Point2XPercent := 0;
-      Point2YPercent := 100;
-    end;
-    // Gradient2
-    with Background.Gradient2 do
-    begin
-      StartColor := AMiddleBottomColor;
-      EndColor := ABottomColor;
-      GradientType := gtLinear;
-      Point1XPercent := 0;
-      Point1YPercent := 0;
-      Point2XPercent := 0;
-      Point2YPercent := 100;
-    end;
-  end;
+  result := 0;
+  ARatio := stringreplace(ARatio,FormatSettings.DecimalSeparator,'.',[rfReplaceAll]);
+  if ARatio = '' then exit;
+
+  idxCol := pos(':',ARatio);
+  if idxCol = 0 then exit;
+  val(copy(ARatio,1,idxCol-1),num,errPos);
+  if errPos <> 0 then exit;
+  if num < 0 then exit;
+  val(copy(ARatio,idxCol+1,length(ARatio)-idxCol),denom,errPos);
+  if errPos <> 0 then exit;
+  if denom <= 0 then exit;
+  result := num/denom;
 end;
 
-procedure BCAssignSystemStyle(AButton: TBCButton);
+function RatioToStr(ARatio: single): string;
+var
+  num,denom: integer;
 
-  function MergeColor(AColor1,AColor2:TColor):TColor;
+  procedure InvFrac;
+  var temp: integer;
   begin
-    result:= BGRAToColor(MergeBGRAWithGammaCorrection(ColorToBGRA(ColorToRGB(AColor1)),1,
-    ColorToBGRA(ColorToRGB(AColor2)),1));
+    temp := num;
+    num := denom;
+    denom := temp;
   end;
 
-  function HoverColor(AColor1: TColor): TColor;
-  var hsla1, hsla2: THSLAPixel;
+  procedure AddFrac(AValue: integer);
   begin
-    hsla1 := BGRAToHSLA(ColorToBGRA(ColorToRGB(AColor1)));
-    hsla2 := BGRAToHSLA(ColorToBGRA(ColorToRGB(clHighlight)));
-    hsla1.hue := hsla2.hue;
-    hsla1.saturation:= hsla2.saturation;
-    result := BGRAToColor(HSLAToBGRA(hsla1));
+    inc(num, AValue*denom);
   end;
 
-var highlight: TColor;
+const MaxDev = 3;
+var
+  dev: array[1..MaxDev] of integer;
+  devCount, i: integer;
+  curVal, remain: Single;
+
 begin
-  {$IFDEF DARWIN}
-  highlight := MergeColor(clBtnFace,clWhite);
-  {$ELSE}
-  highlight := clBtnHighlight;
-  {$ENDIF}
-  with AButton do
+  if ARatio < 0 then ARatio := -ARatio;
+  curVal := ARatio;
+  devCount := 0;
+  repeat
+    inc(devCount);
+    dev[devCount] := trunc(ARatio);
+    remain := frac(curVal);
+    if abs(remain) < 1e-3 then break;
+    curVal := 1/remain;
+  until devCount = MaxDev;
+  num := dev[devCount];
+  denom := 1;
+  for i := devCount-1 downto 1 do
   begin
-    Rounding.RoundX := 6;
-    Rounding.RoundY := 6;
-    BCAssignSystemState(StateNormal, clBtnText, clBtnFace, highlight, clBtnFace, clBtnShadow, clBtnShadow);
-    BCAssignSystemState(StateHover, HoverColor(clBtnText), HoverColor(clBtnFace), HoverColor(highlight), HoverColor(clBtnFace), HoverColor(clBtnShadow), HoverColor(clBtnShadow));
-    BCAssignSystemState(StateClicked, HoverColor(clBtnText), HoverColor(MergeColor(clBtnFace,clBtnShadow)), HoverColor(clBtnFace), HoverColor(MergeColor(clBtnFace,clBtnShadow)), HoverColor(clBtnShadow), HoverColor(clBtnShadow));
+    InvFrac;
+    AddFrac(dev[i]);
   end;
+  result := IntToStr(num)+':'+IntToStr(denom);
 end;
 
 function RectUnion(const rect1, Rect2: TRect): TRect;
@@ -148,6 +145,12 @@ begin
     if not IsRectEmpty(rect2) then
       UnionRect(result,result,rect2);
   end;
+end;
+
+function RectInter(const rect1, Rect2: TRect): TRect;
+begin
+  result := EmptyRect;
+  IntersectRect(result,rect1,rect2);
 end;
 
 function RectOfs(const ARect: TRect; ofsX, ofsY: integer): TRect;
@@ -196,78 +199,38 @@ begin
   result := source.FilterPixelate(pixelSize,useFilter,filter) as TBGRABitmap;
 end;
 
-procedure DrawCheckers(bmp: TBGRABitmap; ARect: TRect);
-const tx = 8; ty = 8; //must be a power of 2
-      xMask = tx*2-1;
-var xcount,patY,w,n,patY1,patY2m1,patX,patX1: NativeInt;
-    oddColor, evenColor: TBGRAPixel;
-    pdest: PBGRAPixel;
-    delta: PtrInt;
-    actualRect: TRect;
+procedure DrawCheckers(bmp: TBGRABitmap; ARect: TRect; AScale: single = 1);
 begin
-  oddColor := BGRA(220,220,220);
-  evenColor := BGRA(255,255,255);
-  actualRect := ARect;
-  IntersectRect(actualRect, ARect, bmp.ClipRect);
-  w := actualRect.Right-actualRect.Left;
-  if (w <= 0) or (actualRect.Bottom <= actualRect.Top) then exit;
-  delta := bmp.Width;
-  if bmp.LineOrder = riloBottomToTop then delta := -delta;
-  delta := (delta-w)*SizeOf(TBGRAPixel);
-  pdest := bmp.ScanLine[actualRect.Top]+actualRect.left;
-  patY1 := actualRect.Top - ARect.Top;
-  patY2m1 := actualRect.Bottom - ARect.Top-1;
-  patX1 := (actualRect.Left - ARect.Left) and xMask;
-  for patY := patY1 to patY2m1 do
-  begin
-    xcount := w;
-    if patY and ty = 0 then
-       patX := patX1
-    else
-       patX := (patX1+tx) and xMask;
-    while xcount > 0 do
-    begin
-      if patX and tx = 0 then
-      begin
-        n := 8-patX;
-        if n > xcount then n := xcount;
-        FillDWord(pdest^,n,DWord(evenColor));
-        dec(xcount,n);
-        inc(pdest,n);
-        patX := tx;
-      end else
-      begin
-        n := 16-patX;
-        if n > xcount then n := xcount;
-        FillDWord(pdest^,n,DWord(oddColor));
-        dec(xcount,n);
-        inc(pdest,n);
-        patX := 0;
-      end;
-    end;
-    inc(pbyte(pdest),delta);
-  end;
-  bmp.InvalidateBitmap;
+  DrawThumbnailCheckers(bmp, ARect, False, AScale);
 end; 
 
-procedure DrawGrid(bmp: TBGRABitmap; sizex, sizey: single);
+procedure DrawGrid(bmp: TBGRABitmap; sizex, sizey: single; ofsx,ofsy: single);
 var xb,yb: integer;
     imgGrid: TBGRABitmap;
     alpha: byte;
 begin
+    ofsx := ofsx - floor(ofsx/sizex)*sizex;
+    ofsy := ofsy - floor(ofsy/sizey)*sizey;
+
     imgGrid := TBGRABitmap.Create(bmp.Width,1);
     alpha := min(96,round((abs(sizex)+abs(sizey))*(96/16/2)));
     imgGrid.DrawLineAntialias(0,0,imgGrid.width-1,0,BGRA(255,255,255,alpha),BGRA(0,0,0,alpha),
         min(3,max(1,round(sizex/8))),true);
-    for yb := 1 to trunc(bmp.Height/sizey) do
-     bmp.PutImage(0,round(yb*sizey),imgGrid,dmFastBlend);
+    for yb := 1 to ceil(bmp.Height/sizey) do
+    begin
+      bmp.PutImage(0,round(ofsy),imgGrid,dmFastBlend);
+      ofsy += sizey;
+    end;
     imgGrid.Free;
 
     imgGrid := TBGRABitmap.Create(1,bmp.Height);
     imgGrid.DrawLineAntialias(0,0,0,imgGrid.height-1,BGRA(0,0,0,alpha),BGRA(255,255,255,alpha),
       min(3,max(1,round(sizey/8))),true);
-    for xb := 1 to trunc(bmp.Width/sizex) do
-     bmp.PutImage(round(xb*sizex),0,imgGrid,dmFastBlend);
+    for xb := 1 to ceil(bmp.Width/sizex) do
+    begin
+      bmp.PutImage(round(ofsx),0,imgGrid,dmFastBlend);
+      ofsx += sizex;
+    end;
     imgGrid.Free;
 end;
 
@@ -737,38 +700,74 @@ begin
   result := temp;
 end;
 
+type
+  { TWaveDisplacementScanner }
+
+  TWaveDisplacementScanner = class(TBGRACustomScanner)
+    Source: TBGRACustomBitmap;
+    Center: TPointF;
+    Wavelength, Displacement, PhaseRad: single;
+    function ScanAt(X,Y: Single): TBGRAPixel; override;
+  end;
+
+{ TWaveDisplacementScanner }
+
+function TWaveDisplacementScanner.ScanAt(X, Y: Single): TBGRAPixel;
+var
+  u, disp: TPointF;
+  dist: Single;
+  alpha: ValReal;
+begin
+  u := PointF(X,Y)-Center;
+  dist := VectLen(u);
+  if dist = 0 then disp := PointF(0,0) else
+  begin
+    u := u*(1/dist);
+    alpha := PhaseRad+dist*2*Pi/Wavelength;
+    disp := u*sin(alpha)*Displacement;
+  end;
+  result := Source.GetPixel(x+disp.x,y+disp.y);
+end;
+
+function WaveDisplacementFilter(source: TBGRACustomBitmap; ARect: TRect;
+  ACenter: TPointF; AWaveLength, ADisplacement, APhase: single): TBGRACustomBitmap;
+var scan: TWaveDisplacementScanner;
+begin
+ scan := TWaveDisplacementScanner.Create;
+ scan.Center := ACenter;
+ scan.Source := source;
+ scan.Wavelength := AWaveLength;
+ scan.Displacement := ADisplacement;
+ scan.PhaseRad := APhase*Pi/180;
+ result := TBGRABitmap.Create(source.Width,source.Height);
+ result.FillRect(ARect, scan, dmSet);
+ scan.Free;
+end;
+
 function DoResample(source: TBGRABitmap; newWidth, newHeight: integer;
   StretchMode: TResampleMode): TBGRABitmap;
 begin
   result := source.Resample(newWidth,newHeight,StretchMode) as TBGRABitmap;
 end;
 
-procedure DrawArrow(ACanvas: TCanvas; ARect: TRect; AStart: boolean; AKind: string; ALineCap: TPenEndCap; State: TOwnerDrawState);
-var bmp : TBGRABitmap;
-  c,c2: TBGRAPixel;
+procedure DrawArrowMask(AMask: TBGRABitmap; AStart: boolean; AKindStr: string; ALineCap: TPenEndCap);
+var
+  kind: TArrowKind;
   x1,x2,xm1,xm2,y,w,temp: single;
 begin
-  if odSelected in State then
-  begin
-    c2 := ColorToBGRA(ColorToRGB(clHighlight));
-    c := ColorToBGRA(ColorToRGB(clHighlightText));
-  end else
-  begin
-    c2 := ColorToBGRA(ColorToRGB(clWindow));
-    c := ColorToBGRA(ColorToRGB(clWindowText));
-  end;
-  with Size(ARect) do bmp:= TBGRABitmap.Create(cx,cy,c2);
-  ApplyArrowStyle(AStart,AKind,bmp,PointF(1.5,1.5));
-  bmp.LineCap := ALineCap;
-  w := bmp.Height/5;
+  AMask.Fill(BGRABlack);
+  kind := StrToArrowKind(AKindStr);
+  ApplyArrowStyle(AMask.Arrow,AStart,kind,PointF(1.5,1.5));
+  AMask.LineCap := ALineCap;
+  w := AMask.Height/5;
   if w > 0 then
   begin
     x1 := w*2.5;
     x2 := 0;
     xm1 := 0;
     xm2 := w*2.5;
-    if (AKind = 'Normal') or (AKind = 'Cut') then x1 -= w*0.7 else
-    if (AKind = 'Flipped') or (AKind = 'FlippedCut') then x1 += w*0.7;
+    if kind in[akNone,akCut] then x1 -= w*0.7 else
+    if kind in[akFlipped,akFlippedCut] then x1 += w*0.7;
     if not AStart then
     begin
       temp := x1;
@@ -776,40 +775,82 @@ begin
       x2 := -temp;
     end else
     begin
-      xm1 := (bmp.Width-0.5)-xm1;
-      xm2 := (bmp.Width-0.5)-xm2;
+      xm1 := (AMask.Width-0.5)-xm1;
+      xm2 := (AMask.Width-0.5)-xm2;
     end;
     x1 -= 0.5;
-    x2 += bmp.Width-0.5;
-    y := (bmp.Height-1)/2;
-    if (AKind='Tail') or (AKind='None') or (AKind = 'Tip') then w *= 2;
-    bmp.DrawLineAntialias(x1,y,x2,y,c,w);
-    if bmp.Width > bmp.Height*2 then
-      bmp.GradientFill(0,0,bmp.width,bmp.height,c2,BGRAPixelTransparent,gtLinear,PointF(xm1,0),PointF(xm2,0),dmDrawWithTransparency);
+    x2 += AMask.Width-0.5;
+    y := (AMask.Height-1)/2;
+    if kind in[akTail,akNone,akTip] then w *= 2;
+    AMask.DrawLineAntialias(x1,y,x2,y,BGRAWhite,w);
+    if AMask.Width > AMask.Height*2 then
+      AMask.GradientFill(0,0,AMask.width,AMask.height,BGRABlack,BGRAPixelTransparent,gtLinear,PointF(xm1,0),PointF(xm2,0),dmDrawWithTransparency);
   end;
-  ACanvas.Draw(ARect.Left,ARect.Top,bmp.Bitmap);
+end;
+
+procedure DrawPenStyle(AComboBox: TBCComboBox; ARect: TRect;
+  APenStyle: TPenStyle; State: TOwnerDrawState);
+var bmp : TBGRABitmap;
+  c,c2: TBGRAPixel;
+  scale: Double;
+begin
+  if odSelected in State then
+  begin
+    c := ColorToBGRA(AComboBox.DropDownFontHighlight);
+    c2 := ColorToBGRA(AComboBox.DropDownHighlight);
+  end
+  else
+  begin
+    c := ColorToBGRA(AComboBox.DropDownFontColor);
+    c2 := ColorToBGRA(AComboBox.DropDownColor);
+  end;
+  scale := AComboBox.GetCanvasScaleFactor;
+  with Size(ARect) do bmp := TBGRABitmap.Create(round(cx*scale),round(cy*scale),c2);
+  DrawPenStyle(bmp, bmp.ClipRect,APenStyle, c);
+  bmp.Draw(ACombobox.Canvas,ARect,true);
   bmp.Free;
 end;
 
-procedure ApplyArrowStyle(AStart: boolean; AKind: string; ABmp: TBGRABitmap; ASize: TPointF);
-var backOfs: single;
+procedure DrawPenStyle(ABitmap: TBGRABitmap; ARect: TRect;
+  APenStyle: TPenStyle; c: TBGRAPixel);
 begin
-  backOfs := 0;
-  if (ASize.x = 0) or (ASize.y = 0) then AKind := 'None';
-  if (length(AKind)>0) and (AKind[length(AKind)] in['1'..'9']) then backOfs := (ord(AKind[length(AKind)])-ord('0'))*0.25;
-  case AKind of
-  'Tail': if AStart then ABmp.ArrowStartAsTail else ABmp.ArrowEndAsTail;
-  'Tip': if AStart then ABmp.ArrowStartAsTriangle else ABmp.ArrowEndAsTriangle;
-  'Normal','Cut','Flipped','FlippedCut': if AStart then ABmp.ArrowStartAsClassic((AKind='Flipped') or (AKind='FlippedCut'),(AKind='Cut') or (AKind='FlippedCut'))
-    else ABmp.ArrowEndAsClassic((AKind='Flipped') or (AKind='FlippedCut'),(AKind='Cut') or (AKind='FlippedCut'));
-  'Triangle','TriangleBack1','TriangleBack2': if AStart then ABmp.ArrowStartAsTriangle(backOfs) else ABmp.ArrowEndAsTriangle(backOfs);
-  'HollowTriangle','HollowTriangleBack1','HollowTriangleBack2': if AStart then ABmp.ArrowStartAsTriangle(backOfs,False,True) else ABmp.ArrowEndAsTriangle(backOfs,False,True);
-  else if AStart then ABmp.ArrowStartAsNone else ABmp.ArrowEndAsNone;
+  ABitmap.LineCap := pecFlat;
+  ABitmap.PenStyle:= APenStyle;
+  ABitmap.DrawLineAntialias(ARect.Left+ARect.Width/10-0.5,ARect.Top+ARect.Height/2-0.5,
+    ARect.Right-ARect.Width/10-0.5,ARect.Top+ARect.Height/2-0.5, c, ARect.Width/10);
+end;
+
+procedure DrawArrow(AComboBox: TBCComboBox; ARect: TRect; AStart: boolean; AKindStr: string; ALineCap: TPenEndCap; State: TOwnerDrawState);
+var mask, bmp : TBGRABitmap;
+  c,c2: TBGRAPixel;
+  scale: Double;
+begin
+  if odSelected in State then
+  begin
+    c2 := ColorToBGRA(AComboBox.DropDownHighlight);
+    c := ColorToBGRA(AComboBox.DropDownFontHighlight);
+  end else
+  begin
+    c2 := ColorToBGRA(AComboBox.DropDownColor);
+    c := ColorToBGRA(AComboBox.DropDownFontColor);
   end;
-  if (AKind = 'Tip') and not ((ASize.x = 0) or (ASize.y = 0)) then
-    ASize := ASize*(0.5/ASize.y);
-  if AStart then ABmp.ArrowStartSize := ASize
-  else ABmp.ArrowEndSize := ASize;
+  scale := AComboBox.GetCanvasScaleFactor;
+  with Size(ARect) do mask:= TBGRABitmap.Create(round(cx*scale),round(cy*scale),BGRABlack);
+  DrawArrowMask(mask, AStart, AKindStr, ALineCap);
+  bmp := TBGRABitmap.Create(mask.Width,mask.Height,c2);
+  bmp.FillMask(0,0,mask,c,dmDrawWithTransparency);
+  bmp.Draw(ACombobox.Canvas,ARect,true);
+  bmp.Free;
+  mask.Free;
+end;
+
+procedure DrawArrow(ABitmap: TBGRABitmap; ARect: TRect; AStart: boolean; AKindStr: string; ALineCap: TPenEndCap; AColor: TBGRAPixel); overload;
+var mask: TBGRABitmap;
+begin
+  with Size(ARect) do mask:= TBGRABitmap.Create(cx,cy,BGRABlack);
+  DrawArrowMask(mask, AStart, AKindStr, ALineCap);
+  ABitmap.FillMask(ARect.Left,ARect.Top, mask, AColor, dmDrawWithTransparency);
+  mask.Free;
 end;
 
 function CreateMarbleTexture(tx,ty: integer): TBGRABitmap;
@@ -1126,17 +1167,28 @@ end;
 
 function NicePointBounds(x,y: single): TRect;
 begin
-  result := rect(floor(x)-NicePointMaxRadius-1,floor(y)-NicePointMaxRadius-1,
-  ceil(x)+NicePointMaxRadius+2,ceil(y)+NicePointMaxRadius+2);
+  result := rect(floor(x)-NicePointMaxRadius*CanvasScale-1,floor(y)-NicePointMaxRadius*CanvasScale-1,
+  ceil(x)+NicePointMaxRadius*CanvasScale+2,ceil(y)+NicePointMaxRadius*CanvasScale+2);
 end;
 
 function NicePoint(bmp: TBGRABitmap; x, y: single; alpha: byte = 192): TRect;
+var
+  multi: TBGRAMultishapeFiller;
+  oldClip: TRect;
 begin
-    result := NicePointBounds(x,y);
-    if not Assigned(bmp) then exit;
-    bmp.EllipseAntialias(x,y,NicePointMaxRadius,NicePointMaxRadius,BGRA(0,0,0,alpha),1);
-    bmp.EllipseAntialias(x,y,NicePointMaxRadius-1,NicePointMaxRadius-1,BGRA(255,255,255,alpha),1);
-    bmp.EllipseAntialias(x,y,NicePointMaxRadius-2,NicePointMaxRadius-2,BGRA(0,0,0,alpha),1);
+  result := NicePointBounds(x,y);
+  if not Assigned(bmp) then exit;
+  oldClip := bmp.ClipRect;
+  bmp.IntersectClip(result);
+  multi := TBGRAMultishapeFiller.Create;
+  multi.AddEllipseBorder(x,y,NicePointMaxRadius*CanvasScale-1*CanvasScale,
+    NicePointMaxRadius*CanvasScale-1*CanvasScale, CanvasScale*3, BGRA(0,0,0,alpha));
+  multi.AddEllipseBorder(x,y,NicePointMaxRadius*CanvasScale-1*CanvasScale,
+    NicePointMaxRadius*CanvasScale-1*CanvasScale, CanvasScale*1, BGRA(255,255,255,alpha));
+  multi.PolygonOrder:= poLastOnTop;
+  multi.Draw(bmp);
+  multi.Free;
+  bmp.ClipRect := oldClip;
 end;
 
 function NicePoint(bmp: TBGRABitmap; ptF: TPointF; alpha: byte = 192): TRect;
@@ -1159,8 +1211,8 @@ var fx: TBGRATextEffect;
 begin
   f := TFont.Create;
   f.Name := 'Arial';
-  f.Height := DoScaleY(16,OriginalDPI);
-  ofs := DoScaleX(4,OriginalDPI);
+  f.Height := DoScaleY(16*CanvasScale,OriginalDPI);
+  ofs := DoScaleX(4*CanvasScale,OriginalDPI);
   fx := TBGRATextEffect.Create(s,f,true);
   if valign = tlBottom then y := y-fx.TextSize.cy else
   if valign = tlCenter then y := y-fx.TextSize.cy div 2;
@@ -1229,7 +1281,7 @@ begin
         if angle < 240 then
         begin
           ec.red := $0000;
-          ec.green := $FFFFF-round((angle-180)/60*$FFFF);
+          ec.green := $FFFF-round((angle-180)/60*$FFFF);
           ec.blue := $FFFF;
         end else
         if angle < 300 then
@@ -1241,14 +1293,14 @@ begin
         begin
           ec.red := $FFFF;
           ec.green := $0000;
-          ec.blue := $FFFFF-round((angle-300)/60*$FFFF);
+          ec.blue := $FFFF-round((angle-300)/60*$FFFF);
         end;
         gray := min($FFFF,max(0,$FFFF - round((sqrt(sqr((xb-xc)/(tx/2))+sqr((yb-yc)/(ty/2)))*1.2-0.1)*$FFFF)));
         level := max(max(ec.red,ec.green),ec.blue);
         {$hints off}
-        ec.red := (ec.red*($FFFF-gray)+level*gray) shr 16;
-        ec.green := (ec.green*($FFFF-gray)+level*gray) shr 16;
-        ec.blue := (ec.blue*($FFFF-gray)+level*gray) shr 16;
+        ec.red := (ec.red*(not gray)+level*gray) shr 16;
+        ec.green := (ec.green*(not gray)+level*gray) shr 16;
+        ec.blue := (ec.blue*(not gray)+level*gray) shr 16;
         {$hints on}
         ec.red := (ec.red*light) shr 16;
         ec.green := (ec.green*light) shr 16;
@@ -1260,69 +1312,6 @@ begin
       inc(pdest);
     end;
   end;
-end;
-
-function ChangeCanvasSize(bmp: TBGRABitmap; newWidth, newHeight: integer;
-  anchor: string; background: TBGRAPixel; repeatImage: boolean; flipMode: boolean = false): TBGRABitmap;
-var origin: TPoint;
-    xb,yb: integer;
-    dx,dy: integer;
-    minx,miny,maxx,maxy: integer;
-    flippedImages: array[Boolean,Boolean] of TBGRABitmap;
-begin
-   if (newWidth < 1) or (newHeight < 1) then
-     raise exception.Create('Invalid canvas size');
-   origin := Point((newWidth-bmp.Width) div 2,(newHeight-bmp.Height) div 2);
-   anchor := UTF8LowerCase(anchor);
-   if (anchor='topleft') or (anchor='top') or (anchor='topright') then origin.Y := 0;
-   if (anchor='bottomleft') or (anchor='bottom') or (anchor='bottomright') then origin.Y := newHeight-bmp.Height;
-   if (anchor='topleft') or (anchor='left') or (anchor='bottomleft') then origin.X := 0;
-   if (anchor='topright') or (anchor='right') or (anchor='bottomright') then origin.X := newWidth-bmp.Width;
-   result := TBGRABitmap.Create(newWidth,newHeight, background);
-   dx := bmp.Width;
-   dy := bmp.Height;
-   if repeatImage then
-   begin
-     minx := (0-origin.X-bmp.Width+1) div bmp.Width;
-     miny := (0-origin.Y-bmp.Height+1) div bmp.Height;
-     maxx := (newWidth-origin.X+bmp.Width-1) div bmp.Width;
-     maxy := (newHeight-origin.Y+bmp.Height-1) div bmp.Height;
-   end else
-   begin
-     minx := 0;
-     miny := 0;
-     maxx := 0;
-     maxy := 0;
-   end;
-   if flipMode and repeatImage then
-   begin
-     flippedImages[false,false] := bmp;
-     if (minx <> 0) or (miny <> 0) or (maxx <> 0) or (maxy <> 0) then
-     begin
-       flippedImages[true,false] := bmp.Duplicate as TBGRABitmap;
-       flippedImages[true,false].HorizontalFlip;
-       flippedImages[true,true] := flippedImages[true,false].Duplicate as TBGRABitmap;
-       flippedImages[true,true].VerticalFlip;
-       flippedImages[false,true] := bmp.Duplicate as TBGRABitmap;
-       flippedImages[false,true].VerticalFlip;
-     end else
-     begin
-       flippedImages[true,false] := nil;  //never used
-       flippedImages[true,true] := nil;
-       flippedImages[false,true] := nil;
-     end;
-     for xb := minx to maxx do
-       for yb := miny to maxy do
-        result.PutImage(origin.x+xb*dx,origin.Y+yb*dy,flippedImages[odd(xb),odd(yb)],dmSet);
-     flippedImages[true,false].free;
-     flippedImages[true,true].free;
-     flippedImages[false,true].free;
-   end else
-   begin
-     for xb := minx to maxx do
-       for yb := miny to maxy do
-        result.PutImage(origin.x+xb*dx,origin.Y+yb*dy,bmp,dmSet);
-   end;
 end;
 
 initialization

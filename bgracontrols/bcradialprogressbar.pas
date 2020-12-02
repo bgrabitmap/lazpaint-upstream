@@ -1,11 +1,18 @@
+// SPDX-License-Identifier: LGPL-3.0-linking-exception
+{******************************* CONTRIBUTOR(S) ******************************
+- Edivando S. Santos Brasil | mailedivando@gmail.com
+  (Compatibility with delphi VCL 11/2018)
+
+***************************** END CONTRIBUTOR(S) *****************************}
 unit BCRadialProgressBar;
 
-{$mode objfpc}{$H+}
+{$I bgracontrols.inc}
 
 interface
 
 uses
-  Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, BCBaseCtrls,
+  Classes, SysUtils, {$IFDEF FPC}LResources,{$ENDIF} Forms, Controls, Graphics, Dialogs, BCBaseCtrls,
+  {$IFNDEF FPC}Types, BGRAGraphics, GraphType, FPImage, {$ENDIF}
   BGRABitmap, BGRABitmapTypes, BGRATextFX;
 
 type
@@ -25,6 +32,7 @@ type
     FFontShadowOffsetX: integer;
     FFontShadowOffsetY: integer;
     FFontShadowRadius: integer;
+    FLineWidth: single;
     procedure SetFFontShadowColor(AValue: TColor);
     procedure SetFFontShadowOffsetX(AValue: integer);
     procedure SetFFontShadowOffsetY(AValue: integer);
@@ -34,12 +42,14 @@ type
     procedure SetMaxValue(AValue: integer);
     procedure SetMinValue(AValue: integer);
     procedure SetValue(AValue: integer);
+    procedure SetLineWidth(AValue: single);
   protected
     { Protected declarations }
     procedure CalculatePreferredSize(var PreferredWidth, PreferredHeight: integer;
-      WithThemeSpace: boolean); override;
+      {%H-}WithThemeSpace: boolean); override;
     procedure DrawControl; override;
     procedure RenderControl; override;
+    procedure SetColor(Value: TColor); override;
   public
     { Public declarations }
     constructor Create(AOwner: TComponent); override;
@@ -64,6 +74,7 @@ type
     property LineColor: TColor read FLineColor write SetFLineColor default clBlack;
     property LineBkgColor: TColor read FLineBkgColor write SetFLineBkgColor default
       clSilver;
+    property LineWidth: single read FLineWidth write SetLineWidth {$IFDEF FPC}default 4{$ENDIF};
     property FontShadowColor: TColor read FFontShadowColor
       write SetFFontShadowColor default clBlack;
     property FontShadowOffsetX: integer read FFontShadowOffsetX
@@ -75,15 +86,19 @@ type
     property Font;
   end;
 
-procedure Register;
+{$IFDEF FPC}procedure Register;{$ENDIF}
 
 implementation
 
+{$IFDEF FPC}
 procedure Register;
 begin
+  {$IFDEF FPC}
   {$I icons\bcradialprogressbar_icon.lrs}
+  {$ENDIF}
   RegisterComponents('BGRA Controls', [TBCRadialProgressBar]);
 end;
+{$ENDIF}
 
 { TBCRadialProgressBar }
 
@@ -180,6 +195,15 @@ begin
   Invalidate;
 end;
 
+procedure TBCRadialProgressBar.SetLineWidth(AValue: single);
+begin
+  if (FLineWidth = AValue) then
+    exit;
+  FLineWidth := AValue;
+  RenderControl;
+  Invalidate;
+end;
+
 procedure TBCRadialProgressBar.CalculatePreferredSize(
   var PreferredWidth, PreferredHeight: integer; WithThemeSpace: boolean);
 begin
@@ -189,6 +213,9 @@ end;
 
 procedure TBCRadialProgressBar.DrawControl;
 begin
+  {$IFNDEF FPC}//# //@  IN DELPHI RenderControl NEDD. IF NO RenderControl BE BLACK AFTER INVALIDATE.
+  RenderControl;
+  {$ENDIF}
   FBitmap.Draw(Canvas, 0, 0, False);
 end;
 
@@ -196,6 +223,7 @@ procedure TBCRadialProgressBar.RenderControl;
 var
   textBmp: TBGRABitmap;
   textStr: string;
+  EffectiveLineWidth:single;
 begin
   FreeAndNil(FBitmap);
   FBitmap := TBGRABitmap.Create(Width, Height);
@@ -205,7 +233,12 @@ begin
   FBitmap.Canvas2D.fillStyle(Color);
   FBitmap.Canvas2D.fill;
 
-  FBitmap.Canvas2D.lineWidth := Height / 50;
+  if LineWidth=0 then
+    EffectiveLineWidth:=Height / 50
+  else
+    EffectiveLineWidth:=LineWidth;
+
+  FBitmap.Canvas2D.lineWidth := EffectiveLineWidth;
   FBitmap.Canvas2D.strokeStyle(LineBkgColor);
   FBitmap.Canvas2D.stroke;
 
@@ -216,22 +249,33 @@ begin
   FBitmap.Canvas2D.fillStyle(BGRAPixelTransparent);
   FBitmap.Canvas2D.fill;
 
-  FBitmap.Canvas2D.lineWidth := Height / 50;
+  FBitmap.Canvas2D.lineWidth := EffectiveLineWidth;
   FBitmap.Canvas2D.strokeStyle(LineColor);
   FBitmap.Canvas2D.stroke;
 
-  textStr := FloatToStr((Value / MaxValue) * 100) + '%';
+  if MaxValue = 0 then
+    textStr := '0%'
+  else
+    textStr := FloatToStr((Value / MaxValue) * 100) + '%';
 
   textBmp := TextShadow(Width, Height, textStr, Font.Height,
-    ColorToBGRA(Font.Color), ColorToBGRA(FontShadowColor), FontShadowOFfsetX,
+    Font.Color, FontShadowColor, FontShadowOFfsetX,
     FontShadowOffsetY, FontSHadowRadius, Font.Style, Font.Name) as TBGRABitmap;
   FBitmap.PutImage(0, 0, textBmp, dmDrawWithTransparency);
   textBmp.Free;
 end;
 
+procedure TBCRadialProgressBar.SetColor(Value: TColor);
+begin
+  inherited SetColor(Value);
+  RenderControl;
+  Invalidate;
+end;
+
 constructor TBCRadialProgressBar.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
+
   with GetControlClassDefaultSize do
     SetInitialBounds(0, 0, 200, 200);
   FMaxValue := 100;
@@ -239,6 +283,7 @@ begin
   FValue := 0;
   FLineColor := clBlack;
   FLineBkgColor := clSilver;
+  FLineWidth:=0;
   FFontShadowColor := clBlack;
   FFontShadowOffsetX := 2;
   FFontShadowOffsetY := 2;

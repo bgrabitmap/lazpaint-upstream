@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 procedure TLazPaintInstance.ShowPrintDlg;
 var f: TFPrint;
     wasVisible: boolean;
@@ -21,9 +22,9 @@ begin
   FormsNeeded;
   topmostInfo := HideTopmost;
   try
-    FCanvasSize.repeatImage := False;
-    if FCanvasSize.ShowModal = mrOk then
-      Image.Assign(FCanvasSize.canvasSizeResult, true, True);
+    FormCanvasSize.repeatImage := False;
+    if FormCanvasSize.ShowModal = mrOk then
+      Image.Assign(FormCanvasSize.canvasSizeResult, true, True);
   except
     on ex:Exception do
       ShowError('ShowCanvasSizeDlg',ex.Message);
@@ -37,9 +38,9 @@ begin
   FormsNeeded;
   topmostInfo := HideTopmost;
   try
-    FCanvasSize.repeatImage := True;
-    if FCanvasSize.ShowModal = mrOk then
-      image.Assign(FCanvasSize.canvasSizeResult,true,True);
+    FormCanvasSize.repeatImage := True;
+    if FormCanvasSize.ShowModal = mrOk then
+      image.Assign(FormCanvasSize.canvasSizeResult,true,True);
   except
     on ex:Exception do
       ShowError('ShowRepeatImageDlg',ex.Message);
@@ -50,9 +51,11 @@ end;
 function TLazPaintInstance.ScriptFileNew(AVars: TVariableSet): TScriptResult;
 var
   bitmapRepl: TBGRABitmap;
-  vW,vH: TScriptVariableReference;
+  vW,vH,vBack: TScriptVariableReference;
   w,h: NativeInt;
-  whDefined: boolean;
+  back: TBGRAPixel;
+  whDefined, dlgSuccess: boolean;
+  topMostInfo: TTopMostInfo;
 begin
   if ToolManager.ToolSleeping then
   begin
@@ -60,12 +63,20 @@ begin
     exit;
   end;
   vW := AVars.GetVariable('Width');
+  w := 1;
   vH := AVars.GetVariable('Height');
+  h := 1;
+  vBack := AVars.GetVariable('BackColor');
+  back := BGRAPixelTransparent;
   whDefined := AVars.IsReferenceDefined(vW) and AVars.IsReferenceDefined(vH);
   if whDefined then
   begin
     w := AVars.GetInteger(vW);
     h := AVars.GetInteger(vH);
+    if AVars.IsReferenceDefined(vBack) then
+      back := AVars.GetPixel(vBack)
+    else
+      back := BGRAPixelTransparent;
     if (w < 1) or (w > MaxImageWidth) or (h < 1) or (h > MaxImageHeight) then
     begin
       result := srInvalidParameters;
@@ -77,7 +88,7 @@ begin
     result := srInvalidParameters;
     exit;
   end;
-  if Image.IsFileModified then
+  if Image.IsFileModified and not AVars.Booleans['IgnoreModified'] then
   begin
     case SaveQuestion(rsNewImage) of
     IDYES: begin
@@ -91,10 +102,16 @@ begin
     end;
   end;
   if whDefined then
-    bitmapRepl := MakeNewBitmapReplacement(w,h)
+    bitmapRepl := MakeNewBitmapReplacement(w,h,back)
   else
   begin
-    if not ShowNewImageDlg(bitmapRepl) then
+    topMostInfo := HideTopmost;
+    try
+      dlgSuccess := ShowNewImageDlg(bitmapRepl);
+    finally
+      ShowTopmost(topMostInfo);
+    end;
+    if not dlgSuccess then
     begin
       result := srCancelledByUser;
       exit;
@@ -103,24 +120,73 @@ begin
     begin
       ScriptContext.RecordingFunctionParameters.AddInteger('Width', bitmapRepl.Width);
       ScriptContext.RecordingFunctionParameters.AddInteger('Height', bitmapRepl.Height);
+      ScriptContext.RecordingFunctionParameters.AddPixel('BackColor', bitmapRepl.GetPixel(0,0));
     end;
   end;
   ChooseTool(ptHand);
   image.Assign(bitmapRepl, True, False);
   Image.CurrentFilenameUTF8 := '';
-  image.SetSavedFlag;
+  image.SetSavedFlag(0,-1,0);
+  UpdateWindows;
+  result := srOk;
+end;
+
+function TLazPaintInstance.ScriptGetName(AVars: TVariableSet): TScriptResult;
+begin
+  AVars.Strings['Result'] := FScriptName;
+  result := srOk;
+end;
+
+function TLazPaintInstance.ScriptImageCanvasSize(AVars: TVariableSet): TScriptResult;
+var
+  w, h: Int64;
+  anchor: String;
+begin
+  w := AVars.Integers['Width'];
+  h := AVars.Integers['Height'];
+  if (w = Image.Width) and (h = Image.Height) then exit(srOk);
+  if (w < 1) or (h < 1) or (w > MaxImageWidth) or (h > MaxImageHeight) then exit(srInvalidParameters);
+  anchor := AVars.Strings['Anchor'];
+  try
+    Image.Assign(ComputeNewCanvasSize(self, w,h, anchor, false,false), true, True);
+  except
+    on ex: exception do
+      result := srException;
+  end;
+  result := srOk;
+end;
+
+function TLazPaintInstance.ScriptImageRepeat(AVars: TVariableSet): TScriptResult;
+var
+  w, h: Int64;
+  anchor: String;
+  flipMode: Boolean;
+begin
+  w := AVars.Integers['Width'];
+  h := AVars.Integers['Height'];
+  if (w = Image.Width) and (h = Image.Height) then exit(srOk);
+  if (w < 1) or (h < 1) or (w > MaxImageWidth) or (h > MaxImageHeight) then exit(srInvalidParameters);
+  anchor := AVars.Strings['Anchor'];
+  flipMode := AVars.Booleans['Flip'];
+  try
+    Image.Assign(ComputeNewCanvasSize(self, w,h, anchor, true,flipMode), true, True);
+  except
+    on ex: exception do
+      result := srException;
+  end;
   result := srOk;
 end;
 
 function TLazPaintInstance.ShowNewImageDlg(out bitmap: TBGRABitmap
   ): boolean;
-var tx,ty: integer;
+var tx,ty,bpp: integer;
+  back: TBGRAPixel;
 begin
   FormsNeeded;
 
-  Result:= unewimage.ShowNewImageDlg(self,tx,ty);
+  Result:= unewimage.ShowNewImageDlg(self,false,tx,ty,bpp,back);
   if result then
-    bitmap := MakeNewBitmapReplacement(tx,ty)
+    bitmap := MakeNewBitmapReplacement(tx,ty,back)
   else
     bitmap := nil;
 end;
@@ -146,11 +212,59 @@ begin
       on ex:exception do
         result := srException;
     end;
+    UpdateWindows;
   end else
     if ShowResampleDialog(AParams) then
       result := srOk
     else
       result := srCancelledByUser;
+end;
+
+function TLazPaintInstance.ScriptLazPaintGetVersion(AVars: TVariableSet): TScriptResult;
+var
+  resList: TScriptVariableReference;
+begin
+  resList := AVars.AddIntegerList('Result');
+  AVars.AppendInteger(resList, LazPaintVersion div 1000000);
+  AVars.AppendInteger(resList, (LazPaintVersion div 10000) mod 100);
+  AVars.AppendInteger(resList, (LazPaintVersion div 100) mod 100);
+  result := srOk;
+end;
+
+function TLazPaintInstance.ScriptShowDirectoryDialog(AVars: TVariableSet): TScriptResult;
+var
+  chosenDir: string;
+begin
+  if SelectDirectory(AVars.Strings['Prompt'], AVars.Strings['InitialDir'], chosenDir) then
+  begin
+    Avars.Strings['Result'] := chosenDir;
+    result := srOk;
+  end else
+    result := srCancelledByUser;
+end;
+
+function TLazPaintInstance.ScriptTranslateGetLanguage(AVars: TVariableSet
+  ): TScriptResult;
+begin
+  AVars.Strings['Result'] := ActiveLanguage;
+  result := srOk;
+end;
+
+function TLazPaintInstance.ScriptTranslateText(AVars: TVariableSet): TScriptResult;
+var
+  textVar, resVar: TScriptVariableReference;
+  i: Integer;
+begin
+  textVar := AVars.GetVariable('Text');
+  if not AVars.IsReferenceDefined(textVar) then exit(srException);
+  if AVars.IsList(textVar) then
+  begin
+    resVar := AVars.AddStringList('Result');
+    for i := 0 to AVars.GetListCount(textVar)-1 do
+      AVars.AppendString(resVar, DoTranslate('', AVars.GetStringAt(textVar, i)));
+  end else
+    AVars.Strings['Result'] := DoTranslate('', AVars.Strings['Text']);
+  result := srOk;
 end;
 
 function TLazPaintInstance.ShowResampleDialog(AParameters: TVariableSet): boolean;
@@ -164,23 +278,26 @@ begin
   if Assigned(ScriptContext.RecordingFunctionParameters) then AVars := ScriptContext.RecordingFunctionParameters;
   if not Assigned(Image) or not image.CheckCurrentLayerVisible then
   begin result := srException; exit; end;
-  if ShowColorIntensityDlg(AVars) then
-    result := srOk else result := srCancelledByUser;
+  result := ShowColorIntensityDlg(AVars);
 end;
 
-function TLazPaintInstance.ShowColorIntensityDlg(AParameters: TVariableSet
-  ): boolean;
+function TLazPaintInstance.ShowColorIntensityDlg(AParameters: TVariableSet): TScriptResult;
 var oldSelectionNormal: boolean;
 begin
-  result := false;
   FormsNeeded;
   oldSelectionNormal := ShowSelectionNormal;
   ShowSelectionNormal := true;
   try
-    result := FColorIntensity.ShowModal(self,ciIntensity,AParameters) = mrOK;
+    case FormColorIntensity.ShowModal(self,ciIntensity,AParameters) of
+    mrOK: result := srOk;
+    else result := srCancelledByUser;
+    end;
   except
     on ex:Exception do
-      ShowError('ShowColorIntensityDlg',ex.Message);
+    begin
+      result := srException;
+      ShowError(FormColorIntensity.Caption, ex.Message);
+    end;
   end;
   ShowSelectionNormal := oldSelectionNormal;
 end;
@@ -190,23 +307,27 @@ begin
   if Assigned(ScriptContext.RecordingFunctionParameters) then AVars := ScriptContext.RecordingFunctionParameters;
   if not Assigned(Image) or not image.CheckCurrentLayerVisible then
   begin result := srException; exit; end;
-  if ShowColorLightnessDlg(AVars) then
-    result := srOk else result := srCancelledByUser;
+  result := ShowColorLightnessDlg(AVars);
 end;
 
 function TLazPaintInstance.ShowColorLightnessDlg(AParameters: TVariableSet
-  ): boolean;
+  ): TScriptResult;
 var oldSelectionNormal: boolean;
 begin
-  result := false;
   FormsNeeded;
   oldSelectionNormal := ShowSelectionNormal;
   ShowSelectionNormal := true;
   try
-    result := FColorIntensity.ShowModal(self,ciLightness,AParameters) = mrOk;
+    case FormColorIntensity.ShowModal(self,ciLightness,AParameters) of
+    mrOk: result := srOk;
+    else result := srCancelledByUser;
+    end;
   except
     on ex:Exception do
-      ShowError('ShowColorLightnessDlg',ex.Message);
+    begin
+      result := srException;
+      ShowError(FormColorIntensity.Caption,ex.Message);
+    end;
   end;
   ShowSelectionNormal := oldSelectionNormal;
 end;
@@ -216,23 +337,26 @@ begin
   if Assigned(ScriptContext.RecordingFunctionParameters) then AVars := ScriptContext.RecordingFunctionParameters;
   if not Assigned(Image) or not image.CheckCurrentLayerVisible then
   begin result := srException; exit; end;
-  if ShowShiftColorsDlg(AVars) then
-    result := srOk else result := srCancelledByUser;
+  result := ShowShiftColorsDlg(AVars);
 end;
 
-function TLazPaintInstance.ShowShiftColorsDlg(AParameters: TVariableSet
-  ): boolean;
+function TLazPaintInstance.ShowShiftColorsDlg(AParameters: TVariableSet): TScriptResult;
 var oldSelectionNormal: boolean;
 begin
-  result := false;
   FormsNeeded;
   oldSelectionNormal := ShowSelectionNormal;
   ShowSelectionNormal := true;
   try
-    result := FShiftColors.ShowModal(self,AParameters) = mrOk;
+    case FormShiftColors.ShowModal(self,AParameters) of
+    mrOk: result := srOk;
+    else result := srCancelledByUser;
+    end;
   except
     on ex:Exception do
-      ShowError('ShowShiftColorsDlg',ex.Message);
+    begin
+      result := srException;
+      ShowError(FormShiftColors.Caption,ex.Message);
+    end;
   end;
   ShowSelectionNormal := oldSelectionNormal;
 end;
@@ -242,22 +366,26 @@ begin
   if Assigned(ScriptContext.RecordingFunctionParameters) then AVars := ScriptContext.RecordingFunctionParameters;
   if not Assigned(Image) or not image.CheckCurrentLayerVisible then
   begin result := srException; exit; end;
-  if ShowColorizeDlg(AVars) then
-    result := srOk else result := srCancelledByUser;
+  result := ShowColorizeDlg(AVars);
 end;
 
-function TLazPaintInstance.ShowColorizeDlg(AParameters: TVariableSet): boolean;
+function TLazPaintInstance.ShowColorizeDlg(AParameters: TVariableSet): TScriptResult;
 var oldSelectionNormal: boolean;
 begin
-  result := false;
   FormsNeeded;
   oldSelectionNormal := ShowSelectionNormal;
   ShowSelectionNormal := true;
   try
-    result := FColorize.ShowModal(self,AParameters) = mrOk;
+    case FormColorize.ShowModal(self,AParameters) of
+    mrOk: result := srOk;
+    else result := srCancelledByUser;
+    end;
   except
     on ex:Exception do
-      ShowError('ShowColorizeDlg',ex.Message);
+    begin
+      result := srException;
+      ShowError(FormColorize.Caption, ex.Message);
+    end;
   end;
   ShowSelectionNormal := oldSelectionNormal;
 end;
@@ -267,76 +395,79 @@ begin
   if Assigned(ScriptContext.RecordingFunctionParameters) then AVars := ScriptContext.RecordingFunctionParameters;
   if not Assigned(Image) or not Image.CheckCurrentLayerVisible then
   begin result := srException; exit; end;
-  if ShowColorCurvesDlg(AVars) then
-    result := srOk else result := srCancelledByUser;
+  result := ShowColorCurvesDlg(AVars);
 end;
 
-function TLazPaintInstance.ShowColorCurvesDlg(AParameters: TVariableSet
-  ): boolean;
+function TLazPaintInstance.ShowColorCurvesDlg(AParameters: TVariableSet): TScriptResult;
 var oldSelectionNormal: boolean;
 begin
-  result := false;
   FormsNeeded;
   oldSelectionNormal := ShowSelectionNormal;
   ShowSelectionNormal := true;
   try
-    result := FColorCurves.ShowModal(self,AParameters) = mrOk;
+    case FormAdjustCurves.ShowModal(self,AParameters) of
+    mrOk: result := srOk;
+    else result := srCancelledByUser;
+    end;
   except
     on ex:Exception do
+    begin
+      result := srException;
       ShowError('ShowColorCurvesDlg',ex.Message);
+    end;
   end;
   ShowSelectionNormal := oldSelectionNormal;
 end;
 
-function TLazPaintInstance.ShowRadialBlurDlg(AFilterConnector: TObject; blurType: TRadialBlurType; ACaption: string): boolean;
+function TLazPaintInstance.ShowRadialBlurDlg(AFilterConnector: TObject; blurType: TRadialBlurType; ACaption: string): TScriptResult;
 var oldSelectionNormal: boolean;
     top: TTopMostInfo;
 begin
   top := self.HideTopmost;
   oldSelectionNormal := ShowSelectionNormal;
   ShowSelectionNormal := true;
-  result := uradialblur.ShowRadialBlurDlg(AFilterConnector,blurType,ACaption);
+  result := URadialBlur.ShowRadialBlurDlg(AFilterConnector, blurType, ACaption);
   ShowSelectionNormal := oldSelectionNormal;
   self.ShowTopmost(top);
 end;
 
-function TLazPaintInstance.ShowMotionBlurDlg(AFilterConnector: TObject):boolean;
+function TLazPaintInstance.ShowMotionBlurDlg(AFilterConnector: TObject): TScriptResult;
 var oldSelectionNormal: boolean;
     top: TTopMostInfo;
 begin
   top := self.HideTopmost;
   oldSelectionNormal := ShowSelectionNormal;
   ShowSelectionNormal := true;
-  result := umotionblur.ShowMotionBlurDlg(AFilterConnector);
+  result := UMotionBlur.ShowMotionBlurDlg(AFilterConnector);
   ShowSelectionNormal := oldSelectionNormal;
   self.ShowTopmost(top);
 end;
 
-function TLazPaintInstance.ShowCustomBlurDlg(AFilterConnector: TObject):boolean;
+function TLazPaintInstance.ShowCustomBlurDlg(AFilterConnector: TObject): TScriptResult;
 var oldSelectionNormal: boolean;
     top: TTopMostInfo;
 begin
   top := self.HideTopmost;
   oldSelectionNormal := ShowSelectionNormal;
   ShowSelectionNormal := true;
-  result := FCustomBlur.ShowDlg(AFilterConnector);
+  result := FormCustomBlur.ShowDlg(AFilterConnector);
   ShowSelectionNormal := oldSelectionNormal;
   self.ShowTopmost(top);
 end;
 
-function TLazPaintInstance.ShowEmbossDlg(AFilterConnector: TObject): boolean;
+function TLazPaintInstance.ShowEmbossDlg(AFilterConnector: TObject): TScriptResult;
 var oldSelectionNormal: boolean;
     top: TTopMostInfo;
 begin
   top := self.HideTopmost;
   oldSelectionNormal := ShowSelectionNormal;
   ShowSelectionNormal := true;
-  result := uemboss.ShowEmbossDlg(AFilterConnector);
+  result := UEmboss.ShowEmbossDlg(AFilterConnector);
   ShowSelectionNormal := oldSelectionNormal;
   self.ShowTopmost(top);
 end;
 
-function TLazPaintInstance.ShowRainDlg(AFilterConnector: TObject): boolean;
+function TLazPaintInstance.ShowRainDlg(AFilterConnector: TObject): TScriptResult;
 var oldSelectionNormal: boolean;
     top: TTopMostInfo;
 begin
@@ -348,20 +479,19 @@ begin
   self.ShowTopmost(top);
 end;
 
-function TLazPaintInstance.ShowPixelateDlg(AFilterConnector: TObject): boolean;
+function TLazPaintInstance.ShowPixelateDlg(AFilterConnector: TObject): TScriptResult;
 var oldSelectionNormal: boolean;
     top: TTopMostInfo;
 begin
   top := self.HideTopmost;
   oldSelectionNormal := ShowSelectionNormal;
   ShowSelectionNormal := true;
-  result := upixelate.ShowPixelateDlg(AFilterConnector);
+  result := UPixelate.ShowPixelateDlg(AFilterConnector);
   ShowSelectionNormal := oldSelectionNormal;
   self.ShowTopmost(top);
 end;
 
-function TLazPaintInstance.ShowNoiseFilterDlg(AFilterConnector: TObject
-  ): boolean;
+function TLazPaintInstance.ShowNoiseFilterDlg(AFilterConnector: TObject): TScriptResult;
 var oldSelectionNormal: boolean;
     top: TTopMostInfo;
 begin
@@ -373,7 +503,7 @@ begin
   self.ShowTopmost(top);
 end;
 
-function TLazPaintInstance.ShowTwirlDlg(AFilterConnector: TObject): boolean;
+function TLazPaintInstance.ShowTwirlDlg(AFilterConnector: TObject): TScriptResult;
 var oldSelectionNormal: boolean;
     top: TTopMostInfo;
 begin
@@ -385,7 +515,19 @@ begin
   self.ShowTopmost(top);
 end;
 
-function TLazPaintInstance.ShowPhongFilterDlg(AFilterConnector: TObject): boolean;
+function TLazPaintInstance.ShowWaveDisplacementDlg(AFilterConnector: TObject): TScriptResult;
+var oldSelectionNormal: boolean;
+    top: TTopMostInfo;
+begin
+  top := self.HideTopmost;
+  oldSelectionNormal := ShowSelectionNormal;
+  ShowSelectionNormal := true;
+  result := UWaveDisplacement.ShowWaveDisplacementDlg(AFilterConnector);
+  ShowSelectionNormal := oldSelectionNormal;
+  self.ShowTopmost(top);
+end;
+
+function TLazPaintInstance.ShowPhongFilterDlg(AFilterConnector: TObject): TScriptResult;
 var oldSelectionNormal: boolean;
     top: TTopMostInfo;
 begin
@@ -397,8 +539,7 @@ begin
   self.ShowTopmost(top);
 end;
 
-function TLazPaintInstance.ShowFunctionFilterDlg(AFilterConnector: TObject
-  ): boolean;
+function TLazPaintInstance.ShowFunctionFilterDlg(AFilterConnector: TObject): TScriptResult;
 var oldSelectionNormal: boolean;
     top: TTopMostInfo;
 begin
@@ -410,14 +551,14 @@ begin
   self.ShowTopmost(top);
 end;
 
-function TLazPaintInstance.ShowSharpenDlg(AFilterConnector: TObject): boolean;
+function TLazPaintInstance.ShowSharpenDlg(AFilterConnector: TObject): TScriptResult;
 var oldSelectionNormal: boolean;
     top: TTopMostInfo;
 begin
   top := self.HideTopmost;
   oldSelectionNormal := ShowSelectionNormal;
   ShowSelectionNormal := true;
-  result := USharpen.ShowSharpenDlg(AFilterConnector,smSharpen);
+  result := USharpen.ShowSharpenDlg(AFilterConnector, smSharpen);
   ShowSelectionNormal := oldSelectionNormal;
   self.ShowTopmost(top);
 end;
@@ -427,11 +568,10 @@ begin
   if Assigned(ScriptContext.RecordingFunctionParameters) then AVars := ScriptContext.RecordingFunctionParameters;
   if not Assigned(Image) or not Image.CheckCurrentLayerVisible then
   begin result := srException; exit; end;
-  if ShowPosterizeDlg(AVars) then
-    result := srOk else result := srCancelledByUser;
+  result := ShowPosterizeDlg(AVars);
 end;
 
-function TLazPaintInstance.ShowPosterizeDlg(AParameters: TVariableSet): boolean;
+function TLazPaintInstance.ShowPosterizeDlg(AParameters: TVariableSet): TScriptResult;
 var oldSelectionNormal: boolean;
     top: TTopMostInfo;
 begin

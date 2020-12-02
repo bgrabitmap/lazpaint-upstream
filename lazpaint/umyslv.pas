@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-only
 unit UMySLV;
 
 {$mode objfpc}{$H+}
@@ -9,8 +10,8 @@ uses
   BGRAVirtualScreen, BGRABitmapTypes, UVolatileScrollBar;
 
 type
-  PMyShellListViewItemData = ^TMyShellListViewItemData;
-  TMyShellListViewItemData = record
+  PLCShellListViewItemData = ^TLCShellListViewItemData;
+  TLCShellListViewItemData = record
     initialIndex: integer;
     caption, filename, typeStr, sizeStr, dateOrDeviceStr: string;
     fileSize: int64;
@@ -21,17 +22,18 @@ type
     displayRect: TRect;
     isSelected: boolean;
   end;
-  TMyShellListViewData = array of TMyShellListViewItemData;
+  TLCShellListViewData = array of TLCShellListViewItemData;
 
   TFormatTypeEvent = procedure(Sender: TObject; var AType: string) of object;
   TSelectItemEvent = procedure(Sender: TObject; Item: Integer; Selected: Boolean) of object;
 
-  { TMyShellListView }
+  { TLCShellListView }
 
-  TMyShellListView = class
+  TLCShellListView = class
   private
     FAllowMultiSelect: boolean;
     FOnDblClick: TNotifyEvent;
+    FOnSelectionChanged: TNotifyEvent;
     FOnSelectItem: TSelectItemEvent;
     FSortColumn: integer;
     FVirtualScreen: TBGRAVirtualScreen;
@@ -39,7 +41,7 @@ type
     FObjectTypes: TObjectTypes;
     FOnFormatType: TFormatTypeEvent;
     FRoot: string;
-    FData: TMyShellListViewData;
+    FData: TLCShellListViewData;
     FPreviousResize: TSize;
     FFitColumnNeeded: boolean;
     FViewStyle: TViewStyle;
@@ -57,6 +59,7 @@ type
     FVerticalScrollPos: integer;
     FWantedItemVisible: integer;
     FItemsPerPage: integer;
+    FScaling: single;
     { Setters and getters }
     function GetColumnCount: integer;
     function GetHeight: integer;
@@ -64,6 +67,7 @@ type
     function GetItemCount: integer;
     function GetItemDevice(AIndex: integer): string;
     function GetItemIsFolder(AIndex: integer): boolean;
+    function GetItemLastModification(AIndex: integer): TDateTime;
     function GetItemName(AIndex: integer): string;
     function GetItemSelected(AIndex: integer): boolean;
     function GetItemType(AIndex: integer): string;
@@ -95,7 +99,7 @@ type
       {%H-}Shift: TShiftState; X, Y: Integer);
     procedure MouseWheel(Sender: TObject; {%H-}Shift: TShiftState;
          WheelDelta: Integer; {%H-}MousePos: TPoint; var Handled: Boolean);
-    procedure CompareItem(Sender: TObject; Item1, Item2: PMyShellListViewItemData; {%H-}Data: Integer;
+    procedure CompareItem(Sender: TObject; Item1, Item2: PLCShellListViewItemData; {%H-}Data: Integer;
       var Compare: Integer);
     procedure ColumnClick(Sender: TObject; AColumn: integer);
     procedure DoFitColumns(ABitmap: TBGRABitmap; AClientWidth: integer);
@@ -104,26 +108,32 @@ type
     procedure Clear;
     function GetItemFullName(AIndex: integer): string;
     function GetItemDisplayRect(AIndex: integer): TRect;
+    function InternalSelectAll: boolean;
+    function InternalDeselectAll(AExcept: integer = -1): boolean;
   public
     DetailIconSize, SmallIconSize, LargeIconSize, FontHeight, MinimumRowHeight: integer;
+    SelectAllAction: TObjectTypes;
     IconPadding: integer;
     BytesCaption: string;
     { Basic methods }
     procedure Reload;
     procedure BeginUpdate;
     procedure EndUpdate;
-    procedure Invalidate;
+    procedure InvalidateView;
     procedure Update;
     procedure MakeItemVisible(AIndex : integer);
     constructor Create(AVirtualScreen: TBGRAVirtualScreen);
+    procedure VirtualScreenFreed;
     destructor Destroy; override;
     procedure SetItemImage(AIndex: integer; ABitmap: TBGRABitmap; AOwned: boolean);
     function GetItemImage(AIndex: integer): TBGRABitmap;
     procedure SetFocus;
     function GetItemAt(X,Y: Integer): integer;
     procedure DeselectAll;
+    procedure SelectAll;
     procedure Sort;
     procedure RemoveItemFromList(AIndex: integer);
+    function IndexByName(AName: string; ACaseSensitive: boolean): integer;
     { Properties }
     property Mask: string read FMask write SetMask; // Can be used to conect to other controls
     property ObjectTypes: TObjectTypes read FObjectTypes write FObjectTypes;
@@ -131,6 +141,7 @@ type
     property ViewStyle: TViewStyle read GetViewStyleFit write SetViewStyleFit;
     property OnDblClick: TNotifyEvent read FOnDblClick write SetOnDblClick;
     property OnSelectItem: TSelectItemEvent read FOnSelectItem write SetOnSelectItem;
+    property OnSelectionChanged: TNotifyEvent read FOnSelectionChanged write FOnSelectionChanged;
     property SortColumn: integer read FSortColumn write SetSortColumn;
     property OnSort: TNotifyEvent read FOnSort write FOnSort;
     property OnFormatType: TFormatTypeEvent read FOnFormatType write FOnFormatType;
@@ -141,6 +152,7 @@ type
     property Height: integer read GetHeight;
     property ItemCaption[AIndex: integer]: string read GetItemCaption;
     property ItemFullName[AIndex: integer]: string read GetItemFullName;
+    property ItemLastModification[AIndex: integer]: TDateTime read GetItemLastModification;
     property ItemName[AIndex: integer]: string read GetItemName;
     property ItemDisplayRect[AIndex: integer]: TRect read GetItemDisplayRect;
     property ItemSelected[AIndex: integer]: boolean read GetItemSelected write SetItemSelected;
@@ -155,11 +167,14 @@ function FileSizeToStr(ASize: int64; AByteCaption: string): string;
 
 implementation
 
-uses LCLType, FileUtil, UResourceStrings, LazPaintType, LazUTF8, Forms, Math,
-  UFileSystem{$if FPC_FULLVERSION>=030001}, LazFileUtils{$endif};
+uses LCLType, UResourceStrings, LazPaintType, LazUTF8, Forms, Math,
+  UFileSystem, LazFileUtils;
+
+const
+  ssSnap = {$IFDEF DARWIN}ssMeta{$ELSE}ssCtrl{$ENDIF};
 
 var
-  SortTarget: TMyShellListView;
+  SortTarget: TLCShellListView;
 
 function FileSizeToStr(ASize: int64; AByteCaption: string): string;
 begin
@@ -171,16 +186,16 @@ begin
     result := FloatToStrF(ASize/(1024*1024), ffFixed, 5, 1) + ' MB';
 end;
 
-function MyShellListViewCompare(item1,item2: pointer): integer;
+function LCListViewCompare(item1,item2: pointer): integer;
 begin
   result := 0;
   if Assigned(SortTarget) then
     SortTarget.CompareItem(SortTarget,item1,item2,0,result);
 end;
 
-{ TMyShellListView }
+{ TLCShellListView }
 
-procedure TMyShellListView.SetMask(const AValue: string);
+procedure TLCShellListView.SetMask(const AValue: string);
 begin
   if AValue <> FMask then
   begin
@@ -189,29 +204,29 @@ begin
   end;
 end;
 
-procedure TMyShellListView.SetOnDblClick(AValue: TNotifyEvent);
+procedure TLCShellListView.SetOnDblClick(AValue: TNotifyEvent);
 begin
   if FOnDblClick=AValue then Exit;
   FOnDblClick:=AValue;
 end;
 
-procedure TMyShellListView.SetOnSelectItem(AValue: TSelectItemEvent);
+procedure TLCShellListView.SetOnSelectItem(AValue: TSelectItemEvent);
 begin
   if FOnSelectItem=AValue then Exit;
   FOnSelectItem:=AValue;
 end;
 
-function TMyShellListView.GetViewStyleFit: TViewStyle;
+function TLCShellListView.GetViewStyleFit: TViewStyle;
 begin
   result := FViewStyle;
 end;
 
-function TMyShellListView.GetWidth: integer;
+function TLCShellListView.GetWidth: integer;
 begin
   result := FVirtualScreen.Width;
 end;
 
-procedure TMyShellListView.SetAllowMultiSelect(AValue: boolean);
+procedure TLCShellListView.SetAllowMultiSelect(AValue: boolean);
 var idx: integer;
 begin
   if FAllowMultiSelect=AValue then Exit;
@@ -228,27 +243,27 @@ begin
   end;
 end;
 
-procedure TMyShellListView.SetItemSelected(AIndex: integer; AValue: boolean);
+procedure TLCShellListView.SetItemSelected(AIndex: integer; AValue: boolean);
 begin
   if (AIndex < 0) or (AIndex >= ItemCount) then exit
   else
   begin
     FData[AIndex].isSelected := AValue;
-    FVirtualScreen.DiscardBitmap;
+    InvalidateView;
   end;
 end;
 
-function TMyShellListView.GetColumnCount: integer;
+function TLCShellListView.GetColumnCount: integer;
 begin
   result := length(FColumns);
 end;
 
-function TMyShellListView.GetHeight: integer;
+function TLCShellListView.GetHeight: integer;
 begin
   result := FVirtualScreen.Height;
 end;
 
-function TMyShellListView.GetItemCaption(AIndex: integer): string;
+function TLCShellListView.GetItemCaption(AIndex: integer): string;
 begin
   if (AIndex < 0) or (AIndex >= ItemCount) then
     result := ''
@@ -256,12 +271,12 @@ begin
     result := FData[AIndex].caption;
 end;
 
-function TMyShellListView.GetItemCount: integer;
+function TLCShellListView.GetItemCount: integer;
 begin
   result := length(FData);
 end;
 
-function TMyShellListView.GetItemDevice(AIndex: integer): string;
+function TLCShellListView.GetItemDevice(AIndex: integer): string;
 begin
   if (AIndex < 0) or (AIndex >= ItemCount) then
     result := ''
@@ -269,7 +284,7 @@ begin
     result := FData[AIndex].dateOrDeviceStr;
 end;
 
-function TMyShellListView.GetItemIsFolder(AIndex: integer): boolean;
+function TLCShellListView.GetItemIsFolder(AIndex: integer): boolean;
 begin
   if (AIndex < 0) or (AIndex >= ItemCount) then
     result := false
@@ -277,7 +292,15 @@ begin
     result := FData[AIndex].isFolder;
 end;
 
-function TMyShellListView.GetItemName(AIndex: integer): string;
+function TLCShellListView.GetItemLastModification(AIndex: integer): TDateTime;
+begin
+  if (AIndex < 0) or (AIndex >= ItemCount) then
+    result := 0
+  else
+    result := FData[AIndex].modification;
+end;
+
+function TLCShellListView.GetItemName(AIndex: integer): string;
 begin
   if (AIndex < 0) or (AIndex >= ItemCount) then
     result := ''
@@ -285,7 +308,7 @@ begin
     result := FData[AIndex].filename;
 end;
 
-function TMyShellListView.GetItemSelected(AIndex: integer): boolean;
+function TLCShellListView.GetItemSelected(AIndex: integer): boolean;
 begin
   if (AIndex < 0) or (AIndex >= ItemCount) then
     result := false
@@ -293,7 +316,7 @@ begin
     result := FData[AIndex].isSelected;
 end;
 
-function TMyShellListView.GetItemType(AIndex: integer): string;
+function TLCShellListView.GetItemType(AIndex: integer): string;
 begin
   if (AIndex < 0) or (AIndex >= ItemCount) then
     result := ''
@@ -301,7 +324,7 @@ begin
     result := FData[AIndex].typeStr;
 end;
 
-function TMyShellListView.GetSelectedCount: integer;
+function TLCShellListView.GetSelectedCount: integer;
 var
   i: Integer;
 begin
@@ -310,7 +333,7 @@ begin
     if ItemSelected[i] then inc(result);
 end;
 
-procedure TMyShellListView.SetRoot(const AValue: string);
+procedure TLCShellListView.SetRoot(const AValue: string);
 begin
   if FRoot <> AValue then
   begin
@@ -319,7 +342,7 @@ begin
   end;
 end;
 
-procedure TMyShellListView.SetSelectedIndex(AValue: integer);
+procedure TLCShellListView.SetSelectedIndex(AValue: integer);
 begin
   if (AValue < 0) or (AValue >= ItemCount) then AValue := -1;
   if FSelectedIndex=AValue then Exit;
@@ -328,13 +351,13 @@ begin
   ItemSelected[AValue] := true;
 end;
 
-procedure TMyShellListView.SetSortColumn(AValue: integer);
+procedure TLCShellListView.SetSortColumn(AValue: integer);
 begin
   if FSortColumn=AValue then Exit;
   FSortColumn:=AValue;
 end;
 
-procedure TMyShellListView.SetViewStyleFit(AValue: TViewStyle);
+procedure TLCShellListView.SetViewStyleFit(AValue: TViewStyle);
 begin
   if FViewStyle=AValue then Exit;
   FViewStyle := AValue;
@@ -342,20 +365,19 @@ begin
   FreeAndNil(FVScrollBar);
 end;
 
-procedure TMyShellListView.SetDisplayRect(AIndex: integer; const ARect: TRect);
+procedure TLCShellListView.SetDisplayRect(AIndex: integer; const ARect: TRect);
 begin
   if (AIndex < 0) or (AIndex >= ItemCount) then exit;
   FData[AIndex].displayRect := ARect;
 end;
 
-procedure TMyShellListView.PopulateWithRoot;
+procedure TLCShellListView.PopulateWithRoot();
 var
   i,j: Integer;
-  Dirs,Files: TStringList;
-  CurFileName, CurFilePath, fileType: string;
+  Dirs,Files: TFileInfoList;
+  CurFileName, fileType: string;
   CurFileSize: Int64;
   dataIndex: integer;
-  age: longint;
 
   function NewItem: integer;
   begin
@@ -391,21 +413,18 @@ begin
     Exit;
   end;
 
-  Files := TStringList.Create;
-  Dirs := TStringList.Create;
+  FData := nil;
+  dataIndex := 0;
+  Files := TFileInfoList.Create;
+  Dirs := TFileInfoList.Create;
   try
     if FRoot = ':' then
     begin
       if FIndexDate <> -1 then FColumns[FIndexDate].Name := rsStorageDevice;
-      if FObjectTypes * [otFolders] = [] then
+      if FObjectTypes * [otFolders] <> [] then
       begin
-        FData := nil;
-        dataIndex := 0;
-      end else
-      begin
-        drives := GetFileSystems;
+        drives := FileManager.GetFileSystems;
         setlength(FData, length(drives));
-        dataIndex := 0;
         for i := 0 to high(drives) do
         with FData[NewItem] do
         begin
@@ -422,18 +441,19 @@ begin
     end else
     begin
       if FIndexDate <> -1 then FColumns[FIndexDate].Name := rsFileDate;
-      if FObjectTypes * [otFolders] <> [] then TCustomShellTreeView.GetFilesInDir(FRoot, '', FObjectTypes * [otFolders], Dirs, fstAlphabet);
-      if FObjectTypes - [otFolders] <> [] then TCustomShellTreeView.GetFilesInDir(FRoot, FMask, FObjectTypes - [otFolders], Files, fstAlphabet);
+      if FObjectTypes * [otFolders] <> [] then FileManager.GetDirectoryElements(FRoot, '', FObjectTypes * [otFolders], Dirs, fstAlphabet);
+      if FObjectTypes - [otFolders] <> [] then FileManager.GetDirectoryElements(FRoot, FMask, FObjectTypes - [otFolders], Files, fstAlphabet);
       setlength(FData, Dirs.Count+Files.Count);
-      dataIndex := 0;
-
-      fileType := rsFolder;
-      if Assigned(FOnFormatType) then FOnFormatType(self, fileType);
-      for i := 0 to Dirs.Count - 1 do
-      if (Dirs.Strings[i] <> '') and (Dirs.Strings[i][1] <> '.') then
+      if Assigned(FOnFormatType) then
       begin
-        CurFileName := Dirs.Strings[i];
-        CurFilePath := IncludeTrailingPathDelimiter(FRoot) + CurFileName;
+        fileType := 'Folder';
+        FOnFormatType(self, fileType);
+      end else
+        fileType := rsFolder;
+      for i := 0 to Dirs.Count - 1 do
+      if (Dirs.Items[i].Filename <> '') and (Dirs.Items[i].Filename[1] <> '.') then
+      begin
+        CurFileName := Dirs.Items[i].Filename;
         with FData[NewItem] do
         begin
           isFolder := true;
@@ -446,17 +466,12 @@ begin
       for i := 0 to Files.Count - 1 do
       begin
         j := NewItem;
-        CurFileName := Files.Strings[i];
-        CurFilePath := IncludeTrailingPathDelimiter(FRoot) + CurFileName;
-        CurFileSize := FileSize(CurFilePath); // in Bytes
+        CurFileName := Files.Items[i].Filename;
+        CurFileSize := Files.Items[i].Size; // in bytes
         FData[j].isFolder := false;
         FData[j].filename := CurFileName;
         FData[j].caption := ChangeFileExt(CurFileName,'');
-        age := FileAgeUTF8(CurFilePath);
-        try
-          FData[j].modification := FileDateToDateTime(age);
-        except
-        end;
+        FData[j].modification := Files.Items[i].LastModification;
         FData[j].fileSize:= CurFileSize;
 
         // Second column - Size
@@ -480,7 +495,7 @@ begin
   end;
 end;
 
-procedure TMyShellListView.Redraw(Sender: TObject; ABitmap: TBGRABitmap);
+procedure TLCShellListView.Redraw(Sender: TObject; ABitmap: TBGRABitmap);
 var
   clientArea: TRect;
   textHeight,w,h: integer;
@@ -520,18 +535,13 @@ var
     begin
       maxScroll := ItemCount*32 - (h-textHeight)*32 div FActualRowHeight + 8;
       if maxScroll < 0 then maxScroll := 0;
+      if FVerticalScrollPos > maxScroll then FVerticalScrollPos:= maxScroll;
       FVScrollBar := TVolatileScrollBar.Create(w-VolatileScrollBarSize,textHeight,
          VolatileScrollBarSize,h-textHeight,sbVertical,FVerticalScrollPos,0,maxScroll);
     end;
-    if Assigned(FVScrollBar) then
-    begin
-      FVScrollBar.Draw(ABitmap);
-      clientArea := rect(0,textHeight,w-VolatileScrollBarSize,h);
-    end else
-    begin
-      clientArea := rect(0,textHeight,w,h);
+    if not Assigned(FVScrollBar) then
       FVerticalScrollPos:= 0;
-    end;
+    clientArea := rect(0,textHeight,w,h);
     FItemsPerPage:= Size(clientArea).cy div FActualRowHeight;
 
     setlength(colPos,ColumnCount+1);
@@ -587,6 +597,10 @@ var
       inc(curY, FActualRowHeight);
       inc(row);
     end;
+    ABitmap.NoClip;
+
+    if Assigned(FVScrollBar) then
+      FVScrollBar.Draw(ABitmap);
   end;
 
   procedure DrawIcons;
@@ -612,18 +626,13 @@ var
     begin
       maxScroll := ((ItemCount+FIconsPerLine-1) div FIconsPerLine)*32*FIconsPerLine - (h*32*FIconsPerLine div totalIconVSize) + 8*FIconsPerLine;
       if maxScroll < 0 then maxScroll := 0;
+      if FVerticalScrollPos > maxScroll then FVerticalScrollPos:= maxScroll;
       FVScrollBar := TVolatileScrollBar.Create(w-VolatileScrollBarSize,0,
          VolatileScrollBarSize,h,sbVertical,FVerticalScrollPos,0,maxScroll);
     end;
-    if Assigned(FVScrollBar) then
-    begin
-      FVScrollBar.Draw(ABitmap);
-      clientArea := rect(0,0,w-VolatileScrollBarSize,h);
-    end else
-    begin
-      clientArea := rect(0,0,w,h);
+    if not Assigned(FVScrollBar) then
       FVerticalScrollPos := 0;
-    end;
+    clientArea := rect(0,0,w,h);
     FItemsPerPage:= (Size(clientArea).cy div totalIconVSize)*FIconsPerLine;
     for item := 0 to ItemCount-1 do SetDisplayRect(item,EmptyRect);
     item := (FVerticalScrollPos div (32*FIconsPerLine))*FIconsPerLine;
@@ -670,11 +679,15 @@ var
       end;
       inc(item);
     end;
+    if Assigned(FVScrollBar) then
+      FVScrollBar.Draw(ABitmap);
   end;
 
 var i: integer;
 
 begin
+  TVolatileScrollBar.InitDPI((Sender as TControl).GetCanvasScaleFactor);
+
   if SelectedIndex = -1 then FKeySelectionRangeStart := -1
   else if FKeySelectionRangeStart = -1 then FKeySelectionRangeStart:= SelectedIndex;
   for i := 0 to ColumnCount-1 do
@@ -685,6 +698,7 @@ begin
   ABitmap.FontHeight := FontHeight;
   ABitmap.FontQuality := fqSystemClearType;
   FActualRowHeight:= MinimumRowHeight;
+  FScaling := (Sender as TControl).GetCanvasScaleFactor;
   textHeight := ABitmap.FontFullHeight+2;
   if textHeight > FActualRowHeight then FActualRowHeight:= textHeight;
 
@@ -731,7 +745,7 @@ begin
     DrawIcons;
 end;
 
-procedure TMyShellListView.KeyDown(Sender: TObject; var Key: Word;
+procedure TLCShellListView.KeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 
   procedure KeySelectRange(curItem: integer);
@@ -754,7 +768,7 @@ procedure TMyShellListView.KeyDown(Sender: TObject; var Key: Word;
         FSelectedIndex:= curItem;
         ItemSelected[FSelectedIndex] := true;
       end;
-    FVirtualScreen.DiscardBitmap;
+    InvalidateView;
     if Assigned(FOnSelectItem) then FOnSelectItem(self,curItem,true);
     MakeItemVisible(curItem);
   end;
@@ -770,7 +784,7 @@ begin
         DeselectAll;
         FSelectedIndex:= 0;
         ItemSelected[0] := true;
-        FVirtualScreen.DiscardBitmap;
+        InvalidateView;
         MakeItemVisible(0);
         if Assigned(FOnSelectItem) then FOnSelectItem(self,0,true);
         exit;
@@ -817,21 +831,27 @@ begin
   begin
     Key := 0;
     if SelectedIndex > 0 then KeySelectRange(Max(0,SelectedIndex-FItemsPerPage));
+  end else
+  if (Key = VK_A) and (ssSnap in Shift) then
+  begin
+    Key := 0;
+    SelectAll;
   end;
-
 end;
 
-procedure TMyShellListView.MouseDoubleClick(Sender: TObject);
+procedure TLCShellListView.MouseDoubleClick(Sender: TObject);
 begin
   if (SelectedIndex <> -1) and Assigned(FOnDblClick) then
     FOnDblClick(self);
 end;
 
-procedure TMyShellListView.MouseDown(Sender: TObject; Button: TMouseButton;
+procedure TLCShellListView.MouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
-var i,idx,prevItem:integer;
-  prevItemWasSelected:boolean;
+var i,idx, prevIdx:integer;
+  keepSelection, selChanged:boolean;
 begin
+  X := round(X*FScaling);
+  Y := round(Y*FScaling);
   SetFocus;
   for i := 0 to ColumnCount-1 do
     if PtInRect(Point(x,y),FColumns[i].displayRect) then
@@ -844,68 +864,94 @@ begin
     if FVScrollBar.MouseDown(X,Y) then
     begin
       FVerticalScrollPos:= FVScrollBar.Position;
-      FVirtualScreen.DiscardBitmap;
+      InvalidateView;
       exit;
     end;
   idx := GetItemAt(X,Y);
-  prevItem := FSelectedIndex;
-  prevItemWasSelected := (prevItem <> -1) and ItemSelected[prevItem];
-  if not (ssCtrl in Shift) or not FAllowMultiSelect then DeselectAll;
-  if (ssShift in Shift) and (prevItem <> -1) and (idx <> -1) and FAllowMultiSelect then
+  keepSelection := (ssSnap in Shift) and FAllowMultiSelect;
+  selChanged := false;
+  if not keepSelection and InternalDeselectAll(FSelectedIndex) then selChanged := true;
+  if (ssShift in Shift) and (FSelectedIndex <> -1) and (idx <> -1) and FAllowMultiSelect then
   begin
-    FSelectedIndex:= prevItem;
-    ItemSelected[FSelectedIndex] := prevItemWasSelected;
-    while idx <> FSelectedIndex do
+    if idx <> FSelectedIndex then
     begin
-      if FSelectedIndex > idx then dec(FSelectedIndex) else inc(FSelectedIndex);
-      ItemSelected[FSelectedIndex] := not ItemSelected[FSelectedIndex];
+      while idx <> FSelectedIndex do
+      begin
+        if FSelectedIndex > idx then dec(FSelectedIndex) else inc(FSelectedIndex);
+        ItemSelected[FSelectedIndex] := not ItemSelected[FSelectedIndex];
+        selChanged := true;
+      end;
+      if not ItemSelected[FSelectedIndex] then FSelectedIndex := -1;
+      if Assigned(FOnSelectItem) then FOnSelectItem(self, FSelectedIndex, ItemSelected[FSelectedIndex]);
     end;
-    FVirtualScreen.DiscardBitmap;
   end else
-  if idx <> -1 then
   begin
-    ItemSelected[idx] := not ItemSelected[idx];
-    if ItemSelected[idx] then
-      FSelectedIndex := idx
-    else
-      FSelectedIndex:= -1;
-    FVirtualScreen.DiscardBitmap;
-  end;
-  if (FSelectedIndex <> prevItem) then
-  begin
-    if prevItemWasSelected and not ((prevItem <> -1) and ItemSelected[prevItem]) then
-      if Assigned(FOnSelectItem) then FOnSelectItem(self,prevItem,False);
-    if (FSelectedIndex <> -1) and ItemSelected[FSelectedIndex] then
+    if keepSelection then
     begin
-      if Assigned(FOnSelectItem) then FOnSelectItem(self,FSelectedIndex,true);
-      MakeItemVisible(FSelectedIndex);
+      if idx <> -1 then
+      begin
+        ItemSelected[idx] := not ItemSelected[idx];
+        if ItemSelected[idx] then FSelectedIndex := idx
+        else if idx = FSelectedIndex then FSelectedIndex := -1;
+        if Assigned(FOnSelectItem) then FOnSelectItem(self, idx, ItemSelected[idx]);
+        selChanged := true;
+      end;
+    end else
+    if idx <> FSelectedIndex then
+    begin
+      if FSelectedIndex <> -1 then
+      begin
+        prevIdx := FSelectedIndex;
+        ItemSelected[prevIdx] := false;
+        FSelectedIndex := -1;
+        if Assigned(FOnSelectItem) then FOnSelectItem(self, prevIdx, false);
+        selChanged := true;
+      end;
+      if idx <> -1 then
+      begin
+        ItemSelected[idx] := true;
+        FSelectedIndex := idx;
+        if Assigned(FOnSelectItem) then FOnSelectItem(self, idx, true);
+        selChanged := true;
+      end;
     end;
+  end;
+  if selChanged then
+  begin
+    InvalidateView;
+    if (FSelectedIndex <> -1) and ItemSelected[FSelectedIndex] then
+      MakeItemVisible(FSelectedIndex);
+    if Assigned(FOnSelectionChanged) then FOnSelectionChanged(self);
   end;
 end;
 
-procedure TMyShellListView.MouseMove(Sender: TObject; Shift: TShiftState; X,
+procedure TLCShellListView.MouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
 begin
+  X := round(X*FScaling);
+  Y := round(Y*FScaling);
   if Assigned(FVScrollBar) then
     if FVScrollBar.MouseMove(X,Y) then
     begin
       FVerticalScrollPos:= FVScrollBar.Position;
-      FVirtualScreen.DiscardBitmap;
+      InvalidateView;
     end;
 end;
 
-procedure TMyShellListView.MouseUp(Sender: TObject; Button: TMouseButton;
+procedure TLCShellListView.MouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
+  X := round(X*FScaling);
+  Y := round(Y*FScaling);
   if Assigned(FVScrollBar) and (Button = mbLeft) then
     if FVScrollBar.MouseUp(X,Y) then
     begin
       FVerticalScrollPos:= FVScrollBar.Position;
-      FVirtualScreen.DiscardBitmap;
+      InvalidateView;
     end;
 end;
 
-procedure TMyShellListView.MouseWheel(Sender: TObject; Shift: TShiftState;
+procedure TLCShellListView.MouseWheel(Sender: TObject; Shift: TShiftState;
   WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
 var Delta: integer;
 begin
@@ -920,13 +966,13 @@ begin
     if FVerticalScrollPos > FVScrollBar.Maximum then FVerticalScrollPos:= FVScrollBar.Maximum;
     if FVerticalScrollPos < FVScrollBar.Minimum then FVerticalScrollPos:= FVScrollBar.Minimum;
     FreeAndNil(FVScrollBar);
-    FVirtualScreen.DiscardBitmap;
+    InvalidateView;
     Handled := true;
   end;
 end;
 
-procedure TMyShellListView.CompareItem(Sender: TObject; Item1,
-  Item2: PMyShellListViewItemData; Data: Integer; var Compare: Integer);
+procedure TLCShellListView.CompareItem(Sender: TObject; Item1,
+  Item2: PLCShellListViewItemData; Data: Integer; var Compare: Integer);
 var diff: int64;
   diffDate: TDateTime;
 
@@ -984,7 +1030,7 @@ begin
    CompareIndex;
 end;
 
-procedure TMyShellListView.ColumnClick(Sender: TObject; AColumn: integer);
+procedure TLCShellListView.ColumnClick(Sender: TObject; AColumn: integer);
 begin
   if SortColumn = AColumn then SortColumn := -1
   else SortColumn := AColumn;
@@ -992,44 +1038,44 @@ begin
   If Assigned(FOnSort) then FOnSort(Sender);
 end;
 
-procedure TMyShellListView.Reload;
+procedure TLCShellListView.Reload;
 begin
   PopulateWithRoot();
 end;
 
-procedure TMyShellListView.BeginUpdate;
+procedure TLCShellListView.BeginUpdate;
 begin
   inc(FUpdateCount);
 end;
 
-procedure TMyShellListView.EndUpdate;
+procedure TLCShellListView.EndUpdate;
 begin
   if FUpdateCount > 0 then
   begin
     dec(FUpdateCount);
-    if FUpdateCount = 0 then FVirtualScreen.DiscardBitmap;
+    if FUpdateCount = 0 then InvalidateView;
   end;
   if FSelectedIndex >= ItemCount then FSelectedIndex:= -1;
   FreeAndNil(FVScrollBar);
 end;
 
-procedure TMyShellListView.Invalidate;
+procedure TLCShellListView.InvalidateView;
 begin
-  FVirtualScreen.DiscardBitmap;
+  if Assigned(FVirtualScreen) then FVirtualScreen.DiscardBitmap;
 end;
 
-procedure TMyShellListView.Update;
+procedure TLCShellListView.Update;
 begin
   FVirtualScreen.Update;
 end;
 
-procedure TMyShellListView.MakeItemVisible(AIndex: integer);
+procedure TLCShellListView.MakeItemVisible(AIndex: integer);
 begin
   FWantedItemVisible := AIndex;
-  FVirtualScreen.DiscardBitmap;
+  InvalidateView;
 end;
 
-procedure TMyShellListView.DoFitColumns(ABitmap: TBGRABitmap; AClientWidth: integer);
+procedure TLCShellListView.DoFitColumns(ABitmap: TBGRABitmap; AClientWidth: integer);
 var i,j,curSize,totalSize: integer;
   colSizes: array of integer;
   sizeA: integer;
@@ -1075,7 +1121,7 @@ begin
   EndUpdate;
 end;
 
-function TMyShellListView.AddColumn(AName: string; AWidth: integer;
+function TLCShellListView.AddColumn(AName: string; AWidth: integer;
   AAlign: TAlignment): integer;
 begin
   setlength(FColumns, length(FColumns)+1);
@@ -1088,7 +1134,7 @@ begin
   result := high(FColumns);
 end;
 
-function TMyShellListView.GetItemCell(AIndex, AColumn: integer): string;
+function TLCShellListView.GetItemCell(AIndex, AColumn: integer): string;
 begin
   result := '';
   if (AIndex < 0) or (AIndex >= ItemCount) then exit;
@@ -1098,16 +1144,17 @@ begin
   if AColumn = FIndexDate then result := FData[AIndex].dateOrDeviceStr;
 end;
 
-procedure TMyShellListView.Clear;
+procedure TLCShellListView.Clear;
 var i: integer;
 begin
   for I := 0 to ItemCount-1 do
     SetItemImage(I,nil,false);
   FData := nil;
-  if FUpdateCount = 0 then FVirtualScreen.DiscardBitmap;
+  FSelectedIndex:= -1;
+  if FUpdateCount = 0 then InvalidateView;
 end;
 
-constructor TMyShellListView.Create(AVirtualScreen: TBGRAVirtualScreen);
+constructor TLCShellListView.Create(AVirtualScreen: TBGRAVirtualScreen);
 begin
   BytesCaption:= rsBytes;
   FVirtualScreen := AVirtualScreen;
@@ -1136,23 +1183,32 @@ begin
   IconPadding := 8;
   FObjectTypes := [otFolders, otNonFolders];
   FSortColumn:= -1;
+  SelectAllAction := [otFolders, otNonFolders];
 end;
 
-destructor TMyShellListView.Destroy;
+procedure TLCShellListView.VirtualScreenFreed;
+begin
+  FVirtualScreen := nil;
+end;
+
+destructor TLCShellListView.Destroy;
 begin
   Clear;
-  FVirtualScreen.OnRedraw := nil;
-  FVirtualScreen.OnKeyDown := nil;
-  FVirtualScreen.OnDblClick := nil;
-  FVirtualScreen.OnMouseDown := nil;
-  FVirtualScreen.OnMouseMove := nil;
-  FVirtualScreen.OnMouseUp := nil;
-  FVirtualScreen.OnMouseWheel := nil;
+  if Assigned(FVirtualScreen) then
+  begin
+    FVirtualScreen.OnRedraw := nil;
+    FVirtualScreen.OnKeyDown := nil;
+    FVirtualScreen.OnDblClick := nil;
+    FVirtualScreen.OnMouseDown := nil;
+    FVirtualScreen.OnMouseMove := nil;
+    FVirtualScreen.OnMouseUp := nil;
+    FVirtualScreen.OnMouseWheel := nil;
+  end;
   FreeAndNil(FVScrollBar);
   inherited Destroy;
 end;
 
-procedure TMyShellListView.SetItemImage(AIndex: integer; ABitmap: TBGRABitmap;
+procedure TLCShellListView.SetItemImage(AIndex: integer; ABitmap: TBGRABitmap;
   AOwned: boolean);
 begin
   if (AIndex < 0) or (AIndex >= ItemCount) then exit;
@@ -1161,11 +1217,11 @@ begin
     if imageOwned then FreeAndNil(image);
     image := ABitmap;
     imageOwned := AOwned and (ABitmap <> nil);
-    FVirtualScreen.DiscardBitmap;
+    InvalidateView;
   end;
 end;
 
-function TMyShellListView.GetItemImage(AIndex: integer): TBGRABitmap;
+function TLCShellListView.GetItemImage(AIndex: integer): TBGRABitmap;
 begin
   if (AIndex < 0) or (AIndex >= ItemCount) then
     result := nil
@@ -1173,7 +1229,7 @@ begin
     Result := FData[AIndex].image;
 end;
 
-function TMyShellListView.GetItemFullName(AIndex: integer): string;
+function TLCShellListView.GetItemFullName(AIndex: integer): string;
 begin
   if (AIndex < 0) or (AIndex >= ItemCount) then
     result := ''
@@ -1184,40 +1240,92 @@ begin
       Result := IncludeTrailingPathDelimiter(FRoot) + FData[AIndex].filename;
 end;
 
-procedure TMyShellListView.SetFocus;
+procedure TLCShellListView.SetFocus;
 begin
   SafeSetFocus(FVirtualScreen);
 end;
 
-function TMyShellListView.GetItemDisplayRect(AIndex: integer): TRect;
+function TLCShellListView.GetItemDisplayRect(AIndex: integer): TRect;
 begin
   if (AIndex < 0) or (AIndex >= ItemCount) then
     result := EmptyRect
   else
+  begin
     result := FData[AIndex].displayRect;
+    if FScaling <> 0 then
+    with result do
+    begin
+      left := round(left/FScaling);
+      right := round(right/FScaling);
+      top := round(top/FScaling);
+      bottom := round(bottom/FScaling);
+    end;
+  end;
 end;
 
-procedure TMyShellListView.Sort;
+function TLCShellListView.InternalSelectAll: boolean;
+var i:integer;
+begin
+  result:= false;
+  for i := 0 to ItemCount-1 do
+    if not FData[i].isSelected and
+      ((FData[i].isFolder and (otFolders in SelectAllAction)) or
+       (not FData[i].isFolder and (otNonFolders in SelectAllAction))) then
+    begin
+      FData[i].isSelected := true;
+      result := true;
+    end;
+  for i := 0 to ItemCount-1 do
+    if FData[i].isSelected and
+      ((FData[i].isFolder and not (otFolders in SelectAllAction)) or
+       (not FData[i].isFolder and not (otNonFolders in SelectAllAction))) then
+    begin
+      FData[i].isSelected := false;
+      result := true;
+    end;
+
+  if result then InvalidateView;
+end;
+
+function TLCShellListView.InternalDeselectAll(AExcept: integer): boolean;
+var i:integer;
+begin
+  result:= false;
+  for i := 0 to ItemCount-1 do
+    if (i <> AExcept) and FData[i].isSelected then
+    begin
+      FData[i].isSelected := false;
+      if FSelectedIndex = i then
+      begin
+        FSelectedIndex := -1;
+        if Assigned(FOnSelectItem) then FOnSelectItem(self, i, False);
+      end;
+      result := true;
+    end;
+  if result then InvalidateView;
+end;
+
+procedure TLCShellListView.Sort;
 var lst: TList;
   i: integer;
-  sortedData: TMyShellListViewData;
+  sortedData: TLCShellListViewData;
 begin
   lst := TList.Create;
   for i:= 0 to ItemCount-1 do
     lst.Add(@FData[i]);
   SortTarget := self;
-  lst.Sort(@MyShellListViewCompare);
+  lst.Sort(@LCListViewCompare);
   setlength(sortedData,ItemCount);
   for i := 0 to lst.Count-1 do
-    sortedData[i] := PMyShellListViewItemData(lst[i])^;
+    sortedData[i] := PLCShellListViewItemData(lst[i])^;
   FData := sortedData;
   lst.Free;
 
   if Assigned(FOnSort) then FOnSort(self);
-  FVirtualScreen.DiscardBitmap;
+  InvalidateView;
 end;
 
-procedure TMyShellListView.RemoveItemFromList(AIndex: integer);
+procedure TLCShellListView.RemoveItemFromList(AIndex: integer);
 var i: integer;
 begin
   if (AIndex < 0) or (AIndex >= ItemCount) then exit;
@@ -1225,10 +1333,31 @@ begin
   for i := AIndex to ItemCount-2 do
     FData[i] := FData[i+1];
   setlength(FData, ItemCount-1);
-  FVirtualScreen.DiscardBitmap;
+  InvalidateView;
 end;
 
-function TMyShellListView.GetItemAt(X, Y: Integer): integer;
+function TLCShellListView.IndexByName(AName: string; ACaseSensitive: boolean
+  ): integer;
+var
+  i: Integer;
+begin
+  for i := 0 to ItemCount-1 do
+  begin
+    if ACaseSensitive and (UTF8CompareStr(AName, ItemName[i])=0) then
+    begin
+      result := i;
+      exit;
+    end else
+    if not ACaseSensitive and (UTF8CompareText(AName, ItemName[i])=0) then
+    begin
+      result := i;
+      exit;
+    end;
+  end;
+  result := -1;
+end;
+
+function TLCShellListView.GetItemAt(X, Y: Integer): integer;
 var i: integer;
   p : TPoint;
 begin
@@ -1242,19 +1371,16 @@ begin
   result := -1;
 end;
 
-procedure TMyShellListView.DeselectAll;
-var i:integer;
-  discard: boolean;
+procedure TLCShellListView.DeselectAll;
 begin
-  discard:= false;
-  for i := 0 to ItemCount-1 do
-    if FData[i].isSelected then
-    begin
-      FData[i].isSelected := false;
-      discard := true;
-    end;
-  FSelectedIndex := -1;
-  if discard then FVirtualScreen.DiscardBitmap;
+  if InternalDeselectAll then
+    if Assigned(FOnSelectionChanged) then FOnSelectionChanged(self);
+end;
+
+procedure TLCShellListView.SelectAll;
+begin
+  if InternalSelectAll then
+    if Assigned(FOnSelectionChanged) then FOnSelectionChanged(self);
 end;
 
 end.

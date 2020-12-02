@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-3.0-linking-exception
 unit BGRAResample;
 
 {$mode objfpc}{$H+}
@@ -18,14 +19,14 @@ interface
   from TWideKernelFilter. It is slower of course than simple interpolation. }
 
 uses
-  Types, SysUtils, BGRABitmapTypes;
+  SysUtils, BGRABitmapTypes;
 
 {------------------------------- Simple stretch ------------------------------------}
 
 function SimpleStretch(bmp: TBGRACustomBitmap;
   NewWidth, NewHeight: integer): TBGRACustomBitmap;
 procedure StretchPutImage(bmp: TBGRACustomBitmap;
-  NewWidth, NewHeight: integer; dest: TBGRACustomBitmap; OffsetX,OffsetY: Integer; ADrawMode: TDrawMode; AOpacity: byte);
+  NewWidth, NewHeight: integer; dest: TBGRACustomBitmap; OffsetX,OffsetY: Integer; ADrawMode: TDrawMode; AOpacity: byte; ANoTransition: boolean = false);
 procedure DownSamplePutImage(source: TBGRACustomBitmap; factorX,factorY: integer; dest: TBGRACustomBitmap; OffsetX,OffsetY: Integer; ADrawMode: TDrawMode);
 function DownSample(source: TBGRACustomBitmap; factorX,factorY: integer): TBGRACustomBitmap;
 
@@ -52,8 +53,8 @@ type
   TSplineKernel = class(TWideKernelFilter)
   public
     Coeff: single;
-    constructor Create;
-    constructor Create(ACoeff: single);
+    constructor Create; overload;
+    constructor Create(ACoeff: single); overload;
     function Interpolation(t: single): single; override;
     function ShouldCheckRange: boolean; override;
     function KernelWidth: single; override;
@@ -96,7 +97,7 @@ function WideKernelResample(bmp: TBGRACustomBitmap;
 
 implementation
 
-uses Math, BGRABlend;
+uses Math, BGRABlend, BGRAClasses;
 
 function SimpleStretch(bmp: TBGRACustomBitmap;
   newWidth, newHeight: integer): TBGRACustomBitmap;
@@ -111,18 +112,18 @@ begin
 end;
 
 procedure StretchPutImage(bmp: TBGRACustomBitmap; NewWidth, NewHeight: integer;
-  dest: TBGRACustomBitmap; OffsetX, OffsetY: Integer; ADrawMode: TDrawMode; AOpacity: byte);
+  dest: TBGRACustomBitmap; OffsetX, OffsetY: Integer; ADrawMode: TDrawMode; AOpacity: byte; ANoTransition: boolean);
 type
   TTransitionState = (tsNone, tsPlain, tsLeft, tsMiddle, tsRight);
 var
-  x_src,y_src, y_src2, prev_y_src, prev_y_src2: NativeInt;
+  x_src,y_src, y_src2, prev_y_src, prev_y_src2: Int32or64;
   inc_x_src, mod_x_src, acc_x_src, inc_y_src, mod_y_src, acc_y_src,
-  acc_x_src2, acc_y_src2: NativeInt;
-  x_dest, y_dest: NativeInt;
+  acc_x_src2, acc_y_src2: Int32or64;
+  x_dest, y_dest: Int32or64;
 
   PDest, PSrc1, PSrc2: PBGRAPixel;
   vertColors: packed array[1..2] of TBGRAPixel;
-  DeltaSrcX: NativeInt;
+  DeltaSrcX: Int32or64;
   targetRect: TRect;
   tempData: PBGRAPixel;
   prevHorizTransition,horizTransition,prevVertTransition,vertTransition: TTransitionState;
@@ -131,11 +132,11 @@ var
   procedure LinearMix(PSrc: PBGRAPixel; DeltaSrc: integer; AccSrcQuarter: boolean;
         PDest: PBGRAPixel; slightlyDifferent: boolean; var transition: TTransitionState);
   var
-    asum: NativeInt;
-    a1,a2: NativeInt;
+    asum: Int32or64;
+    a1,a2: Int32or64;
     newTransition: TTransitionState;
   begin
-    if DeltaSrc=0 then
+    if (DeltaSrc=0) or ANoTransition then
     begin
       PDest^ := PSrc^;
       transition:= tsPlain;
@@ -153,66 +154,93 @@ var
         ((newTransition = tsLeft) and (transition = tsRight)) then
       begin
         transition:= tsMiddle;
-        asum := psrc^.alpha + (psrc+DeltaSrc)^.alpha;
-        if asum = 0 then
-          pdest^ := BGRAPixelTransparent
-        else if asum = 510 then
+        if ADrawMode = dmXor then
         begin
-          pdest^.alpha := 255;
+          pdest^.alpha := (psrc^.alpha + (psrc+DeltaSrc)^.alpha + 1) shr 1;
           pdest^.red := (psrc^.red + (psrc+DeltaSrc)^.red + 1) shr 1;
           pdest^.green := (psrc^.green + (psrc+DeltaSrc)^.green + 1) shr 1;
           pdest^.blue := (psrc^.blue + (psrc+DeltaSrc)^.blue + 1) shr 1;
         end else
         begin
-          pdest^.alpha := asum shr 1;
-          a1 := psrc^.alpha;
-          a2 := (psrc+DeltaSrc)^.alpha;
-          pdest^.red := (psrc^.red*a1 + (psrc+DeltaSrc)^.red*a2 + (asum shr 1)) div asum;
-          pdest^.green := (psrc^.green*a1 + (psrc+DeltaSrc)^.green*a2 + (asum shr 1)) div asum;
-          pdest^.blue := (psrc^.blue*a1 + (psrc+DeltaSrc)^.blue*a2 + (asum shr 1)) div asum;
+          asum := psrc^.alpha + (psrc+DeltaSrc)^.alpha;
+          if asum = 0 then
+            pdest^ := BGRAPixelTransparent
+          else if asum = 510 then
+          begin
+            pdest^.alpha := 255;
+            pdest^.red := (psrc^.red + (psrc+DeltaSrc)^.red + 1) shr 1;
+            pdest^.green := (psrc^.green + (psrc+DeltaSrc)^.green + 1) shr 1;
+            pdest^.blue := (psrc^.blue + (psrc+DeltaSrc)^.blue + 1) shr 1;
+          end else
+          begin
+            pdest^.alpha := asum shr 1;
+            a1 := psrc^.alpha;
+            a2 := (psrc+DeltaSrc)^.alpha;
+            pdest^.red := (psrc^.red*a1 + (psrc+DeltaSrc)^.red*a2 + (asum shr 1)) div asum;
+            pdest^.green := (psrc^.green*a1 + (psrc+DeltaSrc)^.green*a2 + (asum shr 1)) div asum;
+            pdest^.blue := (psrc^.blue*a1 + (psrc+DeltaSrc)^.blue*a2 + (asum shr 1)) div asum;
+          end;
         end;
       end else
       if newTransition = tsRight then
       begin
         transition := tsRight;
-        asum := psrc^.alpha + (psrc+DeltaSrc)^.alpha*3;
-        if asum = 0 then
-          pdest^ := BGRAPixelTransparent
-        else if asum = 1020 then
+        if ADrawMode = dmXor then
         begin
-          pdest^.alpha := 255;
+          pdest^.alpha := (psrc^.alpha + (psrc+DeltaSrc)^.alpha*3 + 2) shr 2;
           pdest^.red := (psrc^.red + (psrc+DeltaSrc)^.red*3 + 2) shr 2;
           pdest^.green := (psrc^.green + (psrc+DeltaSrc)^.green*3 + 2) shr 2;
           pdest^.blue := (psrc^.blue + (psrc+DeltaSrc)^.blue*3 + 2) shr 2;
         end else
         begin
-          pdest^.alpha := asum shr 2;
-          a1 := psrc^.alpha;
-          a2 := (psrc+DeltaSrc)^.alpha;
-          pdest^.red := (psrc^.red*a1 + (psrc+DeltaSrc)^.red*a2*3 + (asum shr 1)) div asum;
-          pdest^.green := (psrc^.green*a1 + (psrc+DeltaSrc)^.green*a2*3 + (asum shr 1)) div asum;
-          pdest^.blue := (psrc^.blue*a1 + (psrc+DeltaSrc)^.blue*a2*3 + (asum shr 1)) div asum;
+          asum := psrc^.alpha + (psrc+DeltaSrc)^.alpha*3;
+          if asum = 0 then
+            pdest^ := BGRAPixelTransparent
+          else if asum = 1020 then
+          begin
+            pdest^.alpha := 255;
+            pdest^.red := (psrc^.red + (psrc+DeltaSrc)^.red*3 + 2) shr 2;
+            pdest^.green := (psrc^.green + (psrc+DeltaSrc)^.green*3 + 2) shr 2;
+            pdest^.blue := (psrc^.blue + (psrc+DeltaSrc)^.blue*3 + 2) shr 2;
+          end else
+          begin
+            pdest^.alpha := asum shr 2;
+            a1 := psrc^.alpha;
+            a2 := (psrc+DeltaSrc)^.alpha;
+            pdest^.red := (psrc^.red*a1 + (psrc+DeltaSrc)^.red*a2*3 + (asum shr 1)) div asum;
+            pdest^.green := (psrc^.green*a1 + (psrc+DeltaSrc)^.green*a2*3 + (asum shr 1)) div asum;
+            pdest^.blue := (psrc^.blue*a1 + (psrc+DeltaSrc)^.blue*a2*3 + (asum shr 1)) div asum;
+          end;
         end;
       end else
       begin
         transition:= tsLeft;
-        asum := psrc^.alpha*3 + (psrc+DeltaSrc)^.alpha;
-        if asum = 0 then
-          pdest^ := BGRAPixelTransparent
-        else if asum = 1020 then
+        if ADrawMode = dmXor then
         begin
-          pdest^.alpha := 255;
+          pdest^.alpha := (psrc^.alpha*3 + (psrc+DeltaSrc)^.alpha + 2) shr 2;
           pdest^.red := (psrc^.red*3 + (psrc+DeltaSrc)^.red + 2) shr 2;
           pdest^.green := (psrc^.green*3 + (psrc+DeltaSrc)^.green + 2) shr 2;
           pdest^.blue := (psrc^.blue*3 + (psrc+DeltaSrc)^.blue + 2) shr 2;
         end else
         begin
-          pdest^.alpha := asum shr 2;
-          a1 := psrc^.alpha;
-          a2 := (psrc+DeltaSrc)^.alpha;
-          pdest^.red := (psrc^.red*a1*3 + (psrc+DeltaSrc)^.red*a2 + (asum shr 1)) div asum;
-          pdest^.green := (psrc^.green*a1*3 + (psrc+DeltaSrc)^.green*a2 + (asum shr 1)) div asum;
-          pdest^.blue := (psrc^.blue*a1*3 + (psrc+DeltaSrc)^.blue*a2 + (asum shr 1)) div asum;
+          asum := psrc^.alpha*3 + (psrc+DeltaSrc)^.alpha;
+          if asum = 0 then
+            pdest^ := BGRAPixelTransparent
+          else if asum = 1020 then
+          begin
+            pdest^.alpha := 255;
+            pdest^.red := (psrc^.red*3 + (psrc+DeltaSrc)^.red + 2) shr 2;
+            pdest^.green := (psrc^.green*3 + (psrc+DeltaSrc)^.green + 2) shr 2;
+            pdest^.blue := (psrc^.blue*3 + (psrc+DeltaSrc)^.blue + 2) shr 2;
+          end else
+          begin
+            pdest^.alpha := asum shr 2;
+            a1 := psrc^.alpha;
+            a2 := (psrc+DeltaSrc)^.alpha;
+            pdest^.red := (psrc^.red*a1*3 + (psrc+DeltaSrc)^.red*a2 + (asum shr 1)) div asum;
+            pdest^.green := (psrc^.green*a1*3 + (psrc+DeltaSrc)^.green*a2 + (asum shr 1)) div asum;
+            pdest^.blue := (psrc^.blue*a1*3 + (psrc+DeltaSrc)^.blue*a2 + (asum shr 1)) div asum;
+          end;
         end;
       end;
     end;
@@ -383,19 +411,19 @@ end;
 procedure DownSamplePutImage2(source: TBGRACustomBitmap;
   dest: TBGRACustomBitmap; OffsetX, OffsetY: Integer; ADrawMode: TDrawMode);
 const factorX = 2; factorY = 2; nbi= factorX*factorY;
-var xb,yb,ys: NativeInt;
+var xb,yb,ys: Int32or64;
     pdest: PBGRAPixel;
     psrc1,psrc2: PBGRAPixel;
-    asum,maxsum: NativeUInt;
-    newWidth,newHeight: NativeInt;
-    r,g,b: NativeUInt;
+    asum,maxsum: UInt32or64;
+    newWidth,newHeight: Int32or64;
+    r,g,b: UInt32or64;
 begin
   if (source.Width mod factorX <> 0) or (source.Height mod factorY <> 0) then
      raise exception.Create('Source size must be a multiple of factorX and factorY');
   newWidth := source.Width div factorX;
   newHeight := source.Height div factorY;
   ys := 0;
-  maxsum := 255*NativeInt(factorX)*NativeInt(factorY);
+  maxsum := 255*Int32or64(factorX)*Int32or64(factorY);
   for yb := 0 to newHeight-1 do
   begin
     pdest := dest.ScanLine[yb+OffsetY]+OffsetX;
@@ -460,19 +488,19 @@ end;
 procedure DownSamplePutImage3(source: TBGRACustomBitmap;
   dest: TBGRACustomBitmap; OffsetX, OffsetY: Integer; ADrawMode: TDrawMode);
 const factorX = 3; factorY = 3; nbi= factorX*factorY;
-var xb,yb,ys: NativeInt;
+var xb,yb,ys: Int32or64;
     pdest: PBGRAPixel;
     psrc1,psrc2,psrc3: PBGRAPixel;
-    asum,maxsum: NativeUInt;
-    newWidth,newHeight: NativeInt;
-    r,g,b: NativeUInt;
+    asum,maxsum: UInt32or64;
+    newWidth,newHeight: Int32or64;
+    r,g,b: UInt32or64;
 begin
   if (source.Width mod factorX <> 0) or (source.Height mod factorY <> 0) then
      raise exception.Create('Source size must be a multiple of factorX and factorY');
   newWidth := source.Width div factorX;
   newHeight := source.Height div factorY;
   ys := 0;
-  maxsum := 255*NativeInt(factorX)*NativeInt(factorY);
+  maxsum := 255*Int32or64(factorX)*Int32or64(factorY);
   for yb := 0 to newHeight-1 do
   begin
     pdest := dest.ScanLine[yb+OffsetY]+OffsetX;
@@ -551,12 +579,12 @@ end;
 
 procedure DownSamplePutImage(source: TBGRACustomBitmap; factorX, factorY: integer;
   dest: TBGRACustomBitmap; OffsetX, OffsetY: Integer; ADrawMode: TDrawMode);
-var xb,yb,ys,iy,ix: NativeInt;
+var xb,yb,ys,iy,ix: Int32or64;
     pdest,psrci: PBGRAPixel;
     psrc: array of PBGRAPixel;
-    asum,maxsum: NativeUInt;
-    newWidth,newHeight: NativeInt;
-    r,g,b,nbi: NativeUInt;
+    asum,maxsum: UInt32or64;
+    newWidth,newHeight: Int32or64;
+    r,g,b,nbi: UInt32or64;
 begin
   if ADrawMode = dmXor then raise exception.Create('dmXor drawmode not supported');
   if (factorX = 2) and (factorY = 2) then
@@ -574,7 +602,7 @@ begin
   newWidth := source.Width div factorX;
   newHeight := source.Height div factorY;
   ys := 0;
-  maxsum := 255*NativeInt(factorX)*NativeInt(factorY);
+  maxsum := 255*Int32or64(factorX)*Int32or64(factorY);
   nbi := factorX*factorY;
   setlength(psrc, factorY);
   for yb := 0 to newHeight-1 do
@@ -592,7 +620,7 @@ begin
       begin
         psrci := psrc[iy];
         for ix := factorX-1 downto 0 do
-          asum += (psrci+ix)^.alpha;
+          inc(asum, (psrci+ix)^.alpha);
       end;
       if asum = maxsum then
       begin
@@ -605,9 +633,9 @@ begin
           begin
             with psrc[iy]^ do
             begin
-              r += red;
-              g += green;
-              b += blue;
+              inc(r, red);
+              inc(g, green);
+              inc(b, blue);
             end;
             inc(psrc[iy]);
           end;
@@ -634,9 +662,9 @@ begin
             begin
               with psrc[iy]^ do
               begin
-                r += red*alpha;
-                g += green*alpha;
-                b += blue*alpha;
+                inc(r, red*alpha);
+                inc(g, green*alpha);
+                inc(b, blue*alpha);
               end;
               inc(psrc[iy]);
             end;
@@ -1083,11 +1111,11 @@ begin
         begin
           cBorder := psrc^;
           Inc(psrc);
-          rSum += cBorder.red * cBorder.alpha * factVert1;
-          gSum += cBorder.green * cBorder.alpha * factVert1;
-          bSum += cBorder.blue * cBorder.alpha * factVert1;
-          aSum += cBorder.alpha * factVert1;
-          Sum  += factVert1;
+          IncF(rSum, cBorder.red * cBorder.alpha * factVert1);
+          IncF(gSum, cBorder.green * cBorder.alpha * factVert1);
+          IncF(bSum, cBorder.blue * cBorder.alpha * factVert1);
+          IncF(aSum, cBorder.alpha * factVert1);
+          IncF(Sum, factVert1);
         end;
 
         if (factVert2 <> 0) and (iysrc2 < bmp.Height) then
@@ -1097,11 +1125,11 @@ begin
           begin
             cBorder := psrc^;
             Inc(psrc);
-            rSum += cBorder.red * cBorder.alpha * factVert2;
-            gSum += cBorder.green * cBorder.alpha * factVert2;
-            bSum += cBorder.blue * cBorder.alpha * factVert2;
-            aSum += cBorder.alpha * factVert2;
-            Sum  += factVert2;
+            IncF(rSum, cBorder.red * cBorder.alpha * factVert2);
+            IncF(gSum, cBorder.green * cBorder.alpha * factVert2);
+            IncF(bSum, cBorder.blue * cBorder.alpha * factVert2);
+            IncF(aSum, cBorder.alpha * factVert2);
+            IncF(Sum, factVert2);
           end;
         end;
       end;
@@ -1113,11 +1141,11 @@ begin
         begin
           cBorder := psrc^;
           Inc(psrc, lineDelta);
-          rSum += cBorder.red * cBorder.alpha * factHoriz1;
-          gSum += cBorder.green * cBorder.alpha * factHoriz1;
-          bSum += cBorder.blue * cBorder.alpha * factHoriz1;
-          aSum += cBorder.alpha * factHoriz1;
-          Sum  += factHoriz1;
+          IncF(rSum, cBorder.red * cBorder.alpha * factHoriz1);
+          IncF(gSum, cBorder.green * cBorder.alpha * factHoriz1);
+          IncF(bSum, cBorder.blue * cBorder.alpha * factHoriz1);
+          IncF(aSum, cBorder.alpha * factHoriz1);
+          IncF(Sum, factHoriz1);
         end;
 
         if (factHoriz2 <> 0) and (ixsrc2 < bmp.Width) then
@@ -1127,11 +1155,11 @@ begin
           begin
             cBorder := psrc^;
             Inc(psrc, lineDelta);
-            rSum += cBorder.red * cBorder.alpha * factHoriz2;
-            gSum += cBorder.green * cBorder.alpha * factHoriz2;
-            bSum += cBorder.blue * cBorder.alpha * factHoriz2;
-            aSum += cBorder.alpha * factHoriz2;
-            Sum  += factHoriz2;
+            IncF(rSum, cBorder.red * cBorder.alpha * factHoriz2);
+            IncF(gSum, cBorder.green * cBorder.alpha * factHoriz2);
+            IncF(bSum, cBorder.blue * cBorder.alpha * factHoriz2);
+            IncF(aSum, cBorder.alpha * factHoriz2);
+            IncF(Sum, factHoriz2);
           end;
         end;
       end;
@@ -1145,11 +1173,11 @@ begin
           for xb2 := ixsrc1p1 to ixsrc2m1 do
           begin
             cFull := psrc^;
-            rSum  += cFull.red * cFull.alpha;
-            gSum  += cFull.green * cFull.alpha;
-            bSum  += cFull.blue * cFull.alpha;
-            aSum  += cFull.alpha;
-            Sum   += 1;
+            IncF(rSum, cFull.red * cFull.alpha);
+            IncF(gSum, cFull.green * cFull.alpha);
+            IncF(bSum, cFull.blue * cFull.alpha);
+            IncF(aSum, cFull.alpha);
+            IncF(Sum, 1);
             Inc(psrc);
           end;
           Inc(psrc, delta);
@@ -1175,6 +1203,7 @@ begin
     ssOutside: result := TSplineKernel.Create(0.5);
     ssRoundOutside: result := TSplineKernel.Create(0.75);
     ssVertexToSide: result := TSplineKernel.Create(1);
+    ssEasyBezier: raise Exception.Create('EasyBezier does not have an interpolator');
   else
     raise Exception.Create('Unknown spline style');
   end;
@@ -1455,10 +1484,10 @@ begin
         c := (scanlinesSrc[clusterY[yc].Pos]+xb)^;
         w := clusterY[yc].Weight;
         wa := w * c.alpha;
-        sumA += wa;
-        sumR += c.red * wa;
-        sumG += c.green * wa;
-        sumB += c.blue * wa;
+        IncF(sumA, wa);
+        IncF(sumR, c.red * wa);
+        IncF(sumG, c.green * wa);
+        IncF(sumB, c.blue * wa);
       end;
     end;
 
@@ -1475,10 +1504,10 @@ begin
         w := clusterX[xc].Weight;
         with verticalSum[ClusterX[xc].Pos - MapXLoPos] do
         begin
-          sum.sumA += sumA*w;
-          sum.sumR += sumR*w;
-          sum.sumG += sumG*w;
-          sum.sumB += sumB*w;
+          IncF(sum.sumA, sumA*w);
+          IncF(sum.sumR, sumR*w);
+          IncF(sum.sumG, sumG*w);
+          IncF(sum.sumB, sumB*w);
         end;
       end;
 
