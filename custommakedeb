@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 if [ "$1" == "" ]; then
-	echo "Creates the Debian package"
+	echo "Creates the Debian package with a custom Lazarus or FPC installation"
 	echo ""
 	echo "Usage: ./makedeb LAZARUS_SOURCE_DIRECTORY [FPC_BINARY]"
 	echo ""
@@ -9,15 +9,12 @@ if [ "$1" == "" ]; then
 	exit 0
 fi
 
-#remove dependency to lazarus-project
-sed -i 's/lcl (>= [0-9.]*), //' debian/control
 echo $1 >debian/CONFIGURE_DEFAULT_LAZDIR
 if [ "$2" == "" ]; then
 	rm debian/CONFIGURE_DEFAULT_FPCBIN
 else
 	echo $2 >debian/CONFIGURE_DEFAULT_FPCBIN
 fi
-debuild -us -uc
+debuild -us -uc -d
 rm debian/CONFIGURE_DEFAULT_LAZDIR
 rm -f debian/CONFIGURE_DEFAULT_FPCBIN
-
