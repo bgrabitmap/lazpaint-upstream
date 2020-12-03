@@ -1,5 +1,10 @@
 lazpaint (7.1.6-1) unstable; urgency=medium
 
+  * new upstream version
+  * debian/control: update description with new features
+  * debian/copyright: add copyright for new files
+  * debian/copyright: use license LGPL-3-linking-exception
+  * debian/rules: update rules to specify usage of custom packages
   * zoom and rotate raster layers without rasterizing
   * vectorial layers to allow one to edit existing shapes
   * shapes can be rotated and transformed (right-click or Alt)
