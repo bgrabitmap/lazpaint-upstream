@@ -11,7 +11,7 @@ uses
   {$IFDEF LINUX}, InterfaceBase{$ENDIF};
 
 const
-  LazPaintVersion = 7010600;
+  LazPaintVersion = 7020100;
 
   function LazPaintVersionStr: string;
 
@@ -129,6 +129,7 @@ type
       class function Empty: TImageEntry; static;
       class function NewFrameIndex: integer; static;
       procedure FreeAndNil;
+      procedure Release;
     end;
     ArrayOfImageEntry = array of TImageEntry;
 
@@ -217,7 +218,7 @@ type
 
     function GetMainFormBounds: TRect; virtual; abstract;
   public
-    Title,AboutText: string;
+    Title: string;
     EmbeddedResult: TModalResult;
     EmbeddedImageBackup: TBGRABitmap;
 
@@ -234,8 +235,17 @@ type
     procedure RestoreMainWindowPosition; virtual; abstract;
     procedure Donate; virtual; abstract;
     procedure UseConfig(ini: TInifile); virtual; abstract;
-    procedure AssignBitmap(bmp: TBGRABitmap); virtual; abstract;
-    procedure EditBitmap(var bmp: TBGRABitmap; ConfigStream: TStream = nil; ATitle: String = ''; AOnRun: TLazPaintInstanceEvent = nil; AOnExit: TLazPaintInstanceEvent = nil; ABlackAndWhite : boolean = false); virtual; abstract;
+    procedure AssignBitmap(bmp: TBGRABitmap); virtual; abstract; overload;
+    procedure AssignBitmap(bmp: TBGRALayeredBitmap); virtual; abstract; overload;
+    function EditBitmap(var bmp: TBGRABitmap; ConfigStream: TStream = nil;
+      ATitle: String = ''; AOnRun: TLazPaintInstanceEvent = nil;
+      AOnExit: TLazPaintInstanceEvent = nil;
+      ABlackAndWhite : boolean = false): boolean; virtual; abstract;
+    function EditBitmap(var bmp: TBGRALayeredBitmap;
+      ConfigStream: TStream = nil; ATitle: String = '';
+      AOnRun: TLazPaintInstanceEvent = nil;
+      AOnExit: TLazPaintInstanceEvent = nil;
+      ABlackAndWhite : boolean = false): boolean; virtual; abstract;
     function EditTexture(ASource: TBGRABitmap): TBGRABitmap; virtual; abstract;
     procedure EditSelection; virtual; abstract;
     function ProcessCommandLine: boolean; virtual; abstract;
@@ -244,7 +254,7 @@ type
     procedure Show; virtual; abstract;
     function Hide: boolean; virtual; abstract;
     procedure Run; virtual; abstract;
-    procedure Restart; virtual; abstract;
+    function Restart: boolean; virtual; abstract;
     procedure CancelRestart; virtual; abstract;
     procedure NotifyImageChange(RepaintNow: boolean; ARect: TRect); virtual; abstract;
     procedure NotifyImageChangeCompletely(RepaintNow: boolean); virtual; abstract;
@@ -306,7 +316,7 @@ type
     procedure InvalidateLayerStack; virtual; abstract;
     procedure UpdateLayerStackOnTimer; virtual; abstract;
     function MakeNewBitmapReplacement(AWidth, AHeight: integer; AColor: TBGRAPixel): TBGRABitmap; virtual; abstract;
-    procedure ChooseTool(Tool : TPaintToolType); virtual; abstract;
+    procedure ChooseTool(Tool : TPaintToolType; AAsFromGui: boolean); virtual; abstract;
     function GetOnlineUpdater: TLazPaintCustomOnlineUpdater; virtual;
 
     property GridVisible: boolean read GetGridVisible write SetGridVisible;
@@ -600,6 +610,12 @@ end;
 procedure TImageEntry.FreeAndNil;
 begin
   SysUtils.FreeAndNil(bmp);
+  bpp := 0;
+end;
+
+procedure TImageEntry.Release;
+begin
+  bmp := nil;
   bpp := 0;
 end;
 

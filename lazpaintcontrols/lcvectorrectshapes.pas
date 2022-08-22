@@ -184,7 +184,7 @@ type
     function AppendToSVG(AContent: TSVGContent; ADefs: TSVGDefine): TSVGElement; override;
     function GetAlignBounds(const ALayoutRect: TRect; const AMatrix: TAffineMatrix): TRectF; override;
     procedure ConfigureCustomEditor(AEditor: TBGRAOriginalEditor); override;
-    procedure MouseDown(RightButton: boolean; Shift: TShiftState; X, Y: single; var ACursor: TOriginalEditorCursor; var AHandled: boolean); override;
+    procedure MouseDown(RightButton: boolean; {%H-}ClickCount: integer; Shift: TShiftState; X, Y: single; var ACursor: TOriginalEditorCursor; var AHandled: boolean); override;
     procedure LoadFromStorage(AStorage: TBGRACustomOriginalStorage); override;
     procedure SaveToStorage(AStorage: TBGRACustomOriginalStorage); override;
     procedure Render(ADest: TBGRABitmap; AMatrix: TAffineMatrix; ADraft: boolean); overload; override;
@@ -988,7 +988,7 @@ var
   i: Integer;
 begin
   pts := GetAffineBox(AMatrix, true).AsPolygon;
-  If GetBackVisible then
+  If GetBackVisible and (Width <> 0) and (Height <> 0) then
   begin
     if (BackFill.FillType = vftSolid) then backScan := nil
     else backScan := BackFill.CreateScanner(AMatrix, ADraft);
@@ -1101,6 +1101,7 @@ begin
       begin
         pts := ComputeStroke(GetAffineBox(AMatrix, false).AsPolygon, true, AMatrix);
         for i := 0 to high(pts) do
+        if not IsEmptyPointF(pts[i]) then
         begin
           if pts[i].x < result.Left then result.Left := pts[i].x;
           if pts[i].x > result.Right then result.Right := pts[i].x;
@@ -1675,10 +1676,10 @@ begin
     TVectorOriginalEditor(AEditor).AddLabel(idxLight, rsLightPosition, taCenter, tlTop);
 end;
 
-procedure TPhongShape.MouseDown(RightButton: boolean; Shift: TShiftState; X,
+procedure TPhongShape.MouseDown(RightButton: boolean; ClickCount: integer; Shift: TShiftState; X,
   Y: single; var ACursor: TOriginalEditorCursor; var AHandled: boolean);
 begin
-  inherited MouseDown(RightButton, Shift, X, Y, ACursor, AHandled);
+  inherited MouseDown(RightButton, ClickCount, Shift, X, Y, ACursor, AHandled);
   if not AHandled then
   begin
     if RightButton then

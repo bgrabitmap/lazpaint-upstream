@@ -8,7 +8,7 @@ interface
 uses
   Classes, SysUtils, FPimage, LazPaintType, BGRABitmap, UImage, UTool,
   UScripting, ULayerAction, UImageType, BGRABitmapTypes, BGRALayerOriginal,
-  BGRASVGOriginal;
+  BGRASVGOriginal, BGRALayers;
 
 type
 
@@ -20,7 +20,7 @@ type
     function GetCurrentTool: TPaintToolType;
     function GetImage: TLazPaintImage;
     function GetToolManager: TToolManager;
-    procedure ChooseTool(ATool: TPaintToolType);
+    procedure ChooseTool(ATool: TPaintToolType; AAsFromGui: boolean = true);
     procedure RegisterScripts(ARegister: Boolean);
     function GenericScriptFunction(AVars: TVariableSet): TScriptResult;
     function ScriptGetAllLayersId(AVars: TVariableSet): TScriptResult;
@@ -59,9 +59,11 @@ type
     function DoEnd: boolean;
     procedure SetCurrentBitmap(bmp: TBGRABitmap; AUndoable: boolean;
       ACaption: string = ''; AOpacity: byte = 255);
+    procedure SetCurrentBitmap(bmp: TBGRACustomLayeredBitmap; AUndoable: boolean);
     procedure CropToSelectionAndLayer;
     procedure CropToSelection;
     procedure Flatten;
+    procedure TakeScreenshot(ARect: TRect);
     procedure HorizontalFlip(AOption: TFlipOption);
     procedure VerticalFlip(AOption: TFlipOption);
     procedure RotateCW;
@@ -109,7 +111,7 @@ implementation
 uses Controls, Dialogs, UResourceStrings, UObject3D,
      ULoadImage, UGraph, UClipboard, Types, BGRAGradientOriginal,
      BGRATransform, ULoading, math, LCVectorClipboard, LCVectorOriginal, LCVectorRectShapes,
-     BGRALayers, BGRAUTF8, UFileSystem, Forms, UTranslation;
+     BGRAUTF8, UFileSystem, Forms, UTranslation;
 
 { TImageActions }
 
@@ -131,9 +133,9 @@ begin
   result := FInstance.ToolManager;
 end;
 
-procedure TImageActions.ChooseTool(ATool: TPaintToolType);
+procedure TImageActions.ChooseTool(ATool: TPaintToolType; AAsFromGui: boolean);
 begin
-  FInstance.ChooseTool(ATool);
+  FInstance.ChooseTool(ATool, AAsFromGui);
 end;
 
 procedure TImageActions.RegisterScripts(ARegister: Boolean);
@@ -639,6 +641,7 @@ begin
     img := Image.SelectionLayerReadonly;
   end;
   try
+    str := '';
     setlength(str, img.width*img.height*8);
     strPos := 1;
     for yb := 0 to img.Height-1 do
@@ -804,8 +807,11 @@ begin
 end;
 
 procedure TImageActions.Undo;
+var
+  prevTool: TPaintToolType;
 begin
   try
+    prevTool := CurrentTool;
     if CurrentTool in[ptMoveSelection,ptRotateSelection] then ChooseTool(ptHand);
     if ToolManager.ToolProvideCommand(tcFinish) then ToolManager.ToolCommand(tcFinish);
     if image.CanUndo then
@@ -814,6 +820,9 @@ begin
       image.Undo;
       ToolManager.ToolOpen;
     end;
+    if (prevTool in[ptMoveSelection,ptRotateSelection]) and
+      not image.SelectionMaskEmpty then
+      ChooseTool(prevTool, false);
   except
     on ex:Exception do
       FInstance.ShowError('Undo',ex.Message);
@@ -821,8 +830,11 @@ begin
 end;
 
 procedure TImageActions.Redo;
+var
+  prevTool: TPaintToolType;
 begin
   try
+    prevTool := CurrentTool;
     if CurrentTool in[ptLayerMapping,ptMoveSelection,ptRotateSelection] then
       ChooseTool(ptHand);
     if image.CanRedo then
@@ -831,6 +843,9 @@ begin
       image.Redo;
       ToolManager.ToolOpen;
     end;
+    if (prevTool in[ptMoveSelection,ptRotateSelection]) and
+      not image.SelectionMaskEmpty then
+      ChooseTool(prevTool, false);
   except
     on ex:Exception do
       FInstance.ShowError('Redo',ex.Message);
@@ -937,7 +952,7 @@ begin
     if Assigned(ALoadedImage) and Assigned(ALoadedImage^.bmp) then
     begin
       newSelection := ALoadedImage^.bmp;
-      ALoadedImage^.FreeAndNil;
+      ALoadedImage^.Release;
     end
     else
       newSelection := LoadFlatImageUTF8(AFilenameUTF8).bmp;
@@ -951,7 +966,7 @@ begin
       LayerAction.RemoveSelection;
       LayerAction.QuerySelection;
       LayerAction.CurrentSelection.PutImage(0,0,newSelection,dmSet);
-      LayerAction.NotifyChange(Image.SelectionMask,Image.SelectionMaskBounds);
+      LayerAction.NotifyChange(Image.SelectionMask,rect(0,0,newSelection.Width,newSelection.Height));
       LayerAction.Validate;
       result := true;
     end;
@@ -1100,12 +1115,36 @@ begin
   image.Flatten;
 end;
 
+procedure TImageActions.TakeScreenshot(ARect: TRect);
+var
+  bmp: TBGRABitmap;
+begin
+  bmp := TBGRABitmap.Create;
+  try
+    bmp.TakeScreenshot(ARect);
+    SetCurrentBitmap(bmp, false, 'Screenshot');
+  except on ex:Exception do
+    FInstance.ShowError('TakeScreenshot',ex.Message);
+  end;
+end;
+
 procedure TImageActions.SetCurrentBitmap(bmp: TBGRABitmap; AUndoable : boolean;
   ACaption: string; AOpacity: byte);
 begin
   ToolManager.ToolCloseDontReopen;
   try
     image.Assign(bmp,True,AUndoable, ACaption,AOpacity);
+  finally
+    ToolManager.ToolOpen;
+  end;
+end;
+
+procedure TImageActions.SetCurrentBitmap(bmp: TBGRACustomLayeredBitmap;
+  AUndoable: boolean);
+begin
+  ToolManager.ToolCloseDontReopen;
+  try
+    image.Assign(bmp,True,AUndoable);
   finally
     ToolManager.ToolOpen;
   end;
@@ -1540,10 +1579,24 @@ end;
 
 procedure TImageActions.DeleteSelection;
 var LayerAction: TLayerAction;
-  doErase: Boolean;
+  doErase, wasSelecting: Boolean;
+  prevTool: TPaintToolType;
 begin
-  if image.SelectionMaskEmpty then exit;
-  if not image.CheckNoAction then exit;
+  if image.SelectionMaskEmpty then
+  begin
+    prevTool := ToolManager.GetCurrentToolType;
+    if (prevTool in [ptMoveLayer, ptZoomLayer, ptRotateLayer])
+       and (image.NbLayers > 1) then
+    begin
+      ChooseTool(ptHand, false);
+      Image.RemoveLayer;
+      ChooseTool(prevTool, false);
+    end;
+    exit;
+  end;
+  wasSelecting := ToolManager.GetCurrentToolType in [ptSelectPen..ptSelectSpline];
+  if wasSelecting then ToolManager.ToolCloseDontReopen
+  else if not image.CheckNoAction then exit;
   LayerAction := nil;
   try
     doErase := Image.SelectionLayerIsEmpty;
@@ -1556,7 +1609,8 @@ begin
       FInstance.ShowError('DeleteSelection',ex.Message);
   end;
   LayerAction.Free;
-  if (CurrentTool = ptRotateSelection) or
+  if wasSelecting then ToolManager.ToolOpen
+  else if (CurrentTool = ptRotateSelection) or
      (CurrentTool = ptMoveSelection) then
     ChooseTool(ptHand);
 end;

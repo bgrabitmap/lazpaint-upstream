@@ -51,6 +51,11 @@ begin
   p := TProcess.Create(nil);
   exe := Application.ExeName;
   p.Executable := exe;
+  if CustomScriptDirectory <> '' then
+  begin
+    p.Parameters.Add('-scriptbasedir');
+    p.Parameters.Add(CustomScriptDirectory);
+  end;
   p.Options := [];
   p.Execute;
   p.Free;
@@ -118,8 +123,10 @@ end;
 
 procedure TMyLazPaintInstance.ApplicationException(Sender: TObject; E: Exception);
 var
+  {$IFDEF DEBUG}
   I: Integer;
   Frames: PPointer;
+  {$ENDIF}
   Report: string;
 begin
   if Initialized then
@@ -205,12 +212,6 @@ begin
   LazpaintApplication := TMyLazPaintInstance.Create;
   LazpaintApplication.UseConfig(ActualConfig);
   FillLanguageList(LazpaintApplication.Config);
-
-  {$IFDEF WINDOWS}
-    LazpaintApplication.AboutText := ReadFileToString(SysToUTF8(ExtractFilePath(Application.ExeName))+'readme.txt');
-  {$ELSE}
-    LazpaintApplication.AboutText := ReadFileToString('readme.txt');
-  {$ENDIF}
 
   if not LazpaintApplication.ProcessCommandLine then
   begin

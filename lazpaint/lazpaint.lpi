@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <ProjectOptions>
-    <Version Value="11"/>
+    <Version Value="12"/>
     <PathDelim Value="\"/>
     <General>
+      <Flags>
+        <CompatibilityMode Value="True"/>
+      </Flags>
       <SessionStorage Value="InProjectDir"/>
-      <MainUnit Value="0"/>
       <Title Value="LazPaint"/>
       <ResourceType Value="res"/>
       <UseXPManifest Value="True"/>
@@ -17,16 +19,16 @@
       <Icon Value="0"/>
     </General>
     <i18n>
-      <EnableI18N LFM="False"/>
+      <EnableI18N Value="True"/>
       <OutDir Value="release\bin\i18n"/>
     </i18n>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="7"/>
-      <MinorVersionNr Value="1"/>
-      <RevisionNr Value="6"/>
+      <MinorVersionNr Value="2"/>
       <CharSet Value="04B0"/>
       <StringTable CompanyName="http://sourceforge.net/projects/lazpaint/" FileDescription="LazPaint" InternalName="lazpaint" OriginalFilename="lazpaint.exe" ProductName="LazPaint"/>
+      <RevisionNr Value="1"/>
     </VersionInfo>
     <BuildModes Count="10">
       <Item1 Name="Debug" Default="True"/>
@@ -56,6 +58,7 @@
           <Linking>
             <Debugging>
               <GenerateDebugInfo Value="False"/>
+              <DebugInfoType Value="dsDwarf2Set"/>
               <UseLineInfoUnit Value="False"/>
               <StripSymbols Value="True"/>
             </Debugging>
@@ -66,11 +69,6 @@
               </Win32>
             </Options>
           </Linking>
-          <Other>
-            <CustomOptions Value="-Cg
--k-pie
--k-znow"/>
-          </Other>
         </CompilerOptions>
       </Item2>
       <Item3 Name="Release Win32">
@@ -389,11 +387,6 @@
               </Win32>
             </Options>
           </Linking>
-          <Other>
-            <CustomOptions Value="-Cg
--k-pie
--k-znow"/>
-          </Other>
         </CompilerOptions>
       </Item10>
       <SharedMatrixOptions Count="2">
@@ -405,6 +398,9 @@
       <Version Value="2"/>
     </PublishOptions>
     <RunParams>
+      <local>
+        <CommandLineParams Value="-scriptbasedir ..\..\..\resources\scripts"/>
+      </local>
       <FormatVersion Value="2"/>
       <Modes Count="1">
         <Mode0 Name="default">
@@ -417,14 +413,15 @@
     <RequiredPackages Count="5">
       <Item1>
         <PackageName Value="BGRABitmapPack"/>
-        <MinVersion Major="11" Minor="3" Release="1" Valid="True"/>
+        <MinVersion Major="11" Minor="5" Release="2" Valid="True"/>
       </Item1>
       <Item2>
         <PackageName Value="bgracontrols"/>
-        <MinVersion Major="7" Minor="1" Valid="True"/>
+        <MinVersion Major="7" Minor="5" Valid="True"/>
       </Item2>
       <Item3>
         <PackageName Value="lazpaintcontrols"/>
+        <MinVersion Minor="2" Release="1" Valid="True"/>
       </Item3>
       <Item4>
         <PackageName Value="Printer4Lazarus"/>
@@ -433,7 +430,7 @@
         <PackageName Value="LCL"/>
       </Item5>
     </RequiredPackages>
-    <Units Count="106">
+    <Units Count="107">
       <Unit0>
         <Filename Value="lazpaint.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -1056,6 +1053,10 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="UIconCache"/>
       </Unit105>
+      <Unit106>
+        <Filename Value="getfilesindir.inc"/>
+        <IsPartOfProject Value="True"/>
+      </Unit106>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -1073,6 +1074,7 @@
     </CodeGeneration>
     <Linking>
       <Debugging>
+        <DebugInfoType Value="dsDwarf2Set"/>
         <UseHeaptrc Value="True"/>
       </Debugging>
       <Options>

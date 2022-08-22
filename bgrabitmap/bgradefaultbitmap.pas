@@ -179,8 +179,10 @@ type
 
     {** Creates an image by copying the content of a ''TFPCustomImage'' }
     constructor Create(AFPImage: TFPCustomImage); overload; override;
-    {** Creates an image by copying the content of a ''TBitmap'' }
-    constructor Create(ABitmap: TBitmap; AUseTransparent: boolean = true); overload; override;
+    {** Creates an image by copying the content of a ''TBitmap'', apply transparent color if specified and bitmap is masked }
+    constructor Create(ABitmap: TBitmap); overload; override;
+    {** Creates an image by copying the content of a ''TBitmap'', enforce/disable use of transparent color }
+    constructor Create(ABitmap: TBitmap; AUseTransparentColor: boolean); overload; override;
 
     {** Creates an image by loading its content from the file ''AFilename''.
         The encoding of the string is the default one for the operating system.
@@ -248,7 +250,8 @@ type
     {** Assign the content of the specified ''Source''. It can be a ''TBGRACustomBitmap'' or
         a ''TFPCustomImage'' }
     procedure Assign(Source: TPersistent); overload; override;
-    procedure Assign(Source: TBitmap; AUseTransparent: boolean); overload;
+    procedure AssignWithFixedTransparent(Source: TBitmap); overload;
+    procedure Assign(Source: TBitmap; AUseTransparentColor: boolean); overload;
 
     {** Stores the image in the stream without compression nor header }
     procedure Serialize(AStream: TStream); override;
@@ -580,7 +583,7 @@ type
     procedure BlendImageOver(ADest: TRect; ASource: IBGRAScanner; AOffsetX, AOffsetY: integer; AOperation: TBlendOperation; AOpacity: byte = 255; ALinearBlend: boolean = false); overload; override;
 
     function GetPtrBitmap(Top,Bottom: Integer): TBGRACustomBitmap; override;
-    function MakeBitmapCopy(BackgroundColor: TColor): TBitmap; override;
+    function MakeBitmapCopy(BackgroundColor: TColor; AMasked: boolean = False): TBitmap; override;
 
     function Resample(newWidth, newHeight: integer;
       mode: TResampleMode = rmFineResample): TBGRADefaultBitmap; override;
@@ -1032,11 +1035,17 @@ begin
   Assign(AFPImage);
 end;
 
-{ Creates an image of dimensions AWidth and AHeight and filled with transparent pixels. }
-constructor TBGRADefaultBitmap.Create(ABitmap: TBitmap; AUseTransparent: boolean);
+constructor TBGRADefaultBitmap.Create(ABitmap: TBitmap);
 begin
   inherited Create;
-  Assign(ABitmap, AUseTransparent);
+  AssignWithFixedTransparent(ABitmap);
+end;
+
+{ Creates an image of dimensions AWidth and AHeight and filled with transparent pixels. }
+constructor TBGRADefaultBitmap.Create(ABitmap: TBitmap; AUseTransparentColor: boolean);
+begin
+  inherited Create;
+  Assign(ABitmap, AUseTransparentColor);
 end;
 
 { Creates an image by loading its content from the file AFilename.
@@ -1184,12 +1193,17 @@ begin
     inherited Assign(Source);
 end;
 
-procedure TBGRADefaultBitmap.Assign(Source: TBitmap; AUseTransparent: boolean);
+procedure TBGRADefaultBitmap.AssignWithFixedTransparent(Source: TBitmap);
+begin
+  Assign(Source, Source.Masked and (Source.TransparentMode = tmFixed));
+end;
+
+procedure TBGRADefaultBitmap.Assign(Source: TBitmap; AUseTransparentColor: boolean);
 var
   transpColor: TBGRAPixel;
 begin
   Assign(Source);
-  if AUseTransparent and TBitmap(Source).Transparent then
+  if AUseTransparentColor then
   begin
     if TBitmap(Source).TransparentMode = tmFixed then
       transpColor := ColorToBGRA(TBitmap(Source).TransparentColor)
@@ -4448,13 +4462,18 @@ end;
 
 { Make a copy of the transparent bitmap to a TBitmap with a background color
   instead of transparency }
-function TBGRADefaultBitmap.MakeBitmapCopy(BackgroundColor: TColor): TBitmap;
+function TBGRADefaultBitmap.MakeBitmapCopy(BackgroundColor: TColor; {%H-}AMasked: boolean): TBitmap;
 var
   opaqueCopy: TBGRACustomBitmap;
 begin
   Result     := TBitmap.Create;
   Result.Width := Width;
   Result.Height := Height;
+  if not HasTransparentPixels then
+  begin
+    Draw(Result.Canvas, 0,0);
+    exit;
+  end;
   opaqueCopy := NewBitmap(Width, Height);
   opaqueCopy.Fill(BackgroundColor);
   opaqueCopy.PutImage(0, 0, self, dmDrawWithTransparency);

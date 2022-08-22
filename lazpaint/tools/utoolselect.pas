@@ -118,7 +118,7 @@ type
 
   TToolRotateSelection = class(TTransformSelectionTool)
   protected
-    class var HintShowed: boolean;
+    class var HintShown: boolean;
     FHandRotating, FHandTranslating: boolean;
     FHandOrigin: TPointF;
     FSnapMode: boolean;
@@ -135,6 +135,7 @@ type
     function GetStatusText: string; override;
     procedure UpdateTransform;
   public
+    class procedure ForgetHintShown;
     constructor Create(AManager: TToolManager); override;
     function ToolUp: TRect; override;
     function Render(VirtualScreen: TBGRABitmap; {%H-}VirtualScreenWidth, {%H-}VirtualScreenHeight: integer; BitmapToVirtualScreen: TBitmapToVirtualScreenFunction):TRect; override;
@@ -295,6 +296,7 @@ begin
     if Assigned(VirtualScreen) then
     begin
       ptsF := ab.AsPolygon;
+      pts := nil;
       setlength(pts, length(ptsF));
       for i := 0 to high(ptsF) do
         pts[i] := (ptsF[i]+PointF(0.5,0.5)).Round;
@@ -346,6 +348,7 @@ begin
       with TCustomRectShape(FShape) do
         ptsF := BGRAPath.ComputeEllipse(FEditor.Matrix*Origin,
                     FEditor.Matrix*XAxis,FEditor.Matrix*YAxis);
+      pts := nil;
       setlength(pts, length(ptsF));
       for i := 0 to high(ptsF) do
         pts[i] := ptsF[i].Round;
@@ -419,10 +422,10 @@ function TToolRotateSelection.DoToolMove(toolDest: TBGRABitmap; pt: TPoint;
 var angleDiff: single;
   finalCenter, newOfs: TPointF;
 begin
-  if not HintShowed then
+  if not HintShown then
   begin
     Manager.ToolPopup(tpmHoldKeyRestrictRotation, VK_CONTROL);
-    HintShowed:= true;
+    HintShown:= true;
   end;
   if FHandRotating and ((FHandOrigin.X <> ptF.X) or (FHandOrigin.Y <> ptF.Y)) then
   begin
@@ -476,6 +479,11 @@ begin
                                    AffineMatrixRotationDeg(FCurrentAngle) *
                                    AffineMatrixTranslation(-FCurrentCenter.X,-FCurrentCenter.Y) *
                                    FOriginalTransform;
+end;
+
+class procedure TToolRotateSelection.ForgetHintShown;
+begin
+  HintShown:= false;
 end;
 
 constructor TToolRotateSelection.Create(AManager: TToolManager);

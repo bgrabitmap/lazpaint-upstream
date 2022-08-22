@@ -194,10 +194,26 @@ var i: integer;
 begin
   if InFilenameChange then exit;
   InFilenameChange := true;
+  txt := trim(Edit_Filename.Text);
+  {$IFDEF WINDOWS}
+  if (length(txt) >= 3) and (upcase(txt[1]) in ['A'..'Z']) and (txt[2]=':') and (txt[3]='\') then
+  {$ELSE}
+  if (length(txt) >= 1) and (txt[1] = PathDelim) then
+  {$ENDIF}
+  begin
+    DirectoryEdit1.Text := ExtractFilePath(txt);
+    txt := ExtractFileName(txt);
+    Edit_Filename.Text := txt;
+  end else
+  if pos(PathDelim, txt) > 1 then
+  begin
+    DirectoryEdit1.Text := ConcatPaths([DirectoryEdit1.Text,ExtractFilePath(txt)]);
+    txt := ExtractFileName(txt);
+    Edit_Filename.Text := txt;
+  end;
   ShellListView1.DeselectAll;
   UpdatePreview('');
   first := true;
-  txt := trim(Edit_Filename.Text);
   for i := 0 to ShellListView1.ItemCount-1 do
     if UTF8CompareText(ShellListView1.ItemName[i],txt) = 0 then
     begin
@@ -617,7 +633,9 @@ begin
     end;
 
     setlength(FCacheComputeIconIndexes, cacheComputeCount);
+    newFilenames := nil;
     setlength(newFilenames, cacheComputeCount);
+    newLastModifications := nil;
     setlength(newLastModifications, cacheComputeCount);
     for i := 0 to cacheComputeCount-1 do
     begin
@@ -1126,6 +1144,11 @@ begin
           if DefaultExtension <> '' then
             FFilename += DefaultExtension;
       end;
+      if not FileManager.IsValidFileName(ExtractFileName(FFilename)) and IsSaveDialog then
+      begin
+        ShowMessage(rsInvalidName);
+        exit;
+      end;
       if FileManager.FileExists(FFilename) and IsSaveDialog and OverwritePrompt then
       begin
         if QuestionDlg(rsSave, rsOverwriteFile, mtConfirmation, [mrOk, rsOkay, mrCancel, rsCancel],0) <> mrOk then exit;
@@ -1217,6 +1240,7 @@ begin
       end;
     end;
 
+  filesToDelete := nil;
   setlength(filesToDelete, deleteCount);
   deleteCount := 0;
   for i := 0 to ShellListView1.ItemCount-1 do

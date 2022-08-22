@@ -75,7 +75,7 @@ type
     procedure PythonBusy({%H-}Sender: TObject);
     function ScriptShowMessage(AVars: TVariableSet): TScriptResult;
     function ScriptInputBox(AVars: TVariableSet): TScriptResult;
-    procedure ToolQueryColorTarget(sender: TToolManager; ATarget: TVectorialFill);
+    procedure ToolQueryColorTarget({%H-}sender: TToolManager; ATarget: TVectorialFill);
 
   protected
     InColorFromFChooseColor: boolean;
@@ -204,7 +204,20 @@ type
     procedure RestoreMainWindowPosition; override;
     procedure UseConfig(ini: TInifile); override;
     procedure AssignBitmap(bmp: TBGRABitmap); override;
-    procedure EditBitmap(var bmp: TBGRABitmap; ConfigStream: TStream = nil; ATitle: String = ''; AOnRun: TLazPaintInstanceEvent = nil; AOnExit: TLazPaintInstanceEvent = nil; ABlackAndWhite: boolean = false); override;
+    procedure AssignBitmap(bmp: TBGRALayeredBitmap); override;
+    function InternalEditBitmap(var bmp: TObject; ConfigStream: TStream = nil;
+      ATitle: String = ''; AOnRun: TLazPaintInstanceEvent = nil;
+      AOnExit: TLazPaintInstanceEvent = nil;
+      ABlackAndWhite: boolean = false): boolean;
+    function EditBitmap(var bmp: TBGRABitmap; ConfigStream: TStream = nil;
+      ATitle: String = ''; AOnRun: TLazPaintInstanceEvent = nil;
+      AOnExit: TLazPaintInstanceEvent = nil;
+      ABlackAndWhite: boolean = false): boolean; override;
+    function EditBitmap(var bmp: TBGRALayeredBitmap;
+      ConfigStream: TStream = nil; ATitle: String = '';
+      AOnRun: TLazPaintInstanceEvent = nil;
+      AOnExit: TLazPaintInstanceEvent = nil;
+      ABlackAndWhite : boolean = false): boolean; override;
     procedure EditSelection; override;
     function EditTexture(ASource: TBGRABitmap): TBGRABitmap; override;
     function ProcessCommandLine: boolean; override;
@@ -213,7 +226,7 @@ type
     procedure Show; override;
     function Hide: boolean; override;
     procedure Run; override;
-    procedure Restart; override;
+    function Restart: boolean; override;
     procedure CancelRestart; override;
     destructor Destroy; override;
     procedure NotifyImageChange(RepaintNow: boolean; ARect: TRect); override;
@@ -268,7 +281,7 @@ type
     procedure InvalidateLayerStack; override;
     procedure UpdateLayerStackOnTimer; override;
     function MakeNewBitmapReplacement(AWidth, AHeight: integer; AColor: TBGRAPixel): TBGRABitmap; override;
-    procedure ChooseTool(Tool : TPaintToolType); override;
+    procedure ChooseTool(Tool : TPaintToolType; AAsFromGui: boolean); override;
     function OpenImage (FileName: string; AddToRecent: Boolean= True): boolean; override;
     procedure AddToImageList(const FileNames: array of String); override;
     procedure UpdateToolbar; override;
@@ -286,8 +299,9 @@ uses LCLType, Types, Dialogs, FileUtil, StdCtrls, LCLIntf, BGRAUTF8, UTranslatio
      unewimage, uresample, UPixelate, unoisefilter, ufilters,
      USharpen, uposterize, UPhongFilter, UFilterFunction,
      uprint, USaveOption, UFormRain,
+     {$IFDEF DARWIN}BGRAGraphics,{$ENDIF}
 
-     ugraph, LCScaleDPI, ucommandline, uabout, UPython, BGRAGraphics;
+     ugraph, LCScaleDPI, ucommandline, uabout, UPython;
 
 { TLazPaintInstance }
 
@@ -517,6 +531,7 @@ end;
 procedure TLazPaintInstance.UseConfig(ini: TInifile);
 begin
   FreeAndNil(FConfig);
+  BlackAndWhite := ini.ReadBool('General','BlackAndWhite',BlackAndWhite);
   FConfig := TLazPaintConfig.Create(ini,LazPaintVersionStr);
   ToolManager.LoadFromConfig;
   FGridVisible := Config.DefaultGridVisible;
@@ -1227,16 +1242,25 @@ end;
 procedure TLazPaintInstance.AssignBitmap(bmp: TBGRABitmap);
 begin
   if Assigned(FImageAction) then
-    FImageAction.SetCurrentBitmap(bmp.Duplicate as TBGRABitmap, False);
+    FImageAction.SetCurrentBitmap(bmp.Duplicate, False);
 end;
 
-procedure TLazPaintInstance.EditBitmap(var bmp: TBGRABitmap; ConfigStream: TStream; ATitle: String; AOnRun: TLazPaintInstanceEvent; AOnExit: TLazPaintInstanceEvent; ABlackAndWhite: boolean);
+procedure TLazPaintInstance.AssignBitmap(bmp: TBGRALayeredBitmap);
+begin
+  if Assigned(FImageAction) then
+    FImageAction.SetCurrentBitmap(bmp.Duplicate, False);
+end;
+
+function TLazPaintInstance.InternalEditBitmap(var bmp: TObject;
+  ConfigStream: TStream; ATitle: String; AOnRun: TLazPaintInstanceEvent;
+  AOnExit: TLazPaintInstanceEvent; ABlackAndWhite: boolean): boolean;
 var
   subLaz: TLazPaintInstance;
   ini : TIniFile;
   topmostInfo: TTopMostInfo;
-
+  embeddedImageToBeFreed: boolean;
 begin
+  result := false;
   try
     subLaz := TLazPaintInstance.Create(True);
   except
@@ -1250,6 +1274,7 @@ begin
   if ATitle <> '' then subLaz.Title := ATitle;
   if FMain <> nil then FMain.Enabled := false;
   topmostInfo:= HideTopmost;
+  embeddedImageToBeFreed := false;
   try
     if ConfigStream <> nil then
     begin
@@ -1259,9 +1284,21 @@ begin
       subLaz.UseConfig(ini);
     end;
     subLaz.FormsNeeded;
-    if bmp <> nil then subLaz.AssignBitmap(bmp);
-    subLaz.AboutText := AboutText;
-    subLaz.EmbeddedImageBackup := bmp;
+    if bmp <> nil then
+    begin
+      if bmp is TBGRABitmap then
+      begin
+        subLaz.AssignBitmap(TBGRABitmap(bmp));
+        subLaz.EmbeddedImageBackup := TBGRABitmap(bmp);
+      end else
+      if bmp is TBGRALayeredBitmap then
+      begin
+        subLaz.AssignBitmap(TBGRALayeredBitmap(bmp));
+        subLaz.EmbeddedImageBackup := TBGRALayeredBitmap(bmp).ComputeFlatImage;
+        embeddedImageToBeFreed := true;
+      end;
+    end;
+    subLaz.FMain.BorderIcons := subLaz.FMain.BorderIcons - [biMinimize];
     if AOnRun <> nil then
       AOnRun(subLaz);
     subLaz.Run;
@@ -1269,8 +1306,17 @@ begin
       AOnExit(subLaz);
     if subLaz.EmbeddedResult = mrOk then
     begin
-      FreeAndNil(bmp);
-      bmp := subLaz.Image.RenderedImage.Duplicate as TBGRABitmap;
+      if bmp is TBGRALayeredBitmap then
+      begin
+        FreeAndNil(bmp);
+        bmp := subLaz.Image.CurrentState.GetLayeredBitmapCopy;
+      end
+      else if bmp is TBGRABitmap then
+      begin
+        FreeAndNil(bmp);
+        bmp := subLaz.Image.RenderedImage.Duplicate;
+      end;
+      result := true;
     end;
     if ConfigStream <> nil then
     begin
@@ -1282,8 +1328,35 @@ begin
       ShowError('EditBitmap',ex.Message);
   end;
   ShowTopmost(topmostInfo);
-  if FMain <> nil then FMain.Enabled := true;
+  if FMain <> nil then
+  begin
+    FMain.Enabled := true;
+    FMain.BringToFront;
+  end;
+  if embeddedImageToBeFreed then
+    subLaz.EmbeddedImageBackup.Free
+    else subLaz.EmbeddedImageBackup := nil;
   subLaz.Free;
+end;
+
+function TLazPaintInstance.EditBitmap(var bmp: TBGRABitmap;
+  ConfigStream: TStream; ATitle: String; AOnRun: TLazPaintInstanceEvent;
+  AOnExit: TLazPaintInstanceEvent; ABlackAndWhite: boolean): boolean;
+var bmpObj: TObject;
+begin
+  bmpObj := bmp;
+  result := InternalEditBitmap(bmpObj, ConfigStream, ATitle, AOnRun, AOnExit, ABlackAndWhite);
+  bmp := bmpObj as TBGRABitmap;
+end;
+
+function TLazPaintInstance.EditBitmap(var bmp: TBGRALayeredBitmap;
+  ConfigStream: TStream; ATitle: String; AOnRun: TLazPaintInstanceEvent;
+  AOnExit: TLazPaintInstanceEvent; ABlackAndWhite: boolean): boolean;
+var bmpObj: TObject;
+begin
+  bmpObj := bmp;
+  result := InternalEditBitmap(bmpObj, ConfigStream, ATitle, AOnRun, AOnExit, ABlackAndWhite);
+  bmp := bmpObj as TBGRALayeredBitmap;
 end;
 
 procedure TLazPaintInstance.EditSelection;
@@ -1520,11 +1593,15 @@ begin
 end;
 
 procedure TLazPaintInstance.ChangeIconSize(size: integer);
+var
+  prevSize: Integer;
 begin
   if Config.DefaultIconSize(0)<>size then
   begin
+    prevSize := Config.DefaultIconSize(0);
     Config.SetDefaultIconSize(size);
-    Restart;
+    if not Restart then
+      Config.SetDefaultIconSize(prevSize);
   end;
 end;
 
@@ -1549,18 +1626,20 @@ procedure TLazPaintInstance.Run;
 begin
   if not MainFormVisible then Show;
   repeat
-    application.ProcessMessages;
-    Sleep(10);
-  until not MainFormVisible;
+    Application.ProcessMessages;
+    if not Application.Terminated then Application.Idle(True);
+  until not MainFormVisible or Application.Terminated;
 end;
 
-procedure TLazPaintInstance.Restart;
+function TLazPaintInstance.Restart: boolean;
 begin
   if FMain <> nil then
   begin
     FRestartQuery := true;
     FMain.Close;
-  end;
+    result := FRestartQuery;
+  end else
+    result := true;
 end;
 
 procedure TLazPaintInstance.CancelRestart;
@@ -1597,7 +1676,9 @@ begin
   begin
     Config.SetDefaultToolboxWindowVisible(ToolboxVisible or (FTopMostInfo.toolboxHidden > 0));
     Config.SetDefaultToolboxWindowPosition(FFormToolbox.BoundsRect);
-  end;
+  end else
+  if Assigned(FMain) then
+    Config.SetDefaultToolboxWindowVisible(FMain.Layout.ToolBoxVisible);
   ToolManager.SaveToConfig;
 
   BGRALayers.UnregisterLoadingHandler(@OnLayeredBitmapLoadStartHandler,@OnLayeredBitmapLoadProgressHandler,@OnLayeredBitmapLoadedHandler);
@@ -1874,9 +1955,17 @@ begin
 end;
 
 procedure TLazPaintInstance.ColorToFChooseColor;
+var
+  c: TBGRAPixel;
 begin
   if not Assigned(FChooseColor) or InColorFromFChooseColor then exit;
-  FChooseColor.SetCurrentColor(GetColor(FChooseColor.ColorTarget));
+  c := GetColor(FChooseColor.ColorTarget);
+  if (c.alpha = 0) and (FChooseColor.ColorTarget in [ctForeColorSolid, ctBackColorSolid, ctOutlineColorSolid]) then
+  begin
+    c := FChooseColor.GetCurrentColor;
+    c.alpha := 0;
+  end;
+  FChooseColor.SetCurrentColor(c);
 end;
 
 procedure TLazPaintInstance.ExitColorEditor;
@@ -1947,7 +2036,7 @@ procedure TLazPaintInstance.ShowAboutDlg;
 var tmi: TTopMostInfo;
 begin
   tmi := HideTopmost;
-  uabout.ShowAboutDlg(self,AboutText);
+  uabout.ShowAboutDlg(self);
   ShowTopmost(tmi);
 end;
 
@@ -1982,10 +2071,10 @@ begin
   result := TBGRABitmap.Create(AWidth,AHeight, AColor);
 end;
 
-procedure TLazPaintInstance.ChooseTool(Tool: TPaintToolType);
+procedure TLazPaintInstance.ChooseTool(Tool: TPaintToolType; AAsFromGui: boolean);
 begin
   FormsNeeded;
-  if Assigned(FMain) then FMain.ChooseTool(Tool);
+  if Assigned(FMain) then FMain.ChooseTool(Tool, AAsFromGui);
 end;
 
 function TLazPaintInstance.GetToolboxHeight: integer;

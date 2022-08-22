@@ -101,15 +101,15 @@ type
     function GetHasSelection: boolean;
     function GetParagraphAlignment: TAlignment;
     procedure InvalidateParagraphLayout(AFrom, ATo: integer);
-    procedure LayoutBrokenLinesChanged(ASender: TObject;
+    procedure LayoutBrokenLinesChanged({%H-}ASender: TObject;
       AParagraphIndex: integer; ASubBrokenStart, ASubBrokenChangedCountBefore,
       ASubBrokenChangedCountAfter: integer; ASubBrokenTotalCountBefore,
       ASubBrokenTotalCountAfter: integer);
-    procedure LayoutParagraphDeleted(ASender: TObject; AParagraphIndex: integer);
-    procedure LayoutParagraphMergedWithNext(ASender: TObject;
+    procedure LayoutParagraphDeleted({%H-}ASender: TObject; AParagraphIndex: integer);
+    procedure LayoutParagraphMergedWithNext({%H-}ASender: TObject;
       AParagraphIndex: integer);
-    procedure LayoutParagraphSplit(ASender: TObject; AParagraphIndex: integer;
-      ASubBrokenIndex, ACharIndex: integer);
+    procedure LayoutParagraphSplit({%H-}ASender: TObject; AParagraphIndex: integer;
+      {%H-}ASubBrokenIndex, {%H-}ACharIndex: integer);
     procedure OnMoveLightPos({%H-}ASender: TObject; {%H-}APrevCoord, ANewCoord: TPointF;
       {%H-}AShift: TShiftState);
     procedure SetAliased(AValue: boolean);
@@ -149,10 +149,13 @@ type
     procedure DeleteTextAfter(ACount: integer);
     procedure InsertText(ATextUTF8: string);
     procedure SelectWithMouse(X,Y: single; AExtend: boolean);
+    procedure SelectWordWithMouse(X,Y: single);
+    procedure SelectParagraphWithMouse(X,Y: single);
     function HasOutline: boolean;
     procedure InsertUnicodeValue;
     procedure FillChange(ASender: TObject; var ADiff: TCustomVectorialFillDiff); override;
     procedure InvalidateAll;
+    function GetVerticalAlignMatrix(tl: TBidiTextLayout): TAffineMatrix;
   public
     constructor Create(AContainer: TVectorOriginal); override;
     procedure QuickDefine(constref APoint1,APoint2: TPointF); override;
@@ -177,7 +180,7 @@ type
     function GetIsSlow(const {%H-}AMatrix: TAffineMatrix): boolean; override;
     function GetGenericCost: integer; override;
     procedure MouseMove({%H-}Shift: TShiftState; {%H-}X, {%H-}Y: single; var {%H-}ACursor: TOriginalEditorCursor; var {%H-}AHandled: boolean); override;
-    procedure MouseDown({%H-}RightButton: boolean; {%H-}Shift: TShiftState; {%H-}X, {%H-}Y: single; var {%H-}ACursor: TOriginalEditorCursor; var {%H-}AHandled: boolean); override;
+    procedure MouseDown({%H-}RightButton: boolean; {%H-}ClickCount: integer; {%H-}Shift: TShiftState; {%H-}X, {%H-}Y: single; var {%H-}ACursor: TOriginalEditorCursor; var {%H-}AHandled: boolean); override;
     procedure MouseUp({%H-}RightButton: boolean; {%H-}Shift: TShiftState; {%H-}X, {%H-}Y: single; var {%H-}ACursor: TOriginalEditorCursor; var {%H-}AHandled: boolean); override;
     procedure KeyDown({%H-}Shift: TShiftState; {%H-}Key: TSpecialKey; var {%H-}AHandled: boolean); override;
     procedure KeyPress({%H-}UTF8Key: string; var {%H-}AHandled: boolean); override;
@@ -187,6 +190,7 @@ type
     function CutSelection: boolean;
     function PasteSelection: boolean;
     function DeleteSelection: boolean;
+    procedure SelectAll;
     function GetAlignBounds(const {%H-}ALayoutRect: TRect; const AMatrix: TAffineMatrix): TRectF; override;
     procedure Transform(const AMatrix: TAffineMatrix); override;
     function AllowShearTransform: boolean; override;
@@ -685,6 +689,7 @@ begin
   if FAliased=AValue then Exit;
   BeginUpdate(TTextShapeFontDiff);
   FAliased:=AValue;
+  InvalidateAll;
   EndUpdate;
 end;
 
@@ -818,6 +823,7 @@ begin
   if FVertAlign=AValue then Exit;
   BeginUpdate(TTextShapeTextDiff);
   FVertAlign:=AValue;
+  InvalidateAll; // could be more subtle
   EndUpdate;
 end;
 
@@ -996,6 +1002,14 @@ begin
     result := false;
 end;
 
+procedure TTextShape.SelectAll;
+begin
+  BeginEditingUpdate;
+  FSelStart:= 0;
+  FSelEnd:= GetTextLayout.CharCount;
+  EndEditingUpdate;
+end;
+
 function TTextShape.GetAlignBounds(const ALayoutRect: TRect;
   const AMatrix: TAffineMatrix): TRectF;
 var
@@ -1045,6 +1059,79 @@ begin
   end;
 end;
 
+procedure TTextShape.SelectWordWithMouse(X, Y: single);
+const letterClasses = [ubcLeftToRight, ubcEuropeanNumber, ubcRightToLeft, ubcArabicLetter, ubcArabicNumber];
+var
+  tl: TBidiTextLayout;
+  function IsInWord(AIndex: integer): boolean;
+  var c: TUTF8Char;
+  begin
+    c := tl.UTF8Char[AIndex];
+    result := GetBidiClassUTF8(@c[1]) in letterClasses;
+  end;
+
+var
+  newPos, paraIndex, startIndex, endIndex: Integer;
+  zoom: Single;
+  untransformed: TAffineMatrix;
+  inWord: boolean;
+begin
+  if UserMode <> vsuEditText then exit;
+  tl := GetTextLayout;
+  zoom := GetTextRenderZoom;
+  untransformed := GetUntransformedMatrix;
+  if not IsAffineMatrixInversible(untransformed) then exit;
+  newPos := tl.GetCharIndexAt(AffineMatrixScale(zoom,zoom)*AffineMatrixInverse(untransformed)*PointF(X,Y), false);
+  if newPos<>-1 then
+  begin
+    paraIndex := tl.GetParagraphAt(newPos);
+    if (newPos < tl.ParagraphStartIndex[paraIndex]) or
+       (newPos >= tl.ParagraphEndIndex[paraIndex]) then exit;
+    startIndex := newPos;
+    endIndex := newPos+1;
+    inWord := IsInWord(newPos);
+    while (startIndex > tl.ParagraphStartIndex[paraIndex])
+      and (IsInWord(startIndex-1) = inWord) do dec(startIndex);
+    while (endIndex < tl.ParagraphEndIndex[paraIndex])
+      and (IsInWord(endIndex) = inWord) do inc(endIndex);
+    if (FSelStart <> startIndex) or
+       (FSelEnd <> endIndex) then
+    begin
+      BeginEditingUpdate;
+      FSelStart := startIndex;
+      FSelEnd:= endIndex;
+      EndEditingUpdate;
+    end;
+  end;
+end;
+
+procedure TTextShape.SelectParagraphWithMouse(X, Y: single);
+var
+  newPos, paraIndex: Integer;
+  tl: TBidiTextLayout;
+  zoom: Single;
+  untransformed: TAffineMatrix;
+begin
+  if UserMode <> vsuEditText then exit;
+  tl := GetTextLayout;
+  zoom := GetTextRenderZoom;
+  untransformed := GetUntransformedMatrix;
+  if not IsAffineMatrixInversible(untransformed) then exit;
+  newPos := tl.GetCharIndexAt(AffineMatrixScale(zoom,zoom)*AffineMatrixInverse(untransformed)*PointF(X,Y), false);
+  if newPos<>-1 then
+  begin
+    paraIndex := tl.GetParagraphAt(newPos);
+    if (FSelStart <> tl.ParagraphStartIndex[paraIndex]) or
+       (FSelEnd <> tl.ParagraphEndIndex[paraIndex]) then
+    begin
+      BeginEditingUpdate;
+      FSelStart := tl.ParagraphStartIndex[paraIndex];
+      FSelEnd:= tl.ParagraphEndIndex[paraIndex];
+      EndEditingUpdate;
+    end;
+  end;
+end;
+
 function TTextShape.HasOutline: boolean;
 begin
   result := not OutlineFill.IsFullyTransparent and (OutlineWidth > 0);
@@ -1071,6 +1158,19 @@ procedure TTextShape.InvalidateAll;
 begin
   if Assigned(FTextLayout) then FTextLayout.InvalidateLayout;
   FParagraphLayout := nil;
+end;
+
+function TTextShape.GetVerticalAlignMatrix(tl: TBidiTextLayout): TAffineMatrix;
+var
+  th: Single;
+begin
+  th := max(tl.TotalTextHeight - tl.ParagraphSpacingBelow * tl.LineHeight, 0);
+  if th < tl.AvailableHeight then
+  case VerticalAlignment of
+  tlBottom: exit(AffineMatrixTranslation(0, tl.AvailableHeight-th));
+  tlCenter: exit(AffineMatrixTranslation(0, (tl.AvailableHeight-th)/2));
+  end;
+  exit(AffineMatrixIdentity);
 end;
 
 constructor TTextShape.Create(AContainer: TVectorOriginal);
@@ -1175,6 +1275,11 @@ begin
     tl.ParagraphAlignment[i] := AlignmentToBidiTextAlignment(alignment, tl.ParagraphRightToLeft[i]);
   end;
   paraAlignList.Free;
+  case AStorage.RawString['vertical-align'] of
+  'middle': VerticalAlignment:= tlCenter;
+  'bottom': VerticalAlignment:= tlBottom;
+  else VerticalAlignment:= tlTop;
+  end;
   EndUpdate;
 end;
 
@@ -1219,6 +1324,11 @@ begin
     end;
   AStorage.RawString['paragraph-align'] := paraAlignList.DelimitedText;
   paraAlignList.Free;
+  case VerticalAlignment of
+  tlTop: AStorage.RemoveAttribute('vertical-align');
+  tlCenter: AStorage.RawString['vertical-align'] := 'middle';
+  tlBottom: AStorage.RawString['vertical-align'] := 'bottom';
+  end;
 end;
 
 destructor TTextShape.Destroy;
@@ -1276,7 +1386,7 @@ begin
     tl := GetTextLayout;
     caret:= tl.GetCaret(FSelEnd);
     zoom := GetTextRenderZoom;
-    m := AffineMatrixTranslation(-0.5,-0.5)*GetUntransformedMatrix*AffineMatrixScale(1/zoom,1/zoom);
+    m := AffineMatrixTranslation(-0.5,-0.5)*GetUntransformedMatrix*AffineMatrixScale(1/zoom,1/zoom)*GetVerticalAlignMatrix(tl);
     if FSelStart<>FSelEnd then
     begin
       pts := tl.GetTextEnveloppe(FSelStart, FSelEnd, false, true, true);
@@ -1730,7 +1840,7 @@ var
                TAffineBox.AffineBox(sourceRectF);
     wholeImage := TAffineBox.AffineBox(PointF(-1,-1), PointF(-1,ADest.Height+1),
                                        PointF(ADest.Width+1,-1));
-    ADest.FillMode := fmWinding;
+    ADest.FillMode := fmAlternate;
     ADest.ErasePolyAntialias( ConcatPointsF([wholeImage.AsPolygon, maskBox.AsPolygon], true),
                                   255, false);
   end;
@@ -1760,6 +1870,7 @@ begin
 
   tl := GetTextLayout;
   sourceRectF := RectF(-pad,0,tl.AvailableWidth+pad,min(tl.TotalTextHeight,tl.AvailableHeight));
+  m *= GetVerticalAlignMatrix(tl);
 
   if CanHaveRenderStorage then
   begin
@@ -1831,12 +1942,6 @@ begin
   sourceRectF.Top := floor(sourceRectF.Top);
   sourceRectF.Right := floor(sourceRectF.Right);
   sourceRectF.Bottom := sourceRectF.Bottom;
-
-  if tl.TotalTextHeight < tl.AvailableHeight then
-  case VerticalAlignment of
-  tlBottom: m *= AffineMatrixTranslation(0, tl.AvailableHeight-tl.TotalTextHeight);
-  tlCenter: m *= AffineMatrixTranslation(0, (tl.AvailableHeight-tl.TotalTextHeight)/2);
-  end;
 
   with transfRectF do
     transfRect := Rect(floor(Left),floor(Top),ceil(Right),ceil(Bottom));
@@ -2105,14 +2210,20 @@ begin
   end;
 end;
 
-procedure TTextShape.MouseDown(RightButton: boolean; Shift: TShiftState; X,
+procedure TTextShape.MouseDown(RightButton: boolean; ClickCount: integer; Shift: TShiftState; X,
   Y: single; var ACursor: TOriginalEditorCursor; var AHandled: boolean);
 begin
-  inherited MouseDown(RightButton, Shift, X, Y, ACursor, AHandled);
+  inherited MouseDown(RightButton, ClickCount, Shift, X, Y, ACursor, AHandled);
   if not AHandled and not RightButton and PointInShape(PointF(X,Y)) then
   begin
-    FMouseSelecting:= true;
-    SelectWithMouse(X,Y, ssShift in Shift);
+    case ClickCount mod 3 of
+    1: begin
+         FMouseSelecting:= true;
+         SelectWithMouse(X,Y, ssShift in Shift);
+       end;
+    2: SelectWordWithMouse(X, Y);
+    0 {3}: SelectParagraphWithMouse(X, Y)
+    end;
     AHandled:= true;
   end;
   if (ACursor = oecDefault) and PointInShape(PointF(X,Y)) then ACursor := oecText;
@@ -2147,7 +2258,7 @@ begin
     else DeleteTextAfter(1);
     AHandled:= true;
   end else
-  if Key in [skLeft,skRight] then
+  if (Key in [skLeft,skRight]) and not (ssAlt in Shift) then
   begin
     tl := GetTextLayout;
     if (Key = skLeft) xor tl.ParagraphRightToLeft[tl.GetParagraphAt(FSelEnd)] then
@@ -2167,7 +2278,7 @@ begin
     end;
     AHandled := true;
   end else
-  if Key in [skUp,skDown] then
+  if (Key in [skUp,skDown]) and not (ssAlt in Shift)  then
   begin
     tl := GetTextLayout;
     if Key = skUp then
@@ -2265,10 +2376,7 @@ begin
   end else
   if (Key = skA) and (ssCtrl in Shift) then
   begin
-    BeginEditingUpdate;
-    FSelStart:= 0;
-    FSelEnd:= GetTextLayout.CharCount;
-    EndEditingUpdate;
+    SelectAll;
     AHandled := true;
   end;
 end;
@@ -2289,10 +2397,13 @@ begin
       begin
         Usermode := vsuEditText;
         InsertText(UTF8Key);
+        AHandled := true;
       end;
     end else
+    begin
       InsertText(UTF8Key);
-    AHandled := true;
+      AHandled := true;
+    end;
   end;
 end;
 
@@ -2455,8 +2566,9 @@ begin
       else span.textDirection:= stdLtr;
     with rF do
     begin
-      setlength(a, 1);
+      setlength({%H-}a, 1);
       a[0] := FloatWithCSSUnit(Left/zoom, cuCustom);
+      if span.textDirection = stdRtl then a[0].value += Width/zoom;
       span.x := a;
       a[0] := FloatWithCSSUnit((Top + fm.Baseline)/zoom, cuCustom);
       span.y := a;
