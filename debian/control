@@ -1,7 +1,7 @@
 Source: lazpaint
 Section: graphics
 Priority: optional
-Maintainer: Johann ELSASS <circular@operamail.com>
+Maintainer: Johann ELSASS <circular@fastmail.com>
 Uploaders: Gürkan Myczko <gurkan@phys.ethz.ch>
 Build-Depends: fpc, lcl, lazarus, libqt5pas-dev, debhelper-compat (= 13)
 Rules-Requires-Root: no
