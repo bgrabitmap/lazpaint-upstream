@@ -33,3 +33,9 @@ lazpaint/units/
 
 *.deb
 lazpaint/release/debian/lazpaint*_no_install.tar.gz
+
+lazpaint/lazpaint.manifest
+
+lazpaint/lazpaint.rc
+
+*.mo
