@@ -1,15 +1,21 @@
+lazpaint (7.2.2-2) unstable; urgency=medium
+
+  * Add libgtk2.0-dev to build-depends. (Closes: #1026718)
+  * Update maintainer address.
+
+ -- Gürkan Myczko <tar@debian.org>  Mon, 09 Jan 2023 15:07:09 +0100
+
 lazpaint (7.2.2-1) unstable; urgency=medium
 
-  * new upstream version
-
- -- Johann ELSASS <circular@fastmail.com>  Tue, 23 Aug 2022 10:35:00 +0100
-
-lazpaint (7.2.1-1) unstable; urgency=medium
-
-  * new upstream version
+  * New upstream version. (Closes: #1005672)
   * d/control: update description with new features
 
- -- Johann ELSASS <circular@fastmail.com>  Mon, 22 Aug 2022 16:02:00 +0100
+  [ Gürkan Myczko ]
+  * Bump standards version to 4.6.1.
+  * d/copyright: bump years.
+  * d/control: wrap build-depends.
+
+ -- Johann ELSASS <circular@fastmail.com>  Tue, 23 Aug 2022 10:35:00 +0100
 
 lazpaint (7.1.6-1) unstable; urgency=medium
 

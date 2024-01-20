@@ -3,7 +3,7 @@ Section: graphics
 Priority: optional
 Maintainer: Johann ELSASS <circular@fastmail.com>
 Uploaders: Gürkan Myczko <gurkan@phys.ethz.ch>
-Build-Depends: fpc, lcl, lazarus, libqt5pas-dev, debhelper-compat (= 13)
+Build-Depends: fpc, lcl, lazarus, libqt5pas-dev, libgtk2.0-dev, debhelper-compat (= 13)
 Rules-Requires-Root: no
 Standards-Version: 4.5.0
 Homepage: https://wiki.freepascal.org/LazPaint
