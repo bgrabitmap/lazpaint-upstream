@@ -2,10 +2,16 @@ Source: lazpaint
 Section: graphics
 Priority: optional
 Maintainer: Johann ELSASS <circular@fastmail.com>
-Uploaders: Gürkan Myczko <gurkan@phys.ethz.ch>
-Build-Depends: fpc, lcl, lazarus, libqt5pas-dev, libgtk2.0-dev, debhelper-compat (= 13)
+Uploaders: Gürkan Myczko <tar@debian.org>
+Build-Depends:
+ fpc,
+ lcl,
+ lazarus,
+ libqt5pas-dev,
+ libgtk2.0-dev,
+ debhelper-compat (= 13)
 Rules-Requires-Root: no
-Standards-Version: 4.5.0
+Standards-Version: 4.6.1
 Homepage: https://wiki.freepascal.org/LazPaint
 Vcs-Git: https://github.com/bgrabitmap/lazpaint-upstream.git
 Vcs-Browser: https://github.com/bgrabitmap/lazpaint-upstream
