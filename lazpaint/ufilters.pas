@@ -120,6 +120,11 @@ begin
       exit;
   end;
 
+  if filter = pfHypocycloid then
+    exit(AInstance.ShowHypocycloidDlg(AInstance, AParameters));
+  if filter = pfSuperformula then
+    exit(AInstance.ShowSuperformulaDlg(AInstance, AParameters));
+
   applyOfsBefore:= false;
   if not (filter in[pfSharpen, pfSmooth, pfClearType, pfClearTypeInverse, pfNormalize, pfMedian,
             pfNegative, pfLinearNegative, pfComplementaryColor, pfGrayscale]) then

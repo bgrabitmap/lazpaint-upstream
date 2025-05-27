@@ -68,16 +68,6 @@ msgctxt "tfabout.label_opensource.caption"
 msgid "Open source (GPLv3)"
 msgstr "Open source (GPLv3)"
 
-#: tfadjustcurves.button_cancel.caption
-msgctxt "tfadjustcurves.button_cancel.caption"
-msgid "Cancel"
-msgstr "Annuleren"
-
-#: tfadjustcurves.button_ok.caption
-msgctxt "tfadjustcurves.button_ok.caption"
-msgid "OK"
-msgstr "OK"
-
 #: tfadjustcurves.caption
 msgid "Adjust curves"
 msgstr "Krommen aanpassen"
@@ -171,9 +161,7 @@ msgstr "Basale SVG"
 
 #: tfblendop.label_svgover.hint
 msgid "Basic blend operations that are available in virtually all image editors"
-msgstr ""
-"Basale mengoperaties die beschikbaar zijn in bijna alle "
-"beeldbewerkingssoftware"
+msgstr "Basale mengoperaties die beschikbaar zijn in bijna alle beeldbewerkingssoftware"
 
 #: tfbrowseimages.caption
 msgid "Browse images"
@@ -253,16 +241,6 @@ msgctxt "tfchoosecolor.caption"
 msgid "Color"
 msgstr "Kleur"
 
-#: tfcolorintensity.button_cancel.caption
-msgctxt "TFCOLORINTENSITY.BUTTON_CANCEL.CAPTION"
-msgid "Cancel"
-msgstr "Annuleren"
-
-#: tfcolorintensity.button_ok.caption
-msgctxt "TFCOLORINTENSITY.BUTTON_OK.CAPTION"
-msgid "OK"
-msgstr "OK"
-
 #: tfcolorintensity.caption
 msgctxt "tfcolorintensity.caption"
 msgid "Intensity"
@@ -277,16 +255,6 @@ msgstr "Vermenigvuldigen"
 msgctxt "tfcolorintensity.label_shift.caption"
 msgid "Shift"
 msgstr "Verschuiven"
-
-#: tfcolorize.button_cancel.caption
-msgctxt "TFCOLORIZE.BUTTON_CANCEL.CAPTION"
-msgid "Cancel"
-msgstr "Annuleren"
-
-#: tfcolorize.button_ok.caption
-msgctxt "TFCOLORIZE.BUTTON_OK.CAPTION"
-msgid "OK"
-msgstr "OK"
 
 #: tfcolorize.caption
 msgctxt "tfcolorize.caption"
@@ -312,11 +280,6 @@ msgstr "Kleurtint"
 msgid "Preset"
 msgstr "Voorinstelling"
 
-#: tfcustomblur.button_cancel.caption
-msgctxt "TFCUSTOMBLUR.BUTTON_CANCEL.CAPTION"
-msgid "Cancel"
-msgstr "Annuleren"
-
 #: tfcustomblur.button_editmask.caption
 msgid "Edit mask..."
 msgstr "Masker bewerken..."
@@ -324,11 +287,6 @@ msgstr "Masker bewerken..."
 #: tfcustomblur.button_loadmask.caption
 msgid "Load mask..."
 msgstr "Masker laden..."
-
-#: tfcustomblur.button_ok.caption
-msgctxt "TFCUSTOMBLUR.BUTTON_OK.CAPTION"
-msgid "OK"
-msgstr "OK"
 
 #: tfcustomblur.caption
 msgctxt "tfcustomblur.caption"
@@ -338,16 +296,6 @@ msgstr "Aangepaste vervaging"
 #: tfcustomblur.openpicturedialog1.title
 msgid "Open grayscale file"
 msgstr "Zwart-witte afbeelding laden..."
-
-#: tfemboss.button_cancel.caption
-msgctxt "TFEMBOSS.BUTTON_CANCEL.CAPTION"
-msgid "Cancel"
-msgstr "Annuleren"
-
-#: tfemboss.button_ok.caption
-msgctxt "TFEMBOSS.BUTTON_OK.CAPTION"
-msgid "OK"
-msgstr "OK"
 
 #: tfemboss.caption
 msgctxt "tfemboss.caption"
@@ -366,16 +314,6 @@ msgstr "Transparant"
 msgctxt "tfemboss.label_direction.caption"
 msgid "Direction :"
 msgstr "Richting :"
-
-#: tffilterfunction.button_cancel.caption
-msgctxt "tffilterfunction.button_cancel.caption"
-msgid "Cancel"
-msgstr "Annuleren"
-
-#: tffilterfunction.button_ok.caption
-msgctxt "tffilterfunction.button_ok.caption"
-msgid "OK"
-msgstr "OK"
 
 #: tffilterfunction.caption
 msgid "Apply function"
@@ -481,6 +419,14 @@ msgstr "Dekkingsgradiënt"
 #: tfgeometricbrush.label1.caption
 msgid "Number of sides:"
 msgstr "Aantal zijden:"
+
+#: tfhypocycloid.caption
+msgid "Hypocycloid"
+msgstr "Hypocycloïde"
+
+#: tfhypocycloid.label_amount.caption
+msgid "Cusps:"
+msgstr "Knobbels:"
 
 #: tfimagelist.caption
 msgid "Image List"
@@ -812,6 +758,10 @@ msgstr "Wijzigingen valideren"
 #: tfmain.exportpicturedialog.title
 msgid "Export as..."
 msgstr "Exporteren als..."
+
+#: tfmain.filecheckscriptssecure.caption
+msgid "Check scripts are secure"
+msgstr "Controleren of scripts veilig zijn"
 
 #: tfmain.filechooseentry.caption
 msgid "Choose entry..."
@@ -1507,6 +1457,10 @@ msgctxt "tfmain.rendercyclicperlinnoise.caption"
 msgid "Cyclic Perlin noise"
 msgstr "Cyclische Perlin-ruis"
 
+#: tfmain.renderhypocycloid.caption
+msgid "Hypocycloid..."
+msgstr "Hypocycloïde..."
+
 #: tfmain.rendermarble.caption
 msgid "Marble"
 msgstr "Marmer"
@@ -1534,6 +1488,10 @@ msgstr "Sneeuwafdruk"
 #: tfmain.renderstone.caption
 msgid "Stone"
 msgstr "Steen"
+
+#: tfmain.rendersuperformula.caption
+msgid "SuperFormula..."
+msgstr "Superformule..."
 
 #: tfmain.renderwater.caption
 msgctxt "tfmain.renderwater.caption"
@@ -2091,16 +2049,6 @@ msgctxt "TFMAIN.VIEWZOOMOUT.HINT"
 msgid "Zoom out"
 msgstr "Uitzoomen"
 
-#: tfmotionblur.button_cancel.caption
-msgctxt "TFMOTIONBLUR.BUTTON_CANCEL.CAPTION"
-msgid "Cancel"
-msgstr "Annuleren"
-
-#: tfmotionblur.button_ok.caption
-msgctxt "TFMOTIONBLUR.BUTTON_OK.CAPTION"
-msgid "OK"
-msgstr "OK"
-
 #: tfmotionblur.caption
 msgctxt "tfmotionblur.caption"
 msgid "Motion blur"
@@ -2169,16 +2117,6 @@ msgstr "Geheugen vereist :"
 msgctxt "tfnewimage.label_width.caption"
 msgid "Width :"
 msgstr "Breedte :"
-
-#: tfnoisefilter.button_cancel.caption
-msgctxt "tfnoisefilter.button_cancel.caption"
-msgid "Cancel"
-msgstr "Annuleren"
-
-#: tfnoisefilter.button_ok.caption
-msgctxt "tfnoisefilter.button_ok.caption"
-msgid "OK"
-msgstr "OK"
 
 #: tfnoisefilter.caption
 msgid "Noise filter"
@@ -2317,16 +2255,6 @@ msgstr "Voeg een puntlicht toe"
 msgid "Remove selected light"
 msgstr "Verwijder geselecteerd licht"
 
-#: tfphongfilter.button_cancel.caption
-msgctxt "tfphongfilter.button_cancel.caption"
-msgid "Cancel"
-msgstr "Annuleren"
-
-#: tfphongfilter.button_ok.caption
-msgctxt "tfphongfilter.button_ok.caption"
-msgid "OK"
-msgstr "OK"
-
 #: tfphongfilter.caption
 msgctxt "tfphongfilter.caption"
 msgid "Shaded map"
@@ -2380,6 +2308,7 @@ msgid "Saturation"
 msgstr "Verzadiging"
 
 #: tfphongfilter.radio_usebackcolor.caption
+msgctxt "tfphongfilter.radio_usebackcolor.caption"
 msgid "Back color"
 msgstr "Achtergrondkleur"
 
@@ -2388,6 +2317,7 @@ msgid "Keep"
 msgstr "Behouden"
 
 #: tfphongfilter.radio_usepencolor.caption
+msgctxt "tfphongfilter.radio_usepencolor.caption"
 msgid "Pen color"
 msgstr "Penkleur"
 
@@ -2395,16 +2325,6 @@ msgstr "Penkleur"
 msgctxt "tfphongfilter.radio_usetexture.caption"
 msgid "Current texture"
 msgstr "Huidige textuur"
-
-#: tfpixelate.button_cancel.caption
-msgctxt "TFPIXELATE.BUTTON_CANCEL.CAPTION"
-msgid "Cancel"
-msgstr "Annuleren"
-
-#: tfpixelate.button_ok.caption
-msgctxt "TFPIXELATE.BUTTON_OK.CAPTION"
-msgid "OK"
-msgstr "OK"
 
 #: tfpixelate.caption
 msgctxt "tfpixelate.caption"
@@ -2421,16 +2341,6 @@ msgctxt "tfpixelate.label_quality.caption"
 msgid "Quality :"
 msgstr "Kwaliteit :"
 
-#: tfposterize.button_cancel.caption
-msgctxt "tfposterize.button_cancel.caption"
-msgid "Cancel"
-msgstr "Annuleren"
-
-#: tfposterize.button_ok.caption
-msgctxt "tfposterize.button_ok.caption"
-msgid "OK"
-msgstr "OK"
-
 #: tfposterize.caption
 msgctxt "tfposterize.caption"
 msgid "Posterize"
@@ -2445,6 +2355,7 @@ msgid "Levels :"
 msgstr "Niveaus :"
 
 #: tfpreviewdialog.caption
+msgctxt "tfpreviewdialog.caption"
 msgid "Preview"
 msgstr "Voorbeeld"
 
@@ -2474,6 +2385,12 @@ msgstr "Druk af"
 msgctxt "tfprint.checkbox_ratio.caption"
 msgid "Keep aspect ratio"
 msgstr "Aspectverhouding behouden"
+
+#: tfprint.combobox_orientation.text
+#, fuzzy
+msgctxt "tfprint.combobox_orientation.text"
+msgid "0"
+msgstr "0"
 
 #: tfprint.groupbox_imagesize.caption
 msgid "Image size"
@@ -2517,6 +2434,12 @@ msgstr "Printer en papier:"
 msgid "Right:"
 msgstr "Rechts:"
 
+#: tfprint.label_selectedprinterandpaper.caption
+#, fuzzy
+msgctxt "tfprint.label_selectedprinterandpaper.caption"
+msgid "."
+msgstr "."
+
 #: tfprint.label_top.caption
 msgid "Top:"
 msgstr "Bovenkant:"
@@ -2538,16 +2461,6 @@ msgctxt "tfquestion.label_message.caption"
 msgid "."
 msgstr "."
 
-#: tfradialblur.button_cancel.caption
-msgctxt "TFRADIALBLUR.BUTTON_CANCEL.CAPTION"
-msgid "Cancel"
-msgstr "Annuleren"
-
-#: tfradialblur.button_ok.caption
-msgctxt "TFRADIALBLUR.BUTTON_OK.CAPTION"
-msgid "OK"
-msgstr "OK"
-
 #: tfradialblur.caption
 msgctxt "tfradialblur.caption"
 msgid "Radial blur"
@@ -2557,16 +2470,6 @@ msgstr "Radiale vervaging"
 msgctxt "tfradialblur.label_radius.caption"
 msgid "Radius :"
 msgstr "Straal :"
-
-#: tfrain.button_cancel.caption
-msgctxt "tfrain.button_cancel.caption"
-msgid "Cancel"
-msgstr "Annuleren"
-
-#: tfrain.button_ok.caption
-msgctxt "tfrain.button_ok.caption"
-msgid "OK"
-msgstr "OK"
 
 #: tfrain.caption
 msgid "Rain"
@@ -2643,6 +2546,7 @@ msgid "Quality:"
 msgstr "Kwaliteit:"
 
 #: tfsaveoption.label_0.caption
+msgctxt "tfsaveoption.label_0.caption"
 msgid "0"
 msgstr "0"
 
@@ -2686,16 +2590,6 @@ msgstr "32 bits"
 msgid "MioMap"
 msgstr "MioMap"
 
-#: tfsharpen.button_cancel.caption
-msgctxt "tfsharpen.button_cancel.caption"
-msgid "Cancel"
-msgstr "Annuleren"
-
-#: tfsharpen.button_ok.caption
-msgctxt "tfsharpen.button_ok.caption"
-msgid "OK"
-msgstr "OK"
-
 #: tfsharpen.caption
 msgid "Sharpen/Smooth"
 msgstr "Verscherpen/Gladstrijken"
@@ -2704,16 +2598,6 @@ msgstr "Verscherpen/Gladstrijken"
 msgctxt "tfsharpen.label_amount.caption"
 msgid "Amount :"
 msgstr "Hoeveelheid :"
-
-#: tfshiftcolors.button_cancel.caption
-msgctxt "TFSHIFTCOLORS.BUTTON_CANCEL.CAPTION"
-msgid "Cancel"
-msgstr "Annuleren"
-
-#: tfshiftcolors.button_ok.caption
-msgctxt "TFSHIFTCOLORS.BUTTON_OK.CAPTION"
-msgid "OK"
-msgstr "OK"
 
 #: tfshiftcolors.caption
 msgctxt "tfshiftcolors.caption"
@@ -2735,20 +2619,70 @@ msgctxt "TFSHIFTCOLORS.LABEL2.CAPTION"
 msgid "Saturation"
 msgstr "Verzadiging"
 
+#: tfsuperformula.caption
+msgid "Superformula"
+msgstr "Superformule"
+
+#: tfsuperformula.label_a.caption
+msgid "a"
+msgstr ""
+
+#: tfsuperformula.label_b.caption
+msgid "b"
+msgstr ""
+
+#: tfsuperformula.label_backcolor.caption
+#, fuzzy
+msgctxt "tfsuperformula.label_backcolor.caption"
+msgid "Back color"
+msgstr "Achtergrondkleur"
+
+#: tfsuperformula.label_n1.caption
+msgid "n1"
+msgstr ""
+
+#: tfsuperformula.label_n2.caption
+msgid "n2"
+msgstr ""
+
+#: tfsuperformula.label_n3.caption
+msgid "n3"
+msgstr ""
+
+#: tfsuperformula.label_pencolor.caption
+#, fuzzy
+msgctxt "tfsuperformula.label_pencolor.caption"
+msgid "Pen color"
+msgstr "Penkleur"
+
+#: tfsuperformula.label_rational.caption
+msgid "Rational"
+msgstr "Rationaal"
+
+#: tfsuperformula.label_size.caption
+#, fuzzy
+msgctxt "tfsuperformula.label_size.caption"
+msgid "Size"
+msgstr "Grootte"
+
+#: tfsuperformula.label_spikecount.caption
+msgid "Spike count"
+msgstr "Spike telling"
+
+#: tfsuperformula.label_spikeoverlap.caption
+msgid "Spike overlap"
+msgstr "Spike-overlap"
+
+#: tfsuperformula.label_width.caption
+#, fuzzy
+msgctxt "tfsuperformula.label_width.caption"
+msgid "Width"
+msgstr "Breedte"
+
 #: tftoolbox.caption
 msgctxt "tftoolbox.caption"
 msgid "Tools"
 msgstr "Gereedschappen"
-
-#: tftwirl.button_cancel.caption
-msgctxt "TFTWIRL.BUTTON_CANCEL.CAPTION"
-msgid "Cancel"
-msgstr "Annuleren"
-
-#: tftwirl.button_ok.caption
-msgctxt "TFTWIRL.BUTTON_OK.CAPTION"
-msgid "OK"
-msgstr "OK"
 
 #: tftwirl.caption
 msgctxt "tftwirl.caption"
@@ -2764,16 +2698,6 @@ msgstr "Hoek :"
 msgctxt "tftwirl.label_radius.caption"
 msgid "Radius :"
 msgstr "Straal :"
-
-#: tfwavedisplacement.button_cancel.caption
-msgctxt "tfwavedisplacement.button_cancel.caption"
-msgid "Cancel"
-msgstr "Annuleren"
-
-#: tfwavedisplacement.button_ok.caption
-msgctxt "tfwavedisplacement.button_ok.caption"
-msgid "OK"
-msgstr "OK"
 
 #: tfwavedisplacement.caption
 msgid "Wave displacement"
@@ -2908,9 +2832,7 @@ msgstr "CMD"
 
 #: uresourcestrings.rscolordescription
 msgid "Color description: click to type in a color with the keyboard using color names or CSS notation."
-msgstr ""
-"Kleurbeschrijving: klik om een kleur in te typen met het toetsenbord middels "
-"kleurnamen of CSS notatie."
+msgstr "Kleurbeschrijving: klik om een kleur in te typen met het toetsenbord middels kleurnamen of CSS notatie."
 
 #: uresourcestrings.rscoloroverlay
 msgid "Color overlay"
@@ -2931,8 +2853,7 @@ msgstr "Weet u zeker dat u deze %1-bestanden uit de container wilt verwijderen?"
 
 #: uresourcestrings.rsconfirmmovemultipletotrash
 msgid "Are you sure you want to move these %1 files to the trash?"
-msgstr ""
-"Weet je zeker dat je deze %1-bestanden naar de prullenbak wilt verplaatsen?"
+msgstr "Weet je zeker dat je deze %1-bestanden naar de prullenbak wilt verplaatsen?"
 
 #: uresourcestrings.rsconfirmmovetotrash
 msgid "Are you sure you want to move this file to the trash?"
@@ -3044,8 +2965,7 @@ msgstr "Einde zonder begin"
 
 #: uresourcestrings.rsenterfolderorcontainername
 msgid "Enter name for new folder or container (using RES or LRS extension):"
-msgstr ""
-"Voer naam in voor een nieuwe map of container (met extensie RES of LRS):"
+msgstr "Voer naam in voor een nieuwe map of container (met extensie RES of LRS):"
 
 #: uresourcestrings.rsenterlayername
 msgid "Enter layer name:"
@@ -3124,6 +3044,7 @@ msgid "File not saved"
 msgstr "Bestand niet opgeslaan"
 
 #: uresourcestrings.rsfilesize
+msgctxt "uresourcestrings.rsfilesize"
 msgid "Size"
 msgstr "Grootte"
 
@@ -3410,9 +3331,7 @@ msgstr "Mitchell"
 
 #: uresourcestrings.rsmorethanonefile
 msgid "You are trying to open more than one file. How would you like these files to be opened?"
-msgstr ""
-"U probeert meer dan een bestand te openen. Hoe wilt u dat deze bestanden "
-"worden geopend?"
+msgstr "U probeert meer dan een bestand te openen. Hoe wilt u dat deze bestanden worden geopend?"
 
 #: uresourcestrings.rsmovingorrotatingselection
 msgid "Moving or rotating selection"
@@ -3475,15 +3394,23 @@ msgstr "Er is niets om te vervormen"
 msgid "There is nothing to be retrieved"
 msgstr "Er is niets om op te halen"
 
+#: uresourcestrings.rsnotlazpaintscript
+msgid "This is not a LazPaint script"
+msgstr "Dit is geen LazPaint-script"
+
 #: uresourcestrings.rsnotreasonableformat
 msgid "It is not reasonable to save such a big image in this file format."
-msgstr ""
-"Het is onredelijk om zo'n grote afbeelding in dit bestandsformaat op te "
-"slaan."
+msgstr "Het is onredelijk om zo'n grote afbeelding in dit bestandsformaat op te slaan."
 
 #: uresourcestrings.rsnumber
 msgid "№"
 msgstr "№"
+
+#: uresourcestrings.rsok
+#, fuzzy
+msgctxt "uresourcestrings.rsok"
+msgid "OK"
+msgstr "OK"
 
 #: uresourcestrings.rsokay
 msgid "Okay"
@@ -3550,6 +3477,12 @@ msgstr "Posterisatie laag met behulp palet"
 #: uresourcestrings.rspresetname
 msgid "Preset name"
 msgstr "Voorinstellingsnaam"
+
+#: uresourcestrings.rspreview
+#, fuzzy
+msgctxt "uresourcestrings.rspreview"
+msgid "Preview"
+msgstr "Voorbeeld"
 
 #: uresourcestrings.rspx
 msgid "px"
@@ -3627,6 +3560,14 @@ msgstr "Gebruik RECHTS klikken om de vorm te finaliseren"
 msgid "Use RIGHT click to define source"
 msgstr "Gebruik RECHTS klikken om de bron te definiëren"
 
+#: uresourcestrings.rsrightclickfortransformcenter
+msgid "Use RIGHT click to define transform center"
+msgstr "Gebruik RECHTS klikken om het transformatiecentrum te definiëren"
+
+#: uresourcestrings.rsrunscriptagaintoupdateeffect
+msgid "Run this script again to update effect"
+msgstr "Voer dit script opnieuw uit om het effect bij te werken"
+
 #: uresourcestrings.rssaturation
 msgctxt "uresourcestrings.rssaturation"
 msgid "Saturation"
@@ -3654,6 +3595,10 @@ msgstr "Palet opslaan als..."
 msgctxt "uresourcestrings.rsscript"
 msgid "Script"
 msgstr "Script"
+
+#: uresourcestrings.rsscriptnotsafe
+msgid "The script file does not seem to be safe: %1"
+msgstr "Het scriptbestand lijkt niet veilig te zijn: %1"
 
 #: uresourcestrings.rsselectblendoperation
 msgctxt "uresourcestrings.rsselectblendoperation"
@@ -3698,6 +3643,10 @@ msgstr "Apparaat"
 msgid "Stroke"
 msgstr "Penkleur"
 
+#: uresourcestrings.rssuretorununsafescript
+msgid "Are you sure you would like to run this script? The following modules used by this script may be unsafe: %1"
+msgstr "Weet u zeker dat u dit script wilt uitvoeren? De volgende modules die door dit script worden gebruikt, kunnen onveilig zijn: %1"
+
 #: uresourcestrings.rstextoutline
 msgctxt "uresourcestrings.rstextoutline"
 msgid "Text outline"
@@ -3710,14 +3659,11 @@ msgstr "Texture mapping"
 
 #: uresourcestrings.rstherearenocheckeditems
 msgid "There are no checked items. Check some items or add some new ones."
-msgstr ""
-"Er zijn geen aangevinkte items. Controleer enkele items of voeg nieuwe toe."
+msgstr "Er zijn geen aangevinkte items. Controleer enkele items of voeg nieuwe toe."
 
 #: uresourcestrings.rsthereisnofilenamegivenforthisfileusesaveas
 msgid "There is no file name given for this file. Use \"Save as...\" from the main menu."
-msgstr ""
-"Er is geen bestandsnaam gegeven voor dit bestand. Gebruik \"Opslaan als…\" in "
-"het hoofdmenu."
+msgstr "Er is geen bestandsnaam gegeven voor dit bestand. Gebruik \"Opslaan als…\" in het hoofdmenu."
 
 #: uresourcestrings.rstodo
 msgid "To do"
@@ -3792,7 +3738,7 @@ msgid "Vertical size"
 msgstr "Verticale afmeting"
 
 #: uresourcestrings.rsvisible
-msgid "Visibile"
+msgid "Visible"
 msgstr "Zichtbaar"
 
 #: uresourcestrings.rsyellow
@@ -3812,3 +3758,4 @@ msgstr "Inzoomen in lagenoverzicht"
 msgctxt "uresourcestrings.rszoomlayerstackout"
 msgid "Zoom layer stack out"
 msgstr "Uitzoomen uit lagenoverzicht"
+

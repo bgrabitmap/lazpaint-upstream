@@ -64,16 +64,6 @@ msgctxt "tfabout.label_opensource.caption"
 msgid "Open source (GPLv3)"
 msgstr "开源（GPLv3）"
 
-#: tfadjustcurves.button_cancel.caption
-msgctxt "tfadjustcurves.button_cancel.caption"
-msgid "Cancel"
-msgstr "取消"
-
-#: tfadjustcurves.button_ok.caption
-msgctxt "tfadjustcurves.button_ok.caption"
-msgid "OK"
-msgstr "确定"
-
 #: tfadjustcurves.caption
 msgid "Adjust curves"
 msgstr "调整曲线"
@@ -247,16 +237,6 @@ msgctxt "tfchoosecolor.caption"
 msgid "Color"
 msgstr "颜色"
 
-#: tfcolorintensity.button_cancel.caption
-msgctxt "TFCOLORINTENSITY.BUTTON_CANCEL.CAPTION"
-msgid "Cancel"
-msgstr "取消"
-
-#: tfcolorintensity.button_ok.caption
-msgctxt "TFCOLORINTENSITY.BUTTON_OK.CAPTION"
-msgid "OK"
-msgstr "确定"
-
 #: tfcolorintensity.caption
 msgctxt "tfcolorintensity.caption"
 msgid "Intensity"
@@ -271,16 +251,6 @@ msgstr "倍增"
 msgctxt "tfcolorintensity.label_shift.caption"
 msgid "Shift"
 msgstr "位移"
-
-#: tfcolorize.button_cancel.caption
-msgctxt "TFCOLORIZE.BUTTON_CANCEL.CAPTION"
-msgid "Cancel"
-msgstr "取消"
-
-#: tfcolorize.button_ok.caption
-msgctxt "TFCOLORIZE.BUTTON_OK.CAPTION"
-msgid "OK"
-msgstr "确定"
 
 #: tfcolorize.caption
 msgctxt "tfcolorize.caption"
@@ -306,11 +276,6 @@ msgstr "色调"
 msgid "Preset"
 msgstr "预设"
 
-#: tfcustomblur.button_cancel.caption
-msgctxt "TFCUSTOMBLUR.BUTTON_CANCEL.CAPTION"
-msgid "Cancel"
-msgstr "取消"
-
 #: tfcustomblur.button_editmask.caption
 msgid "Edit mask..."
 msgstr "编辑蒙版..."
@@ -318,11 +283,6 @@ msgstr "编辑蒙版..."
 #: tfcustomblur.button_loadmask.caption
 msgid "Load mask..."
 msgstr "加载蒙版..."
-
-#: tfcustomblur.button_ok.caption
-msgctxt "TFCUSTOMBLUR.BUTTON_OK.CAPTION"
-msgid "OK"
-msgstr "确定"
 
 #: tfcustomblur.caption
 msgctxt "tfcustomblur.caption"
@@ -332,16 +292,6 @@ msgstr "自定义模糊"
 #: tfcustomblur.openpicturedialog1.title
 msgid "Open grayscale file"
 msgstr "打开灰度文件"
-
-#: tfemboss.button_cancel.caption
-msgctxt "TFEMBOSS.BUTTON_CANCEL.CAPTION"
-msgid "Cancel"
-msgstr "取消"
-
-#: tfemboss.button_ok.caption
-msgctxt "TFEMBOSS.BUTTON_OK.CAPTION"
-msgid "OK"
-msgstr "确定"
 
 #: tfemboss.caption
 msgctxt "tfemboss.caption"
@@ -360,16 +310,6 @@ msgstr "透明"
 msgctxt "tfemboss.label_direction.caption"
 msgid "Direction :"
 msgstr "方向 :"
-
-#: tffilterfunction.button_cancel.caption
-msgctxt "tffilterfunction.button_cancel.caption"
-msgid "Cancel"
-msgstr "取消"
-
-#: tffilterfunction.button_ok.caption
-msgctxt "tffilterfunction.button_ok.caption"
-msgid "OK"
-msgstr "确定"
 
 #: tffilterfunction.caption
 msgid "Apply function"
@@ -476,17 +416,25 @@ msgstr "透明度渐变"
 msgid "Number of sides:"
 msgstr "边数 :"
 
+#: tfhypocycloid.caption
+msgid "Hypocycloid"
+msgstr "摆线"
+
+#: tfhypocycloid.label_amount.caption
+msgid "Cusps:"
+msgstr "尖点："
+
 #: tfimagelist.caption
 msgid "Image List"
 msgstr "图像列表"
 
 #: tfimagelist.pmautouncheckonopen.caption
 msgid "Autouncheck files after being open"
-msgstr ""
+msgstr "打开后自动取消选中文件"
 
 #: tfimagelist.pmautouncheckonsave.caption
 msgid "Autouncheck files after being edited and saved"
-msgstr ""
+msgstr "编辑并保存后自动取消选中文件"
 
 #: tfimagelist.pmremoveall.caption
 msgid "Empty image list"
@@ -808,6 +756,10 @@ msgstr "确认更改"
 msgid "Export as..."
 msgstr "导出为..."
 
+#: tfmain.filecheckscriptssecure.caption
+msgid "Check scripts are secure"
+msgstr "检查脚本是否安全"
+
 #: tfmain.filechooseentry.caption
 msgid "Choose entry..."
 msgstr "选择条目..."
@@ -856,7 +808,7 @@ msgstr "快速保存"
 
 #: tfmain.filequicksave.hint
 msgid "Save current file without dialogs"
-msgstr ""
+msgstr "无需对话框保存当前文件"
 
 #: tfmain.filequit.hint
 msgctxt "TFMAIN.FILEQUIT.HINT"
@@ -1504,6 +1456,10 @@ msgctxt "tfmain.rendercyclicperlinnoise.caption"
 msgid "Cyclic Perlin noise"
 msgstr "环状佩林噪声"
 
+#: tfmain.renderhypocycloid.caption
+msgid "Hypocycloid..."
+msgstr "摆线..."
+
 #: tfmain.rendermarble.caption
 msgid "Marble"
 msgstr "大理石"
@@ -1531,6 +1487,10 @@ msgstr "雪印"
 #: tfmain.renderstone.caption
 msgid "Stone"
 msgstr "石头"
+
+#: tfmain.rendersuperformula.caption
+msgid "SuperFormula..."
+msgstr "超级公式"
 
 #: tfmain.renderwater.caption
 msgctxt "tfmain.renderwater.caption"
@@ -2089,16 +2049,6 @@ msgctxt "TFMAIN.VIEWZOOMOUT.HINT"
 msgid "Zoom out"
 msgstr "缩小"
 
-#: tfmotionblur.button_cancel.caption
-msgctxt "TFMOTIONBLUR.BUTTON_CANCEL.CAPTION"
-msgid "Cancel"
-msgstr "取消"
-
-#: tfmotionblur.button_ok.caption
-msgctxt "TFMOTIONBLUR.BUTTON_OK.CAPTION"
-msgid "OK"
-msgstr "确定"
-
 #: tfmotionblur.caption
 msgctxt "tfmotionblur.caption"
 msgid "Motion blur"
@@ -2167,16 +2117,6 @@ msgstr "需要内存 :"
 msgctxt "tfnewimage.label_width.caption"
 msgid "Width :"
 msgstr "宽度 :"
-
-#: tfnoisefilter.button_cancel.caption
-msgctxt "tfnoisefilter.button_cancel.caption"
-msgid "Cancel"
-msgstr "取消"
-
-#: tfnoisefilter.button_ok.caption
-msgctxt "tfnoisefilter.button_ok.caption"
-msgid "OK"
-msgstr "确定"
 
 #: tfnoisefilter.caption
 msgid "Noise filter"
@@ -2315,16 +2255,6 @@ msgstr "添加点光源"
 msgid "Remove selected light"
 msgstr "删除所选光源"
 
-#: tfphongfilter.button_cancel.caption
-msgctxt "tfphongfilter.button_cancel.caption"
-msgid "Cancel"
-msgstr "取消"
-
-#: tfphongfilter.button_ok.caption
-msgctxt "tfphongfilter.button_ok.caption"
-msgid "OK"
-msgstr "确定"
-
 #: tfphongfilter.caption
 msgctxt "tfphongfilter.caption"
 msgid "Shaded map"
@@ -2378,6 +2308,7 @@ msgid "Saturation"
 msgstr "饱和度"
 
 #: tfphongfilter.radio_usebackcolor.caption
+msgctxt "tfphongfilter.radio_usebackcolor.caption"
 msgid "Back color"
 msgstr "背景色"
 
@@ -2386,6 +2317,7 @@ msgid "Keep"
 msgstr "保留"
 
 #: tfphongfilter.radio_usepencolor.caption
+msgctxt "tfphongfilter.radio_usepencolor.caption"
 msgid "Pen color"
 msgstr "钢笔颜色"
 
@@ -2393,16 +2325,6 @@ msgstr "钢笔颜色"
 msgctxt "tfphongfilter.radio_usetexture.caption"
 msgid "Current texture"
 msgstr "当前纹理"
-
-#: tfpixelate.button_cancel.caption
-msgctxt "TFPIXELATE.BUTTON_CANCEL.CAPTION"
-msgid "Cancel"
-msgstr "取消"
-
-#: tfpixelate.button_ok.caption
-msgctxt "TFPIXELATE.BUTTON_OK.CAPTION"
-msgid "OK"
-msgstr "确定"
 
 #: tfpixelate.caption
 msgctxt "tfpixelate.caption"
@@ -2419,16 +2341,6 @@ msgctxt "tfpixelate.label_quality.caption"
 msgid "Quality :"
 msgstr "品质 :"
 
-#: tfposterize.button_cancel.caption
-msgctxt "tfposterize.button_cancel.caption"
-msgid "Cancel"
-msgstr "取消"
-
-#: tfposterize.button_ok.caption
-msgctxt "tfposterize.button_ok.caption"
-msgid "OK"
-msgstr "确定"
-
 #: tfposterize.caption
 msgctxt "tfposterize.caption"
 msgid "Posterize"
@@ -2443,6 +2355,7 @@ msgid "Levels :"
 msgstr "级别 :"
 
 #: tfpreviewdialog.caption
+msgctxt "tfpreviewdialog.caption"
 msgid "Preview"
 msgstr "预览"
 
@@ -2472,6 +2385,12 @@ msgstr "打印"
 msgctxt "tfprint.checkbox_ratio.caption"
 msgid "Keep aspect ratio"
 msgstr "保持纵横比"
+
+#: tfprint.combobox_orientation.text
+#, fuzzy
+msgctxt "tfprint.combobox_orientation.text"
+msgid "0"
+msgstr "0"
 
 #: tfprint.groupbox_imagesize.caption
 msgid "Image size"
@@ -2515,6 +2434,12 @@ msgstr "打印机和纸张:"
 msgid "Right:"
 msgstr "右:"
 
+#: tfprint.label_selectedprinterandpaper.caption
+#, fuzzy
+msgctxt "tfprint.label_selectedprinterandpaper.caption"
+msgid "."
+msgstr "."
+
 #: tfprint.label_top.caption
 msgid "Top:"
 msgstr "顶部:"
@@ -2536,16 +2461,6 @@ msgctxt "tfquestion.label_message.caption"
 msgid "."
 msgstr "."
 
-#: tfradialblur.button_cancel.caption
-msgctxt "TFRADIALBLUR.BUTTON_CANCEL.CAPTION"
-msgid "Cancel"
-msgstr "取消"
-
-#: tfradialblur.button_ok.caption
-msgctxt "TFRADIALBLUR.BUTTON_OK.CAPTION"
-msgid "OK"
-msgstr "确定"
-
 #: tfradialblur.caption
 msgctxt "tfradialblur.caption"
 msgid "Radial blur"
@@ -2555,16 +2470,6 @@ msgstr "径向模糊"
 msgctxt "tfradialblur.label_radius.caption"
 msgid "Radius :"
 msgstr "半径 :"
-
-#: tfrain.button_cancel.caption
-msgctxt "tfrain.button_cancel.caption"
-msgid "Cancel"
-msgstr "取消"
-
-#: tfrain.button_ok.caption
-msgctxt "tfrain.button_ok.caption"
-msgid "OK"
-msgstr "确定"
 
 #: tfrain.caption
 msgid "Rain"
@@ -2641,6 +2546,7 @@ msgid "Quality:"
 msgstr "品质:"
 
 #: tfsaveoption.label_0.caption
+msgctxt "tfsaveoption.label_0.caption"
 msgid "0"
 msgstr "0"
 
@@ -2684,16 +2590,6 @@ msgstr "32 位色"
 msgid "MioMap"
 msgstr "MioMap"
 
-#: tfsharpen.button_cancel.caption
-msgctxt "tfsharpen.button_cancel.caption"
-msgid "Cancel"
-msgstr "取消"
-
-#: tfsharpen.button_ok.caption
-msgctxt "tfsharpen.button_ok.caption"
-msgid "OK"
-msgstr "确定"
-
 #: tfsharpen.caption
 msgid "Sharpen/Smooth"
 msgstr "锐化/平滑"
@@ -2702,16 +2598,6 @@ msgstr "锐化/平滑"
 msgctxt "tfsharpen.label_amount.caption"
 msgid "Amount :"
 msgstr "数量 :"
-
-#: tfshiftcolors.button_cancel.caption
-msgctxt "TFSHIFTCOLORS.BUTTON_CANCEL.CAPTION"
-msgid "Cancel"
-msgstr "取消"
-
-#: tfshiftcolors.button_ok.caption
-msgctxt "TFSHIFTCOLORS.BUTTON_OK.CAPTION"
-msgid "OK"
-msgstr "确定"
 
 #: tfshiftcolors.caption
 msgctxt "tfshiftcolors.caption"
@@ -2733,20 +2619,70 @@ msgctxt "TFSHIFTCOLORS.LABEL2.CAPTION"
 msgid "Saturation"
 msgstr "饱和度"
 
+#: tfsuperformula.caption
+msgid "Superformula"
+msgstr "超级公式"
+
+#: tfsuperformula.label_a.caption
+msgid "a"
+msgstr ""
+
+#: tfsuperformula.label_b.caption
+msgid "b"
+msgstr ""
+
+#: tfsuperformula.label_backcolor.caption
+#, fuzzy
+msgctxt "tfsuperformula.label_backcolor.caption"
+msgid "Back color"
+msgstr "背景色"
+
+#: tfsuperformula.label_n1.caption
+msgid "n1"
+msgstr ""
+
+#: tfsuperformula.label_n2.caption
+msgid "n2"
+msgstr ""
+
+#: tfsuperformula.label_n3.caption
+msgid "n3"
+msgstr ""
+
+#: tfsuperformula.label_pencolor.caption
+#, fuzzy
+msgctxt "tfsuperformula.label_pencolor.caption"
+msgid "Pen color"
+msgstr "钢笔颜色"
+
+#: tfsuperformula.label_rational.caption
+msgid "Rational"
+msgstr "有理数"
+
+#: tfsuperformula.label_size.caption
+#, fuzzy
+msgctxt "tfsuperformula.label_size.caption"
+msgid "Size"
+msgstr "大小"
+
+#: tfsuperformula.label_spikecount.caption
+msgid "Spike count"
+msgstr "峰值计数"
+
+#: tfsuperformula.label_spikeoverlap.caption
+msgid "Spike overlap"
+msgstr "尖峰重叠"
+
+#: tfsuperformula.label_width.caption
+#, fuzzy
+msgctxt "tfsuperformula.label_width.caption"
+msgid "Width"
+msgstr "宽度"
+
 #: tftoolbox.caption
 msgctxt "tftoolbox.caption"
 msgid "Tools"
 msgstr "工具"
-
-#: tftwirl.button_cancel.caption
-msgctxt "TFTWIRL.BUTTON_CANCEL.CAPTION"
-msgid "Cancel"
-msgstr "取消"
-
-#: tftwirl.button_ok.caption
-msgctxt "TFTWIRL.BUTTON_OK.CAPTION"
-msgid "OK"
-msgstr "确定"
 
 #: tftwirl.caption
 msgctxt "tftwirl.caption"
@@ -2762,16 +2698,6 @@ msgstr "角度 :"
 msgctxt "tftwirl.label_radius.caption"
 msgid "Radius :"
 msgstr "半径 :"
-
-#: tfwavedisplacement.button_cancel.caption
-msgctxt "tfwavedisplacement.button_cancel.caption"
-msgid "Cancel"
-msgstr "取消"
-
-#: tfwavedisplacement.button_ok.caption
-msgctxt "tfwavedisplacement.button_ok.caption"
-msgid "OK"
-msgstr "确定"
 
 #: tfwavedisplacement.caption
 msgid "Wave displacement"
@@ -3128,6 +3054,7 @@ msgid "File not saved"
 msgstr "文件未保存"
 
 #: uresourcestrings.rsfilesize
+msgctxt "uresourcestrings.rsfilesize"
 msgid "Size"
 msgstr "大小"
 
@@ -3252,11 +3179,11 @@ msgstr "信息"
 
 #: uresourcestrings.rsinnerlight
 msgid "Inner light"
-msgstr ""
+msgstr "内部光"
 
 #: uresourcestrings.rsinnershadow
 msgid "Inner shadow"
-msgstr ""
+msgstr "内部阴影"
 
 #: uresourcestrings.rsintensity
 msgctxt "uresourcestrings.rsintensity"
@@ -3269,7 +3196,7 @@ msgstr "内部错误"
 
 #: uresourcestrings.rsinvalidangle
 msgid "Invalid angle"
-msgstr ""
+msgstr "无效的角度"
 
 #: uresourcestrings.rsinvalidname
 msgid "Invalid name"
@@ -3323,7 +3250,7 @@ msgstr "层"
 
 #: uresourcestrings.rslayeralreadysplit
 msgid "Layer already split"
-msgstr ""
+msgstr "图层已拆分"
 
 #: uresourcestrings.rslayeredimage
 msgid "Layered image"
@@ -3404,7 +3331,7 @@ msgstr "图层蒙版"
 
 #: uresourcestrings.rsmaskfromalphachannel
 msgid "Mask from alpha channel"
-msgstr ""
+msgstr "从 Alpha 通道生成蒙版"
 
 #: uresourcestrings.rsmerge
 msgid "Merge"
@@ -3476,7 +3403,7 @@ msgstr "正常"
 
 #: uresourcestrings.rsnotchromaticchannel
 msgid "This is not a chromatic channel"
-msgstr ""
+msgstr "这不是一个色度通道"
 
 #: uresourcestrings.rsnothingtobedeformed
 msgctxt "uresourcestrings.rsnothingtobedeformed"
@@ -3488,6 +3415,10 @@ msgctxt "uresourcestrings.rsnothingtoberetrieved"
 msgid "There is nothing to be retrieved"
 msgstr "没有可接收内容"
 
+#: uresourcestrings.rsnotlazpaintscript
+msgid "This is not a LazPaint script"
+msgstr "这不是 LazPaint 脚本"
+
 #: uresourcestrings.rsnotreasonableformat
 msgid "It is not reasonable to save such a big image in this file format."
 msgstr "此文件格式不适合保存如此大的图像。"
@@ -3495,6 +3426,12 @@ msgstr "此文件格式不适合保存如此大的图像。"
 #: uresourcestrings.rsnumber
 msgid "№"
 msgstr "№"
+
+#: uresourcestrings.rsok
+#, fuzzy
+msgctxt "uresourcestrings.rsok"
+msgid "OK"
+msgstr "确定"
 
 #: uresourcestrings.rsokay
 msgid "Okay"
@@ -3563,6 +3500,12 @@ msgstr "使用调色板对图层进行海报化"
 #: uresourcestrings.rspresetname
 msgid "Preset name"
 msgstr "预设名称"
+
+#: uresourcestrings.rspreview
+#, fuzzy
+msgctxt "uresourcestrings.rspreview"
+msgid "Preview"
+msgstr "预览"
 
 #: uresourcestrings.rspx
 msgid "px"
@@ -3636,11 +3579,19 @@ msgstr "RGB"
 
 #: uresourcestrings.rsrightclickfinishshape
 msgid "Use RIGHT click to finish shape"
-msgstr ""
+msgstr "右键单击以完成形状"
 
 #: uresourcestrings.rsrightclickforsource
 msgid "Use RIGHT click to define source"
 msgstr "单击右键来定义源"
+
+#: uresourcestrings.rsrightclickfortransformcenter
+msgid "Use RIGHT click to define transform center"
+msgstr "右键单击以定义转换中心"
+
+#: uresourcestrings.rsrunscriptagaintoupdateeffect
+msgid "Run this script again to update effect"
+msgstr "再次运行此脚本以更新效果"
 
 #: uresourcestrings.rssaturation
 msgctxt "uresourcestrings.rssaturation"
@@ -3671,6 +3622,10 @@ msgctxt "uresourcestrings.rsscript"
 msgid "Script"
 msgstr "脚本"
 
+#: uresourcestrings.rsscriptnotsafe
+msgid "The script file does not seem to be safe: %1"
+msgstr "该脚本文件似乎不安全：%1"
+
 #: uresourcestrings.rsselectblendoperation
 msgctxt "uresourcestrings.rsselectblendoperation"
 msgid "Select blend operation"
@@ -3696,15 +3651,15 @@ msgstr "插值"
 
 #: uresourcestrings.rssplitcmyk
 msgid "Split CMYK"
-msgstr ""
+msgstr "分离 CMYK"
 
 #: uresourcestrings.rssplithsl
 msgid "Split HSL"
-msgstr ""
+msgstr "分离 HSL"
 
 #: uresourcestrings.rssplitrgb
 msgid "Split RGB"
-msgstr ""
+msgstr "分离 RGB"
 
 #: uresourcestrings.rsstoragedevice
 msgid "Device"
@@ -3713,6 +3668,10 @@ msgstr "设备"
 #: uresourcestrings.rsstroke
 msgid "Stroke"
 msgstr "描边效果"
+
+#: uresourcestrings.rssuretorununsafescript
+msgid "Are you sure you would like to run this script? The following modules used by this script may be unsafe: %1"
+msgstr "您确定要运行此脚本吗？该脚本使用的以下模块可能不安全：%1"
 
 #: uresourcestrings.rstextoutline
 #, fuzzy
@@ -3803,10 +3762,10 @@ msgstr "版本"
 
 #: uresourcestrings.rsverticalsize
 msgid "Vertical size"
-msgstr ""
+msgstr "垂直尺寸"
 
 #: uresourcestrings.rsvisible
-msgid "Visibile"
+msgid "Visible"
 msgstr "可见的"
 
 #: uresourcestrings.rsyellow

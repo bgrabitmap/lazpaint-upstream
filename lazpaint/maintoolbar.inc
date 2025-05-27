@@ -7,6 +7,7 @@ procedure TFMain.CreateToolbarElements;
       lbl: TLabel; pnl: TPanel; mouseMove: TMouseMoveEvent; mouseClick: TNotifyEvent; AIsTarget: boolean);
   begin
     vf.PopupMenu := nil;
+    vf.AllowKeyInput:= false;
     vf.VerticalPadding:= DoScaleY(6, OriginalDPI);
     vf.OnChooseColor :=  @VectorialFill_ChooseColor;
     vf.OnTextureClick := @VectorialFill_TextureClick;
@@ -126,7 +127,6 @@ begin
   Tool_TextPhong.OnClick := @Tool_TextPhongClick;
   Tool_TextShadow.OnClick := @Tool_TextShadowClick;
   Tool_TextOutline.OnClick := @Tool_TextOutlineClick;
-  Panel_TextMore.AutoSize := true;
   Panel_ToolbarBackground.OnMouseMove := @Panel_ToolbarBackgroundMouseMove;
   TimerHidePenPreview.OnTimer := @TimerHidePenPreviewTimer;
   TimerHideTextMore.OnTimer := @TimerHideTextMoreTimer;
@@ -657,11 +657,13 @@ begin
   end;
 end;
 
-function TFMain.TextSpinEditFocused: boolean;
+function TFMain.SpinEditFocused: boolean;
+var ctrl: TWinControl;
 begin
-  result := SpinEdit_TextSize.Focused or SpinEdit_TextBlur.Focused or SpinEdit_TextShadowX.Focused or
-           SpinEdit_TextShadowY.Focused or SpinEdit_ShapeAltitude.Focused or
-           SpinEdit_TextOutlineWidth.Focused;
+  ctrl := Screen.ActiveControl;
+  if Assigned(ctrl) and (ctrl is TBCTrackBarUpDown) then
+    Result := (ctrl as TBCTrackBarUpDown).Focused
+    else Result := False;
 end;
 
 procedure TFMain.UpdateBrush;
@@ -695,14 +697,14 @@ end;
 
 function TFMain.CatchToolKeyDown(var AKey: Word): boolean;
 begin
-  if Assigned(FLayout) then
+  if Assigned(FLayout) and not SpinEditFocused then
     result := FLayout.CatchToolKeyDown(AKey)
     else result := false;
 end;
 
 function TFMain.CatchToolKeyUp(var AKey: Word): boolean;
 begin
-  if Assigned(FLayout) then
+  if Assigned(FLayout) and not SpinEditFocused then
     result := FLayout.CatchToolKeyUp(AKey)
     else result := false;
 end;
@@ -821,12 +823,15 @@ begin
   VectorialFill_Pen.Height := min(VectorialFill_Pen.ToolIconSize + VectorialFill_Pen.VerticalPadding,
                                Panel_SwapColor.ClientHeight - VectorialFill_Pen.Top - 1);
   VectorialFill_Pen.Tag := 0;
+  VectorialFill_Pen.AllowKeyInput:= false;
   VectorialFill_Back.Height := min(VectorialFill_Back.ToolIconSize + VectorialFill_Back.VerticalPadding,
                                Panel_SwapColor.ClientHeight - VectorialFill_Back.Top - 1);
   VectorialFill_Back.Tag := 0;
+  VectorialFill_Back.AllowKeyInput:= false;
   VectorialFill_Outline.Height := min(VectorialFill_Outline.ToolIconSize + VectorialFill_Outline.VerticalPadding,
                                   Panel_SwapColor.ClientHeight - VectorialFill_Outline.Top - 1);
   VectorialFill_Outline.Tag := 0;
+  VectorialFill_Outline.AllowKeyInput:= false;
   Panel_PenFill.Height := Panel_SwapColor.Height;
   Panel_BackFill.Height := Panel_SwapColor.Height;
   Panel_OutlineFill.Height := Panel_SwapColor.Height;
@@ -1576,9 +1581,22 @@ begin
 end;
 
 procedure TFMain.ShowTextMore;
+var
+  w, h: Integer;
 begin
   if not Panel_TextMore.Visible then
   begin
+    ToolBar25.AutoSize := false;
+    w := ToolBar25.Width;
+    h := ToolBar25.Height;
+    ToolBar25.GetPreferredSize(w, h);
+    ToolBar25.Width := w;
+    ToolBar25.Height := h;
+    ToolBar25.Left := DoScaleX(2, 96);
+    ToolBar25.Top := DoScaleX(2, 96);
+
+    Panel_TextMore.Width := ToolBar25.Width + DoScaleX(4, 96);
+    Panel_TextMore.Height := ToolBar25.Height + DoScaleX(4, 96);
     Panel_TextMore.Left := min(Panel_Text.Left, ClientWidth-Panel_TextMore.Width);
     Panel_TextMore.Top := Panel_Text.Top+Panel_Text.Height;
     Panel_TextMore.Visible := True;
@@ -1612,6 +1630,7 @@ begin
   AFillControl.Height := AFillControl.PreferredSize.cy;
   APanel.Height := AFillControl.Top + AFillControl.Height + DoScaleY(3, OriginalDPI);
   AFillControl.Tag := 1;
+  AFillControl.AllowKeyInput:= true;
   HideFill(3000, true);
 end;
 
@@ -1691,6 +1710,11 @@ begin
   ShowTextMore;
 end;
 
+procedure TFMain.Panel_ToolbarBackgroundClick(Sender: TObject);
+begin
+  Layout.FocusImage;
+end;
+
 procedure TFMain.PopupToolbarPopup(Sender: TObject);
 begin
   MenuFileToolbar.Checked := Config.DefaultFileToolbarVisible;
@@ -1747,7 +1771,7 @@ begin
       end;
   end else
     bmp.FillEllipseAntialias(x,y,visualSize/2,visualSize/2,c);
-  t := round(ImageList16.Width*scaling);
+  t := round(DoScaleX(ImageList16.Width, 96)*scaling);
   margin := DoScaleX(round(4*scaling),OriginalDPI);
   FPenPlusMinus := round((t+margin)/scaling);
   m := t/10;

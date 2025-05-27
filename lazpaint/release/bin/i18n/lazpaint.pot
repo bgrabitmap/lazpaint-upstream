@@ -47,16 +47,6 @@ msgstr ""
 msgid "Open source (GPLv3)"
 msgstr ""
 
-#: tfadjustcurves.button_cancel.caption
-msgctxt "tfadjustcurves.button_cancel.caption"
-msgid "Cancel"
-msgstr ""
-
-#: tfadjustcurves.button_ok.caption
-msgctxt "tfadjustcurves.button_ok.caption"
-msgid "OK"
-msgstr ""
-
 #: tfadjustcurves.caption
 msgid "Adjust curves"
 msgstr ""
@@ -220,16 +210,6 @@ msgctxt "tfchoosecolor.caption"
 msgid "Color"
 msgstr ""
 
-#: tfcolorintensity.button_cancel.caption
-msgctxt "tfcolorintensity.button_cancel.caption"
-msgid "Cancel"
-msgstr ""
-
-#: tfcolorintensity.button_ok.caption
-msgctxt "tfcolorintensity.button_ok.caption"
-msgid "OK"
-msgstr ""
-
 #: tfcolorintensity.caption
 msgctxt "tfcolorintensity.caption"
 msgid "Intensity"
@@ -241,16 +221,6 @@ msgstr ""
 
 #: tfcolorintensity.label_shift.caption
 msgid "Shift"
-msgstr ""
-
-#: tfcolorize.button_cancel.caption
-msgctxt "tfcolorize.button_cancel.caption"
-msgid "Cancel"
-msgstr ""
-
-#: tfcolorize.button_ok.caption
-msgctxt "tfcolorize.button_ok.caption"
-msgid "OK"
 msgstr ""
 
 #: tfcolorize.caption
@@ -275,11 +245,6 @@ msgstr ""
 msgid "Preset"
 msgstr ""
 
-#: tfcustomblur.button_cancel.caption
-msgctxt "tfcustomblur.button_cancel.caption"
-msgid "Cancel"
-msgstr ""
-
 #: tfcustomblur.button_editmask.caption
 msgid "Edit mask..."
 msgstr ""
@@ -288,27 +253,12 @@ msgstr ""
 msgid "Load mask..."
 msgstr ""
 
-#: tfcustomblur.button_ok.caption
-msgctxt "tfcustomblur.button_ok.caption"
-msgid "OK"
-msgstr ""
-
 #: tfcustomblur.caption
 msgid "Custom blur"
 msgstr ""
 
 #: tfcustomblur.openpicturedialog1.title
 msgid "Open grayscale file"
-msgstr ""
-
-#: tfemboss.button_cancel.caption
-msgctxt "tfemboss.button_cancel.caption"
-msgid "Cancel"
-msgstr ""
-
-#: tfemboss.button_ok.caption
-msgctxt "tfemboss.button_ok.caption"
-msgid "OK"
 msgstr ""
 
 #: tfemboss.caption
@@ -325,16 +275,6 @@ msgstr ""
 
 #: tfemboss.label_direction.caption
 msgid "Direction :"
-msgstr ""
-
-#: tffilterfunction.button_cancel.caption
-msgctxt "tffilterfunction.button_cancel.caption"
-msgid "Cancel"
-msgstr ""
-
-#: tffilterfunction.button_ok.caption
-msgctxt "tffilterfunction.button_ok.caption"
-msgid "OK"
 msgstr ""
 
 #: tffilterfunction.caption
@@ -437,6 +377,14 @@ msgstr ""
 
 #: tfgeometricbrush.label1.caption
 msgid "Number of sides:"
+msgstr ""
+
+#: tfhypocycloid.caption
+msgid "Hypocycloid"
+msgstr ""
+
+#: tfhypocycloid.label_amount.caption
+msgid "Cusps:"
 msgstr ""
 
 #: tfimagelist.caption
@@ -756,6 +704,10 @@ msgstr ""
 
 #: tfmain.exportpicturedialog.title
 msgid "Export as..."
+msgstr ""
+
+#: tfmain.filecheckscriptssecure.caption
+msgid "Check scripts are secure"
 msgstr ""
 
 #: tfmain.filechooseentry.caption
@@ -1410,6 +1362,10 @@ msgstr ""
 msgid "Cyclic Perlin noise"
 msgstr ""
 
+#: tfmain.renderhypocycloid.caption
+msgid "Hypocycloid..."
+msgstr ""
+
 #: tfmain.rendermarble.caption
 msgid "Marble"
 msgstr ""
@@ -1436,6 +1392,10 @@ msgstr ""
 
 #: tfmain.renderstone.caption
 msgid "Stone"
+msgstr ""
+
+#: tfmain.rendersuperformula.caption
+msgid "SuperFormula..."
 msgstr ""
 
 #: tfmain.renderwater.caption
@@ -1940,16 +1900,6 @@ msgstr ""
 msgid "Zoom out"
 msgstr ""
 
-#: tfmotionblur.button_cancel.caption
-msgctxt "tfmotionblur.button_cancel.caption"
-msgid "Cancel"
-msgstr ""
-
-#: tfmotionblur.button_ok.caption
-msgctxt "tfmotionblur.button_ok.caption"
-msgid "OK"
-msgstr ""
-
 #: tfmotionblur.caption
 msgid "Motion blur"
 msgstr ""
@@ -2015,16 +1965,6 @@ msgstr ""
 #: tfnewimage.label_width.caption
 msgctxt "tfnewimage.label_width.caption"
 msgid "Width :"
-msgstr ""
-
-#: tfnoisefilter.button_cancel.caption
-msgctxt "tfnoisefilter.button_cancel.caption"
-msgid "Cancel"
-msgstr ""
-
-#: tfnoisefilter.button_ok.caption
-msgctxt "tfnoisefilter.button_ok.caption"
-msgid "OK"
 msgstr ""
 
 #: tfnoisefilter.caption
@@ -2158,16 +2098,6 @@ msgstr ""
 msgid "Remove selected light"
 msgstr ""
 
-#: tfphongfilter.button_cancel.caption
-msgctxt "tfphongfilter.button_cancel.caption"
-msgid "Cancel"
-msgstr ""
-
-#: tfphongfilter.button_ok.caption
-msgctxt "tfphongfilter.button_ok.caption"
-msgid "OK"
-msgstr ""
-
 #: tfphongfilter.caption
 msgid "Shaded map"
 msgstr ""
@@ -2220,6 +2150,7 @@ msgid "Saturation"
 msgstr ""
 
 #: tfphongfilter.radio_usebackcolor.caption
+msgctxt "tfphongfilter.radio_usebackcolor.caption"
 msgid "Back color"
 msgstr ""
 
@@ -2228,21 +2159,12 @@ msgid "Keep"
 msgstr ""
 
 #: tfphongfilter.radio_usepencolor.caption
+msgctxt "tfphongfilter.radio_usepencolor.caption"
 msgid "Pen color"
 msgstr ""
 
 #: tfphongfilter.radio_usetexture.caption
 msgid "Current texture"
-msgstr ""
-
-#: tfpixelate.button_cancel.caption
-msgctxt "tfpixelate.button_cancel.caption"
-msgid "Cancel"
-msgstr ""
-
-#: tfpixelate.button_ok.caption
-msgctxt "tfpixelate.button_ok.caption"
-msgid "OK"
 msgstr ""
 
 #: tfpixelate.caption
@@ -2256,16 +2178,6 @@ msgstr ""
 #: tfpixelate.label_quality.caption
 msgctxt "tfpixelate.label_quality.caption"
 msgid "Quality :"
-msgstr ""
-
-#: tfposterize.button_cancel.caption
-msgctxt "tfposterize.button_cancel.caption"
-msgid "Cancel"
-msgstr ""
-
-#: tfposterize.button_ok.caption
-msgctxt "tfposterize.button_ok.caption"
-msgid "OK"
 msgstr ""
 
 #: tfposterize.caption
@@ -2282,6 +2194,7 @@ msgid "Levels :"
 msgstr ""
 
 #: tfpreviewdialog.caption
+msgctxt "tfpreviewdialog.caption"
 msgid "Preview"
 msgstr ""
 
@@ -2310,6 +2223,11 @@ msgstr ""
 #: tfprint.checkbox_ratio.caption
 msgctxt "tfprint.checkbox_ratio.caption"
 msgid "Keep aspect ratio"
+msgstr ""
+
+#: tfprint.combobox_orientation.text
+msgctxt "tfprint.combobox_orientation.text"
+msgid "0"
 msgstr ""
 
 #: tfprint.groupbox_imagesize.caption
@@ -2354,6 +2272,11 @@ msgstr ""
 msgid "Right:"
 msgstr ""
 
+#: tfprint.label_selectedprinterandpaper.caption
+msgctxt "tfprint.label_selectedprinterandpaper.caption"
+msgid "."
+msgstr ""
+
 #: tfprint.label_top.caption
 msgid "Top:"
 msgstr ""
@@ -2375,16 +2298,6 @@ msgctxt "tfquestion.label_message.caption"
 msgid "."
 msgstr ""
 
-#: tfradialblur.button_cancel.caption
-msgctxt "tfradialblur.button_cancel.caption"
-msgid "Cancel"
-msgstr ""
-
-#: tfradialblur.button_ok.caption
-msgctxt "tfradialblur.button_ok.caption"
-msgid "OK"
-msgstr ""
-
 #: tfradialblur.caption
 msgctxt "tfradialblur.caption"
 msgid "Radial blur"
@@ -2393,16 +2306,6 @@ msgstr ""
 #: tfradialblur.label_radius.caption
 msgctxt "tfradialblur.label_radius.caption"
 msgid "Radius :"
-msgstr ""
-
-#: tfrain.button_cancel.caption
-msgctxt "tfrain.button_cancel.caption"
-msgid "Cancel"
-msgstr ""
-
-#: tfrain.button_ok.caption
-msgctxt "tfrain.button_ok.caption"
-msgid "OK"
 msgstr ""
 
 #: tfrain.caption
@@ -2479,6 +2382,7 @@ msgid "Quality:"
 msgstr ""
 
 #: tfsaveoption.label_0.caption
+msgctxt "tfsaveoption.label_0.caption"
 msgid "0"
 msgstr ""
 
@@ -2522,32 +2426,12 @@ msgstr ""
 msgid "MioMap"
 msgstr ""
 
-#: tfsharpen.button_cancel.caption
-msgctxt "tfsharpen.button_cancel.caption"
-msgid "Cancel"
-msgstr ""
-
-#: tfsharpen.button_ok.caption
-msgctxt "tfsharpen.button_ok.caption"
-msgid "OK"
-msgstr ""
-
 #: tfsharpen.caption
 msgid "Sharpen/Smooth"
 msgstr ""
 
 #: tfsharpen.label_amount.caption
 msgid "Amount :"
-msgstr ""
-
-#: tfshiftcolors.button_cancel.caption
-msgctxt "tfshiftcolors.button_cancel.caption"
-msgid "Cancel"
-msgstr ""
-
-#: tfshiftcolors.button_ok.caption
-msgctxt "tfshiftcolors.button_ok.caption"
-msgid "OK"
 msgstr ""
 
 #: tfshiftcolors.caption
@@ -2569,19 +2453,65 @@ msgctxt "tfshiftcolors.label2.caption"
 msgid "Saturation"
 msgstr ""
 
+#: tfsuperformula.caption
+msgid "Superformula"
+msgstr ""
+
+#: tfsuperformula.label_a.caption
+msgid "a"
+msgstr ""
+
+#: tfsuperformula.label_b.caption
+msgid "b"
+msgstr ""
+
+#: tfsuperformula.label_backcolor.caption
+msgctxt "tfsuperformula.label_backcolor.caption"
+msgid "Back color"
+msgstr ""
+
+#: tfsuperformula.label_n1.caption
+msgid "n1"
+msgstr ""
+
+#: tfsuperformula.label_n2.caption
+msgid "n2"
+msgstr ""
+
+#: tfsuperformula.label_n3.caption
+msgid "n3"
+msgstr ""
+
+#: tfsuperformula.label_pencolor.caption
+msgctxt "tfsuperformula.label_pencolor.caption"
+msgid "Pen color"
+msgstr ""
+
+#: tfsuperformula.label_rational.caption
+msgid "Rational"
+msgstr ""
+
+#: tfsuperformula.label_size.caption
+msgctxt "tfsuperformula.label_size.caption"
+msgid "Size"
+msgstr ""
+
+#: tfsuperformula.label_spikecount.caption
+msgid "Spike count"
+msgstr ""
+
+#: tfsuperformula.label_spikeoverlap.caption
+msgid "Spike overlap"
+msgstr ""
+
+#: tfsuperformula.label_width.caption
+msgctxt "tfsuperformula.label_width.caption"
+msgid "Width"
+msgstr ""
+
 #: tftoolbox.caption
 msgctxt "tftoolbox.caption"
 msgid "Tools"
-msgstr ""
-
-#: tftwirl.button_cancel.caption
-msgctxt "tftwirl.button_cancel.caption"
-msgid "Cancel"
-msgstr ""
-
-#: tftwirl.button_ok.caption
-msgctxt "tftwirl.button_ok.caption"
-msgid "OK"
 msgstr ""
 
 #: tftwirl.caption
@@ -2595,16 +2525,6 @@ msgstr ""
 #: tftwirl.label_radius.caption
 msgctxt "tftwirl.label_radius.caption"
 msgid "Radius :"
-msgstr ""
-
-#: tfwavedisplacement.button_cancel.caption
-msgctxt "tfwavedisplacement.button_cancel.caption"
-msgid "Cancel"
-msgstr ""
-
-#: tfwavedisplacement.button_ok.caption
-msgctxt "tfwavedisplacement.button_ok.caption"
-msgid "OK"
 msgstr ""
 
 #: tfwavedisplacement.caption
@@ -2950,6 +2870,7 @@ msgid "File not saved"
 msgstr ""
 
 #: uresourcestrings.rsfilesize
+msgctxt "uresourcestrings.rsfilesize"
 msgid "Size"
 msgstr ""
 
@@ -3294,12 +3215,21 @@ msgstr ""
 msgid "There is nothing to be retrieved"
 msgstr ""
 
+#: uresourcestrings.rsnotlazpaintscript
+msgid "This is not a LazPaint script"
+msgstr ""
+
 #: uresourcestrings.rsnotreasonableformat
 msgid "It is not reasonable to save such a big image in this file format."
 msgstr ""
 
 #: uresourcestrings.rsnumber
 msgid "№"
+msgstr ""
+
+#: uresourcestrings.rsok
+msgctxt "uresourcestrings.rsok"
+msgid "OK"
 msgstr ""
 
 #: uresourcestrings.rsokay
@@ -3366,6 +3296,11 @@ msgstr ""
 
 #: uresourcestrings.rspresetname
 msgid "Preset name"
+msgstr ""
+
+#: uresourcestrings.rspreview
+msgctxt "uresourcestrings.rspreview"
+msgid "Preview"
 msgstr ""
 
 #: uresourcestrings.rspx
@@ -3444,6 +3379,14 @@ msgstr ""
 msgid "Use RIGHT click to define source"
 msgstr ""
 
+#: uresourcestrings.rsrightclickfortransformcenter
+msgid "Use RIGHT click to define transform center"
+msgstr ""
+
+#: uresourcestrings.rsrunscriptagaintoupdateeffect
+msgid "Run this script again to update effect"
+msgstr ""
+
 #: uresourcestrings.rssaturation
 msgctxt "uresourcestrings.rssaturation"
 msgid "Saturation"
@@ -3469,6 +3412,10 @@ msgstr ""
 #: uresourcestrings.rsscript
 msgctxt "uresourcestrings.rsscript"
 msgid "Script"
+msgstr ""
+
+#: uresourcestrings.rsscriptnotsafe
+msgid "The script file does not seem to be safe: %1"
 msgstr ""
 
 #: uresourcestrings.rsselectblendoperation
@@ -3510,6 +3457,10 @@ msgstr ""
 
 #: uresourcestrings.rsstroke
 msgid "Stroke"
+msgstr ""
+
+#: uresourcestrings.rssuretorununsafescript
+msgid "Are you sure you would like to run this script? The following modules used by this script may be unsafe: %1"
 msgstr ""
 
 #: uresourcestrings.rstextoutline
@@ -3603,7 +3554,7 @@ msgid "Vertical size"
 msgstr ""
 
 #: uresourcestrings.rsvisible
-msgid "Visibile"
+msgid "Visible"
 msgstr ""
 
 #: uresourcestrings.rsyellow

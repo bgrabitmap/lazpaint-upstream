@@ -65,16 +65,6 @@ msgctxt "tfabout.label_opensource.caption"
 msgid "Open source (GPLv3)"
 msgstr "Open source (GPLv3)"
 
-#: tfadjustcurves.button_cancel.caption
-msgctxt "tfadjustcurves.button_cancel.caption"
-msgid "Cancel"
-msgstr "Sefsex"
-
-#: tfadjustcurves.button_ok.caption
-msgctxt "tfadjustcurves.button_ok.caption"
-msgid "OK"
-msgstr "Ih"
-
 #: tfadjustcurves.caption
 msgid "Adjust curves"
 msgstr "Sgaddi izligen"
@@ -248,16 +238,6 @@ msgctxt "tfchoosecolor.caption"
 msgid "Color"
 msgstr "Ini"
 
-#: tfcolorintensity.button_cancel.caption
-msgctxt "TFCOLORINTENSITY.BUTTON_CANCEL.CAPTION"
-msgid "Cancel"
-msgstr "Sefsex"
-
-#: tfcolorintensity.button_ok.caption
-msgctxt "TFCOLORINTENSITY.BUTTON_OK.CAPTION"
-msgid "OK"
-msgstr "Ih"
-
 #: tfcolorintensity.caption
 msgctxt "tfcolorintensity.caption"
 msgid "Intensity"
@@ -272,16 +252,6 @@ msgstr "Sugget"
 msgctxt "tfcolorintensity.label_shift.caption"
 msgid "Shift"
 msgstr "Sekḥer"
-
-#: tfcolorize.button_cancel.caption
-msgctxt "TFCOLORIZE.BUTTON_CANCEL.CAPTION"
-msgid "Cancel"
-msgstr "Sefsex"
-
-#: tfcolorize.button_ok.caption
-msgctxt "TFCOLORIZE.BUTTON_OK.CAPTION"
-msgid "OK"
-msgstr "Ih"
 
 #: tfcolorize.caption
 msgctxt "tfcolorize.caption"
@@ -307,11 +277,6 @@ msgstr "Tiɣmi"
 msgid "Preset"
 msgstr "Azwir-ɣewwar"
 
-#: tfcustomblur.button_cancel.caption
-msgctxt "TFCUSTOMBLUR.BUTTON_CANCEL.CAPTION"
-msgid "Cancel"
-msgstr "Sefsex"
-
 #: tfcustomblur.button_editmask.caption
 msgid "Edit mask..."
 msgstr "Ẓreg tagelmust..."
@@ -319,11 +284,6 @@ msgstr "Ẓreg tagelmust..."
 #: tfcustomblur.button_loadmask.caption
 msgid "Load mask..."
 msgstr "Sali-d tagelmust..."
-
-#: tfcustomblur.button_ok.caption
-msgctxt "TFCUSTOMBLUR.BUTTON_OK.CAPTION"
-msgid "OK"
-msgstr "Ih"
 
 #: tfcustomblur.caption
 msgctxt "tfcustomblur.caption"
@@ -333,16 +293,6 @@ msgstr "Aluɣu yugnen"
 #: tfcustomblur.openpicturedialog1.title
 msgid "Open grayscale file"
 msgstr "Ldi afaylu s tfesna n umelliɣdi"
-
-#: tfemboss.button_cancel.caption
-msgctxt "TFEMBOSS.BUTTON_CANCEL.CAPTION"
-msgid "Cancel"
-msgstr "Sefsex"
-
-#: tfemboss.button_ok.caption
-msgctxt "TFEMBOSS.BUTTON_OK.CAPTION"
-msgid "OK"
-msgstr "Ih"
 
 #: tfemboss.caption
 msgctxt "tfemboss.caption"
@@ -361,16 +311,6 @@ msgstr "Afrawan"
 msgctxt "tfemboss.label_direction.caption"
 msgid "Direction :"
 msgstr "Tanila :"
-
-#: tffilterfunction.button_cancel.caption
-msgctxt "tffilterfunction.button_cancel.caption"
-msgid "Cancel"
-msgstr "Sefsex"
-
-#: tffilterfunction.button_ok.caption
-msgctxt "tffilterfunction.button_ok.caption"
-msgid "OK"
-msgstr "Ih"
 
 #: tffilterfunction.caption
 msgid "Apply function"
@@ -448,7 +388,7 @@ msgstr "HSL"
 
 #: tffilterfunction.tabsheet_lab.caption
 msgid "Lab"
-msgstr ""
+msgstr "Lab"
 
 #: tffilterfunction.tabsheet_rgb.caption
 msgctxt "tffilterfunction.tabsheet_rgb.caption"
@@ -476,6 +416,14 @@ msgstr "Tiḍullest n ufesniw"
 #: tfgeometricbrush.label1.caption
 msgid "Number of sides:"
 msgstr "Amḍan n idisan:"
+
+#: tfhypocycloid.caption
+msgid "Hypocycloid"
+msgstr "Hypocycloid"
+
+#: tfhypocycloid.label_amount.caption
+msgid "Cusps:"
+msgstr "Iɣtimen:"
 
 #: tfimagelist.caption
 msgid "Image List"
@@ -655,11 +603,11 @@ msgstr "Sekḥer initen..."
 
 #: tfmain.combobox_arrowend.hint
 msgid "Ending arrow"
-msgstr ""
+msgstr "Tasedlis n taggara"
 
 #: tfmain.combobox_arrowstart.hint
 msgid "Starting arrow"
-msgstr ""
+msgstr "Tasedlis n tazwara n taggara"
 
 #: tfmain.combobox_penstyle.hint
 msgid "Pen style"
@@ -809,6 +757,10 @@ msgstr "Sentem ibeddilen"
 msgid "Export as..."
 msgstr "Sifeḍ am..."
 
+#: tfmain.filecheckscriptssecure.caption
+msgid "Check scripts are secure"
+msgstr "Senqed ma yella yisennayen d imɣurifen"
+
 #: tfmain.filechooseentry.caption
 msgid "Choose entry..."
 msgstr "Fren anekcum..."
@@ -853,11 +805,11 @@ msgstr "Siggez..."
 
 #: tfmain.filequicksave.caption
 msgid "Quick save"
-msgstr ""
+msgstr "Sekles d imezli"
 
 #: tfmain.filequicksave.hint
 msgid "Save current file without dialogs"
-msgstr ""
+msgstr "Sekles afaylu imezli war amennuɣ"
 
 #: tfmain.filequit.hint
 msgctxt "TFMAIN.FILEQUIT.HINT"
@@ -1507,6 +1459,10 @@ msgctxt "tfmain.rendercyclicperlinnoise.caption"
 msgid "Cyclic Perlin noise"
 msgstr "Asxerxec n Perlin s wallus"
 
+#: tfmain.renderhypocycloid.caption
+msgid "Hypocycloid..."
+msgstr "Hypocycloid..."
+
 #: tfmain.rendermarble.caption
 msgid "Marble"
 msgstr "Aṛxam"
@@ -1534,6 +1490,10 @@ msgstr "Idrizen deg udfel"
 #: tfmain.renderstone.caption
 msgid "Stone"
 msgstr "Aẓru"
+
+#: tfmain.rendersuperformula.caption
+msgid "SuperFormula..."
+msgstr "Tamestɣant tameɣzunt..."
 
 #: tfmain.renderwater.caption
 msgctxt "tfmain.renderwater.caption"
@@ -1943,7 +1903,7 @@ msgstr "Taqbuct n teklut tafarayt"
 
 #: tfmain.tool_textalignbottom.hint
 msgid "Align bottom"
-msgstr ""
+msgstr "Seɣram s uslad"
 
 #: tfmain.tool_textaligncenter.hint
 msgid "Center"
@@ -1955,7 +1915,7 @@ msgstr "Derrec s azelmaḍ"
 
 #: tfmain.tool_textalignmiddle.hint
 msgid "Center vertically"
-msgstr ""
+msgstr "Seɣram s wadda n teɣzi"
 
 #: tfmain.tool_textalignright.hint
 msgid "Align right"
@@ -1963,15 +1923,15 @@ msgstr "Derrec s ayfus"
 
 #: tfmain.tool_textaligntop.hint
 msgid "Align top"
-msgstr ""
+msgstr "Seɣram s uzelmaḍ"
 
 #: tfmain.tool_textbidirectional.hint
 msgid "Bidirectional"
-msgstr ""
+msgstr "Ihawi n sin"
 
 #: tfmain.tool_textbold.hint
 msgid "Bold"
-msgstr ""
+msgstr "Aseɣtas abennu"
 
 #: tfmain.tool_textfont.hint
 msgctxt "TFMAIN.TOOL_TEXTFONT.HINT"
@@ -1980,11 +1940,11 @@ msgstr "Fren tasefsit..."
 
 #: tfmain.tool_textitalic.hint
 msgid "Italic"
-msgstr ""
+msgstr "Asfaz imelles"
 
 #: tfmain.tool_textltr.hint
 msgid "Left to right"
-msgstr ""
+msgstr "Seg uzelmaḍ ar tazwara"
 
 #: tfmain.tool_textoutline.hint
 msgctxt "TFMAIN.TOOL_TEXTOUTLINE.HINT"
@@ -1998,7 +1958,7 @@ msgstr "Aḍris s tili Phong"
 
 #: tfmain.tool_textrtl.hint
 msgid "Right to left"
-msgstr ""
+msgstr "Seg tazwara ar uzelmaḍ"
 
 #: tfmain.tool_textshadow.hint
 msgctxt "TFMAIN.TOOL_TEXTSHADOW.HINT"
@@ -2007,11 +1967,11 @@ msgstr "Tili n uḍris"
 
 #: tfmain.tool_textstrikeout.hint
 msgid "Strikeout"
-msgstr ""
+msgstr "Awernuz"
 
 #: tfmain.tool_textunderline.hint
 msgid "Underline"
-msgstr ""
+msgstr "Awernuz s uzda"
 
 #: tfmain.viewcolors.caption
 msgctxt "TFMAIN.VIEWCOLORS.CAPTION"
@@ -2092,16 +2052,6 @@ msgctxt "TFMAIN.VIEWZOOMOUT.HINT"
 msgid "Zoom out"
 msgstr "Simecṭuḥ"
 
-#: tfmotionblur.button_cancel.caption
-msgctxt "TFMOTIONBLUR.BUTTON_CANCEL.CAPTION"
-msgid "Cancel"
-msgstr "Sefsex"
-
-#: tfmotionblur.button_ok.caption
-msgctxt "TFMOTIONBLUR.BUTTON_OK.CAPTION"
-msgid "OK"
-msgstr "Ih"
-
 #: tfmotionblur.caption
 msgctxt "tfmotionblur.caption"
 msgid "Motion blur"
@@ -2170,16 +2120,6 @@ msgstr "Takatut yettwasran :"
 msgctxt "tfnewimage.label_width.caption"
 msgid "Width :"
 msgstr "Tehri :"
-
-#: tfnoisefilter.button_cancel.caption
-msgctxt "tfnoisefilter.button_cancel.caption"
-msgid "Cancel"
-msgstr "Sefsex"
-
-#: tfnoisefilter.button_ok.caption
-msgctxt "tfnoisefilter.button_ok.caption"
-msgid "OK"
-msgstr "Ih"
 
 #: tfnoisefilter.caption
 msgid "Noise filter"
@@ -2318,16 +2258,6 @@ msgstr "Rnu tafat tunqiḍt"
 msgid "Remove selected light"
 msgstr "Kkes tafat yettwafernen"
 
-#: tfphongfilter.button_cancel.caption
-msgctxt "tfphongfilter.button_cancel.caption"
-msgid "Cancel"
-msgstr "Sefsex"
-
-#: tfphongfilter.button_ok.caption
-msgctxt "tfphongfilter.button_ok.caption"
-msgid "OK"
-msgstr "Ih"
-
 #: tfphongfilter.caption
 msgctxt "tfphongfilter.caption"
 msgid "Shaded map"
@@ -2381,6 +2311,7 @@ msgid "Saturation"
 msgstr "Tawant"
 
 #: tfphongfilter.radio_usebackcolor.caption
+msgctxt "tfphongfilter.radio_usebackcolor.caption"
 msgid "Back color"
 msgstr "Ini n ugilal"
 
@@ -2389,6 +2320,7 @@ msgid "Keep"
 msgstr "Ḥrez"
 
 #: tfphongfilter.radio_usepencolor.caption
+msgctxt "tfphongfilter.radio_usepencolor.caption"
 msgid "Pen color"
 msgstr "Ini n yimru"
 
@@ -2396,16 +2328,6 @@ msgstr "Ini n yimru"
 msgctxt "tfphongfilter.radio_usetexture.caption"
 msgid "Current texture"
 msgstr "Tizḍi tamirant"
-
-#: tfpixelate.button_cancel.caption
-msgctxt "TFPIXELATE.BUTTON_CANCEL.CAPTION"
-msgid "Cancel"
-msgstr "Sefsex"
-
-#: tfpixelate.button_ok.caption
-msgctxt "TFPIXELATE.BUTTON_OK.CAPTION"
-msgid "OK"
-msgstr "Ih"
 
 #: tfpixelate.caption
 msgctxt "tfpixelate.caption"
@@ -2422,16 +2344,6 @@ msgctxt "tfpixelate.label_quality.caption"
 msgid "Quality :"
 msgstr "Taɣara :"
 
-#: tfposterize.button_cancel.caption
-msgctxt "tfposterize.button_cancel.caption"
-msgid "Cancel"
-msgstr "Sefsex"
-
-#: tfposterize.button_ok.caption
-msgctxt "tfposterize.button_ok.caption"
-msgid "OK"
-msgstr "Ih"
-
 #: tfposterize.caption
 msgctxt "tfposterize.caption"
 msgid "Posterize"
@@ -2446,6 +2358,7 @@ msgid "Levels :"
 msgstr "Iswiren :"
 
 #: tfpreviewdialog.caption
+msgctxt "tfpreviewdialog.caption"
 msgid "Preview"
 msgstr "Tamuɣli"
 
@@ -2475,6 +2388,12 @@ msgstr "Siggez"
 msgctxt "tfprint.checkbox_ratio.caption"
 msgid "Keep aspect ratio"
 msgstr "Ḥrez assaɣ n tmeẓri"
+
+#: tfprint.combobox_orientation.text
+#, fuzzy
+msgctxt "tfprint.combobox_orientation.text"
+msgid "0"
+msgstr "0"
 
 #: tfprint.groupbox_imagesize.caption
 msgid "Image size"
@@ -2518,6 +2437,12 @@ msgstr "Tasaggazt akked ukaɣeḍ:"
 msgid "Right:"
 msgstr "Ayfus:"
 
+#: tfprint.label_selectedprinterandpaper.caption
+#, fuzzy
+msgctxt "tfprint.label_selectedprinterandpaper.caption"
+msgid "."
+msgstr "."
+
 #: tfprint.label_top.caption
 msgid "Top:"
 msgstr "Uksawen :"
@@ -2539,16 +2464,6 @@ msgctxt "tfquestion.label_message.caption"
 msgid "."
 msgstr "."
 
-#: tfradialblur.button_cancel.caption
-msgctxt "TFRADIALBLUR.BUTTON_CANCEL.CAPTION"
-msgid "Cancel"
-msgstr "Sefsex"
-
-#: tfradialblur.button_ok.caption
-msgctxt "TFRADIALBLUR.BUTTON_OK.CAPTION"
-msgid "OK"
-msgstr "Ih"
-
 #: tfradialblur.caption
 msgctxt "tfradialblur.caption"
 msgid "Radial blur"
@@ -2558,16 +2473,6 @@ msgstr "Aluɣu aẓenẓaran"
 msgctxt "tfradialblur.label_radius.caption"
 msgid "Radius :"
 msgstr "Aqqar :"
-
-#: tfrain.button_cancel.caption
-msgctxt "tfrain.button_cancel.caption"
-msgid "Cancel"
-msgstr "Sefsex"
-
-#: tfrain.button_ok.caption
-msgctxt "tfrain.button_ok.caption"
-msgid "OK"
-msgstr "Ih"
 
 #: tfrain.caption
 msgid "Rain"
@@ -2637,13 +2542,14 @@ msgstr "Tizḍi"
 
 #: tfsaveoption.checkbox_lossless.caption
 msgid "Lossless"
-msgstr ""
+msgstr "War tuffɣa"
 
 #: tfsaveoption.label1.caption
 msgid "Quality:"
 msgstr "Taɣara:"
 
 #: tfsaveoption.label_0.caption
+msgctxt "tfsaveoption.label_0.caption"
 msgid "0"
 msgstr "0"
 
@@ -2687,16 +2593,6 @@ msgstr "32 n ibiten"
 msgid "MioMap"
 msgstr "MioMap"
 
-#: tfsharpen.button_cancel.caption
-msgctxt "tfsharpen.button_cancel.caption"
-msgid "Cancel"
-msgstr "Sefsex"
-
-#: tfsharpen.button_ok.caption
-msgctxt "tfsharpen.button_ok.caption"
-msgid "OK"
-msgstr "Ih"
-
 #: tfsharpen.caption
 msgid "Sharpen/Smooth"
 msgstr "Semsed/Mzi"
@@ -2705,16 +2601,6 @@ msgstr "Semsed/Mzi"
 msgctxt "tfsharpen.label_amount.caption"
 msgid "Amount :"
 msgstr "Tasmekta :"
-
-#: tfshiftcolors.button_cancel.caption
-msgctxt "TFSHIFTCOLORS.BUTTON_CANCEL.CAPTION"
-msgid "Cancel"
-msgstr "Sefsex"
-
-#: tfshiftcolors.button_ok.caption
-msgctxt "TFSHIFTCOLORS.BUTTON_OK.CAPTION"
-msgid "OK"
-msgstr "Ih"
 
 #: tfshiftcolors.caption
 msgctxt "tfshiftcolors.caption"
@@ -2736,20 +2622,70 @@ msgctxt "TFSHIFTCOLORS.LABEL2.CAPTION"
 msgid "Saturation"
 msgstr "Tawant"
 
+#: tfsuperformula.caption
+msgid "Superformula"
+msgstr "Tamestɣant tameɣzunt"
+
+#: tfsuperformula.label_a.caption
+msgid "a"
+msgstr ""
+
+#: tfsuperformula.label_b.caption
+msgid "b"
+msgstr ""
+
+#: tfsuperformula.label_backcolor.caption
+#, fuzzy
+msgctxt "tfsuperformula.label_backcolor.caption"
+msgid "Back color"
+msgstr "Ini n ugilal"
+
+#: tfsuperformula.label_n1.caption
+msgid "n1"
+msgstr ""
+
+#: tfsuperformula.label_n2.caption
+msgid "n2"
+msgstr ""
+
+#: tfsuperformula.label_n3.caption
+msgid "n3"
+msgstr ""
+
+#: tfsuperformula.label_pencolor.caption
+#, fuzzy
+msgctxt "tfsuperformula.label_pencolor.caption"
+msgid "Pen color"
+msgstr "Ini n yimru"
+
+#: tfsuperformula.label_rational.caption
+msgid "Rational"
+msgstr "Amisseɣ"
+
+#: tfsuperformula.label_size.caption
+#, fuzzy
+msgctxt "tfsuperformula.label_size.caption"
+msgid "Size"
+msgstr "Tiddi"
+
+#: tfsuperformula.label_spikecount.caption
+msgid "Spike count"
+msgstr "Amḍan n iẓṛan"
+
+#: tfsuperformula.label_spikeoverlap.caption
+msgid "Spike overlap"
+msgstr "Imeṛṛak n iẓṛan"
+
+#: tfsuperformula.label_width.caption
+#, fuzzy
+msgctxt "tfsuperformula.label_width.caption"
+msgid "Width"
+msgstr "Tehri"
+
 #: tftoolbox.caption
 msgctxt "tftoolbox.caption"
 msgid "Tools"
 msgstr "Ifecka"
-
-#: tftwirl.button_cancel.caption
-msgctxt "TFTWIRL.BUTTON_CANCEL.CAPTION"
-msgid "Cancel"
-msgstr "Sefsex"
-
-#: tftwirl.button_ok.caption
-msgctxt "TFTWIRL.BUTTON_OK.CAPTION"
-msgid "OK"
-msgstr "Ih"
 
 #: tftwirl.caption
 msgctxt "tftwirl.caption"
@@ -2765,16 +2701,6 @@ msgstr "Tiɣmert :"
 msgctxt "tftwirl.label_radius.caption"
 msgid "Radius :"
 msgstr "Aqqar :"
-
-#: tfwavedisplacement.button_cancel.caption
-msgctxt "tfwavedisplacement.button_cancel.caption"
-msgid "Cancel"
-msgstr "Sefsex"
-
-#: tfwavedisplacement.button_ok.caption
-msgctxt "tfwavedisplacement.button_ok.caption"
-msgid "OK"
-msgstr "Ih"
 
 #: tfwavedisplacement.caption
 msgid "Wave displacement"
@@ -2849,7 +2775,7 @@ msgstr "Bitmap"
 
 #: uresourcestrings.rsblack
 msgid "Black"
-msgstr ""
+msgstr "Aberkan"
 
 #: uresourcestrings.rsblendopnotusedforbackground
 msgid "The blend operation is applied only if there is a layer underneath"
@@ -2895,7 +2821,7 @@ msgstr "CD"
 
 #: uresourcestrings.rschannels
 msgid "Channels"
-msgstr ""
+msgstr "Izrigen"
 
 #: uresourcestrings.rsclearpalette
 msgid "Clear palette"
@@ -2916,7 +2842,7 @@ msgstr "Aglam n yini: sit iwakken ad teskecmeḍ ini s unasiw s yismawen-nnsen n
 
 #: uresourcestrings.rscoloroverlay
 msgid "Color overlay"
-msgstr ""
+msgstr "Tigawt n ini"
 
 #: uresourcestrings.rscolors
 msgctxt "uresourcestrings.rscolors"
@@ -2972,7 +2898,7 @@ msgstr "CTRL"
 
 #: uresourcestrings.rscurrentlayernotsplit
 msgid "Current layer is not split"
-msgstr ""
+msgstr "Ider amezli ur yelli ara yeqsem"
 
 #: uresourcestrings.rscurvemodehint
 msgid "Press S or X to set the curve mode of the last point"
@@ -2980,7 +2906,7 @@ msgstr "Ssed S neɣ X iwakken ad tesɣewreḍ askar n uzlig i tenqiḍt taneggar
 
 #: uresourcestrings.rscyan
 msgid "Cyan"
-msgstr ""
+msgstr "Aẓewweɣ"
 
 #: uresourcestrings.rsdefaultpalette
 msgid "Default palette"
@@ -3011,11 +2937,11 @@ msgstr "Ɛiwen s wedrim..."
 
 #: uresourcestrings.rsdownload
 msgid "Download"
-msgstr ""
+msgstr "Smeslay"
 
 #: uresourcestrings.rsdropshadow
 msgid "Drop shadow"
-msgstr ""
+msgstr "Afelqa"
 
 #: uresourcestrings.rsduplicateimage
 msgid "Duplicate image"
@@ -3131,6 +3057,7 @@ msgid "File not saved"
 msgstr "Afaylu ur yeklis ara"
 
 #: uresourcestrings.rsfilesize
+msgctxt "uresourcestrings.rsfilesize"
 msgid "Size"
 msgstr "Tiddi"
 
@@ -3166,7 +3093,7 @@ msgstr "Ḍrant-d tuccḍiwin-agi:"
 
 #: uresourcestrings.rsfractaltree
 msgid "Fractal tree"
-msgstr ""
+msgstr "Tajɣa n taṣṣurt"
 
 #: uresourcestrings.rsframes
 msgid "Frames"
@@ -3255,11 +3182,11 @@ msgstr "Talɣut"
 
 #: uresourcestrings.rsinnerlight
 msgid "Inner light"
-msgstr ""
+msgstr "Tafat n tmeẓra"
 
 #: uresourcestrings.rsinnershadow
 msgid "Inner shadow"
-msgstr ""
+msgstr "Afelqa n tmeẓra"
 
 #: uresourcestrings.rsintensity
 msgctxt "uresourcestrings.rsintensity"
@@ -3272,7 +3199,7 @@ msgstr "Tuccḍa tagensant"
 
 #: uresourcestrings.rsinvalidangle
 msgid "Invalid angle"
-msgstr ""
+msgstr "Abaṭel n unɣal"
 
 #: uresourcestrings.rsinvalidname
 msgid "Invalid name"
@@ -3317,7 +3244,7 @@ msgstr "Lqem aneggaru n LazPaint i iwejden ɣef Internet d"
 
 #: uresourcestrings.rslava
 msgid "Lava"
-msgstr ""
+msgstr "Afeggag"
 
 #: uresourcestrings.rslayer
 msgctxt "uresourcestrings.rslayer"
@@ -3326,7 +3253,7 @@ msgstr "Tissi"
 
 #: uresourcestrings.rslayeralreadysplit
 msgid "Layer already split"
-msgstr ""
+msgstr "Ider yella yeqsem"
 
 #: uresourcestrings.rslayeredimage
 msgid "Layered image"
@@ -3334,7 +3261,7 @@ msgstr "Tugna s tissiyin"
 
 #: uresourcestrings.rslayereffect
 msgid "Layer effect"
-msgstr ""
+msgstr "Asent n umider"
 
 #: uresourcestrings.rslayers
 msgctxt "uresourcestrings.rslayers"
@@ -3391,11 +3318,11 @@ msgstr "Allus"
 
 #: uresourcestrings.rsmagenta
 msgid "Magenta"
-msgstr ""
+msgstr "Magenta"
 
 #: uresourcestrings.rsmakemonochromatic
 msgid "Make monochromatic"
-msgstr ""
+msgstr "Err-it asebḥi yiwen"
 
 #: uresourcestrings.rsmakencolorspalettefrombitmap
 msgid "Make %1-colors palette from image"
@@ -3403,15 +3330,15 @@ msgstr "Eg tapaliḍt n %1 n yiniten seg tugna"
 
 #: uresourcestrings.rsmask
 msgid "Mask"
-msgstr ""
+msgstr "Tamagurt"
 
 #: uresourcestrings.rsmaskfromalphachannel
 msgid "Mask from alpha channel"
-msgstr ""
+msgstr "Asker seg uzweldeg n tneflit"
 
 #: uresourcestrings.rsmerge
 msgid "Merge"
-msgstr ""
+msgstr "Sergi"
 
 #: uresourcestrings.rsmergeselection
 msgid "Do you want to merge selection?"
@@ -3450,7 +3377,7 @@ msgstr "Tugna tamaynutt"
 
 #: uresourcestrings.rsnewmask
 msgid "New mask"
-msgstr ""
+msgstr "Tamagurt tamezli"
 
 #: uresourcestrings.rsno
 msgid "No"
@@ -3479,7 +3406,7 @@ msgstr "Amagnu"
 
 #: uresourcestrings.rsnotchromaticchannel
 msgid "This is not a chromatic channel"
-msgstr ""
+msgstr "Wagi ur yelli ara d azeṭṭa n ini"
 
 #: uresourcestrings.rsnothingtobedeformed
 msgctxt "uresourcestrings.rsnothingtobedeformed"
@@ -3491,6 +3418,10 @@ msgctxt "uresourcestrings.rsnothingtoberetrieved"
 msgid "There is nothing to be retrieved"
 msgstr "Ulac d acu ara d-terreḍ"
 
+#: uresourcestrings.rsnotlazpaintscript
+msgid "This is not a LazPaint script"
+msgstr "Ayagi mačči d usennay n LazPaint"
+
 #: uresourcestrings.rsnotreasonableformat
 msgid "It is not reasonable to save such a big image in this file format."
 msgstr "Ur iwulem ara ad teskelseḍ tugna s umasal-agi n ufaylu."
@@ -3498,6 +3429,12 @@ msgstr "Ur iwulem ara ad teskelseḍ tugna s umasal-agi n ufaylu."
 #: uresourcestrings.rsnumber
 msgid "№"
 msgstr "№"
+
+#: uresourcestrings.rsok
+#, fuzzy
+msgctxt "uresourcestrings.rsok"
+msgid "OK"
+msgstr "Ih"
 
 #: uresourcestrings.rsokay
 msgid "Okay"
@@ -3566,6 +3503,12 @@ msgstr "Talɣa n ubeqqiḍ i tissi s useqdec n tpaliḍt"
 #: uresourcestrings.rspresetname
 msgid "Preset name"
 msgstr "Sbadu isem"
+
+#: uresourcestrings.rspreview
+#, fuzzy
+msgctxt "uresourcestrings.rspreview"
+msgid "Preview"
+msgstr "Tamuɣli"
 
 #: uresourcestrings.rspx
 msgid "px"
@@ -3641,11 +3584,19 @@ msgstr "RGB"
 
 #: uresourcestrings.rsrightclickfinishshape
 msgid "Use RIGHT click to finish shape"
-msgstr ""
+msgstr "Seqdec asiti ayfus iwakken ad tesɛelmi tamegni"
 
 #: uresourcestrings.rsrightclickforsource
 msgid "Use RIGHT click to define source"
 msgstr "Seqdec asiti ayfus iwakken ad tesbaduḍ aɣbalu"
+
+#: uresourcestrings.rsrightclickfortransformcenter
+msgid "Use RIGHT click to define transform center"
+msgstr "Seqdec asiti ayfus iwakken ad tesbaduḍ amkan n uɣezzif"
+
+#: uresourcestrings.rsrunscriptagaintoupdateeffect
+msgid "Run this script again to update effect"
+msgstr "Seɣreḍ taggargant-agi amekkan ad tesbaduḍ azemzeɣ"
 
 #: uresourcestrings.rssaturation
 msgctxt "uresourcestrings.rssaturation"
@@ -3676,6 +3627,10 @@ msgctxt "uresourcestrings.rsscript"
 msgid "Script"
 msgstr "Askript"
 
+#: uresourcestrings.rsscriptnotsafe
+msgid "The script file does not seem to be safe: %1"
+msgstr "Afaylu n usennay mačči d amɣurif: %1"
+
 #: uresourcestrings.rsselectblendoperation
 msgctxt "uresourcestrings.rsselectblendoperation"
 msgid "Select blend operation"
@@ -3701,26 +3656,29 @@ msgstr "Izirig ittleɣwayen"
 
 #: uresourcestrings.rssplitcmyk
 msgid "Split CMYK"
-msgstr ""
+msgstr "Qsem CMYK"
 
 #: uresourcestrings.rssplithsl
 msgid "Split HSL"
-msgstr ""
+msgstr "Qsem HSL"
 
 #: uresourcestrings.rssplitrgb
 msgid "Split RGB"
-msgstr ""
+msgstr "Qsem RGB"
 
 #: uresourcestrings.rsstoragedevice
 msgid "Device"
-msgstr "Ibenk"
+msgstr "Tibenkatin"
 
 #: uresourcestrings.rsstroke
 msgid "Stroke"
-msgstr ""
+msgstr "Ineggura"
+
+#: uresourcestrings.rssuretorununsafescript
+msgid "Are you sure you would like to run this script? The following modules used by this script may be unsafe: %1"
+msgstr "Tettḥamleḍ ad tsenseḍ usennay-a? Iḥulfan-a seg usennay-a zemren ad ilɛun d iruray: %1"
 
 #: uresourcestrings.rstextoutline
-#, fuzzy
 msgctxt "uresourcestrings.rstextoutline"
 msgid "Text outline"
 msgstr "Azdaw n uḍris"
@@ -3804,19 +3762,19 @@ msgstr "Tissi tamawayt"
 
 #: uresourcestrings.rsversion
 msgid "Version"
-msgstr ""
+msgstr "Tayfuct"
 
 #: uresourcestrings.rsverticalsize
 msgid "Vertical size"
-msgstr ""
+msgstr "Tamezla n teɣzi"
 
 #: uresourcestrings.rsvisible
-msgid "Visibile"
-msgstr ""
+msgid "Visible"
+msgstr "Iṭṭef"
 
 #: uresourcestrings.rsyellow
 msgid "Yellow"
-msgstr ""
+msgstr "Awraɣ"
 
 #: uresourcestrings.rsyes
 msgid "Yes"
