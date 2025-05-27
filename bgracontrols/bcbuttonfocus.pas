@@ -413,7 +413,6 @@ end;
 {$IFDEF FPC}
 procedure Register;
 begin
-  //{$I icons\bcbuttonfocus_icon.lrs}
   RegisterComponents('BGRA Button Controls', [TBCButtonFocus]);
   {$IFDEF FPC}
   RegisterPropertyEditor(TypeInfo(integer), TBCButtonFocus,
@@ -1858,7 +1857,7 @@ begin
   FBGRANormal.Free;
   FBGRAHover.Free;
   FBGRAClick.Free;
-  {$IFDEF FPC}FreeThenNil{$ELSE}FreeAndNil{$ENDIF}(FGlyph);
+  FreeAndNil(FGlyph);
   FRounding.Free;
   FRoundingDropDown.Free;
   inherited Destroy;

@@ -195,7 +195,6 @@ uses BGRABitmapTypes, Math, BCTools;
 {$IFDEF FPC}
 procedure Register;
 begin
-//{$I icons\bctrackbarupdown_icon.lrs}
   RegisterComponents('BGRA Controls', [TBCTrackbarUpdown]);
 end;
 {$ENDIF}
@@ -297,7 +296,7 @@ begin
   FEmptyText:= false;
   DoSelectAll;
   Invalidate;
-  NotifyChange;
+  if not (csLoading in ComponentState) then NotifyChange;
 end;
 
 procedure TCustomBCTrackbarUpdown.SetArrowColor(AValue: TColor);

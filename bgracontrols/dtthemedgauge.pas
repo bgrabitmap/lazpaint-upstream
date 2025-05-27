@@ -13,7 +13,7 @@
   (Compatibility with delphi VCL 11/2018)
 
 ***************************** END CONTRIBUTOR(S) *****************************}
-unit dtthemedgauge;
+unit DTThemedGauge;
 
 {$I bgracontrols.inc}
 
@@ -77,7 +77,6 @@ implementation
 {$IFDEF FPC}
 procedure Register;
 begin
-  //{$I icons\dtthemedgauge_icon.lrs}
   RegisterComponents('BGRA Controls', [TDTThemedGauge]);
 end;
 {$ENDIF}
@@ -247,7 +246,7 @@ begin
   X := origin.CenterPoint.x - Round(PointerSettings.Length * cos((j + Position * 270 / ScaleSettings.Maximum) * Pi / 180));
   Y := origin.CenterPoint.y - Round(PointerSettings.Length * sin((j + Position * 270 / ScaleSettings.Maximum) * Pi / 180));
 
-  FPointerBitmap.DrawLineAntialias(origin.CenterPoint.y, origin.CenterPoint.y, x, y, PointerSettings.Color, PointerSettings.Thickness);
+  FPointerBitmap.DrawLineAntialias(origin.CenterPoint.x, origin.CenterPoint.y, x, y, PointerSettings.Color, PointerSettings.Thickness);
 
   // Draw cap over needle
   FPointerBitmap.EllipseAntialias(origin.CenterPoint.x, origin.CenterPoint.y, PointerCapSettings.Radius, PointerCapSettings.Radius, PointerCapSettings.EdgeColor, 2, ColorToBGRA(PointerCapSettings.FillColor));

@@ -12,7 +12,7 @@
   (Compatibility with delphi VCL 11/2018)
 
 ***************************** END CONTRIBUTOR(S) *****************************}
-unit dtthemedclock;
+unit DTThemedClock;
 
 {$I bgracontrols.inc}
 
@@ -88,7 +88,6 @@ implementation
 {$IFDEF FPC}
 procedure Register;
 begin
-  //{$I icons\dtthemedclock_icon.lrs}
   RegisterComponents('BGRA Controls', [TDTThemedClock]);
 end;
 {$ENDIF}

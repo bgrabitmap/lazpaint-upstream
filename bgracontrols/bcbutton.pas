@@ -435,8 +435,7 @@ end;
 {$IFDEF FPC}
 procedure Register;
 begin
-  {$I images\bgracontrols_images.lrs}
-  //{$I icons\bcbutton_icon.lrs}
+  {$R images\bgracontrols_images.res}
   RegisterComponents('BGRA Button Controls', [TBCButton]);
   RegisterPropertyEditor(TypeInfo(integer), TBCButton,
     'ImageIndex', TBCButtonImageIndexPropertyEditor);
@@ -2059,7 +2058,7 @@ begin
   FBGRANormal.Free;
   FBGRAHover.Free;
   FBGRAClick.Free;
-  {$IFDEF FPC}FreeThenNil(FGlyph);{$ELSE}FreeAndNil(FGlyph);{$ENDIF}
+  FreeAndNil(FGlyph);
   FRounding.Free;
   FRoundingDropDown.Free;
   inherited Destroy;

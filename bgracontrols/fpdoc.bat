@@ -1,1 +1,0 @@
-fpdoc.exe --descr-dir=.\fpdoc\ --package=bgracontrols --input-dir=.\

@@ -122,6 +122,7 @@ type
     property Border;
     property BorderBCStyle;
     property Caption;
+    property Color;
     property Constraints;
     property DockSite;
     property DragCursor;
@@ -173,7 +174,6 @@ uses BCTools;
 {$IFDEF FPC}
 procedure Register;
 begin
-  //{$I icons\bcpanel_icon.lrs}
   RegisterComponents('BGRA Controls', [TBCPanel]);
 end;
 {$ENDIF}
