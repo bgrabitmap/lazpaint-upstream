@@ -62,17 +62,87 @@ ifeq ($(UNAME),Linux)
   SCRIPT_FILES:=$(shell find "$(SOURCE_SCRIPT_DIR)" -maxdepth 1 -type f -name *.py -printf "\"%f\" ")
   SCRIPT_RUNTIME_FILES:=$(shell find "$(SOURCE_SCRIPT_DIR)/lazpaint" -maxdepth 1 -type f -name *.py -printf "\"%f\" ")
   
-  LAZARUSDIRECTORIES:="-Fu$(lazdir)/*" "-Fi$(lazdir)/*" "-Fu$(lazdir)/components/printers/unix" "-Fi$(lazdir)/components/printers/unix" "-Fu$(lazdir)/packager/registration" "-Fi$(lazdir)/packager/registration" "-Fu$(lazdir)/components/*" "-Fi$(lazdir)/components/*" "-Fu$(lazdir)/lcl/forms" "-Fi$(lazdir)/lcl/forms" "-Fu$(lazdir)/lcl/widgetset" "-Fi$(lazdir)/lcl/widgetset" "-Fu$(lazdir)/interfaces/*" "-Fi$(lazdir)/interfaces/*" "-Fu$(lazdir)/lcl/nonwin32" "-Fi$(lazdir)/lcl/nonwin32" "-Fu$(lazdir)/lcl/interfaces/gtk2" "-Fi$(lazdir)/lcl/interfaces/gtk2" "-Fu$(lazdir)/lcl/components/*" "-Fi$(lazdir)/lcl/components/*" "-Fu$(lazdir)/lcl/include" "-Fi$(lazdir)/lcl/include" "-Fu$(lazdir)/lcl" "-Fi$(lazdir)/lcl"
+  LAZARUSDIRECTORIES:=\
+"-Fu$(lazdir)/*" \
+"-Fi$(lazdir)/*" \
+"-Fu$(lazdir)/components/printers/unix" \
+"-Fi$(lazdir)/components/printers/unix" \
+"-Fu$(lazdir)/packager/registration" \
+"-Fi$(lazdir)/packager/registration" \
+"-Fu$(lazdir)/components/*" \
+"-Fi$(lazdir)/components/*" \
+"-Fu$(lazdir)/lcl/forms" \
+"-Fi$(lazdir)/lcl/forms" \
+"-Fu$(lazdir)/lcl/widgetset" \
+"-Fi$(lazdir)/lcl/widgetset" \
+"-Fu$(lazdir)/interfaces/*" \
+"-Fi$(lazdir)/interfaces/*" \
+"-Fu$(lazdir)/lcl/nonwin32" \
+"-Fi$(lazdir)/lcl/nonwin32" \
+"-Fu$(lazdir)/lcl/interfaces/gtk2" \
+"-Fi$(lazdir)/lcl/interfaces/gtk2" \
+"-Fu$(lazdir)/lcl/components/*" \
+"-Fi$(lazdir)/lcl/components/*" \
+"-Fu$(lazdir)/lcl/include" \
+"-Fi$(lazdir)/lcl/include" \
+"-Fu$(lazdir)/lcl" \
+"-Fi$(lazdir)/lcl"
 endif
 
 ifeq ($(UNAME),FreeBSD)
   TARGET ?= Gtk2
-  LAZARUSDIRECTORIES:="-Fu$(lazdir)/*" "-Fi$(lazdir)/*" "-Fu$(lazdir)/components/printers/unix" "-Fi$(lazdir)/components/printers/unix" "-Fu$(lazdir)/packager/registration" "-Fi$(lazdir)/packager/registration" "-Fu$(lazdir)/components/*" "-Fi$(lazdir)/components/*" "-Fu$(lazdir)/lcl/forms" "-Fi$(lazdir)/lcl/forms" "-Fu$(lazdir)/lcl/widgetset" "-Fi$(lazdir)/lcl/widgetset" "-Fu$(lazdir)/interfaces/*" "-Fi$(lazdir)/interfaces/*" "-Fu$(lazdir)/lcl/nonwin32" "-Fi$(lazdir)/lcl/nonwin32" "-Fu$(lazdir)/lcl/interfaces/gtk2" "-Fi$(lazdir)/lcl/interfaces/gtk2" "-Fu$(lazdir)/lcl/components/*" "-Fi$(lazdir)/lcl/components/*" "-Fu$(lazdir)/lcl/include" "-Fi$(lazdir)/lcl/include" "-Fu$(lazdir)/lcl" "-Fi$(lazdir)/lcl"
+  LAZARUSDIRECTORIES:=\
+"-Fu$(lazdir)/*" \
+"-Fi$(lazdir)/*" \
+"-Fu$(lazdir)/components/printers/unix" \
+"-Fi$(lazdir)/components/printers/unix" \
+"-Fu$(lazdir)/packager/registration" \
+"-Fi$(lazdir)/packager/registration" \
+"-Fu$(lazdir)/components/*" \
+"-Fi$(lazdir)/components/*" \
+"-Fu$(lazdir)/lcl/forms" \
+"-Fi$(lazdir)/lcl/forms" \
+"-Fu$(lazdir)/lcl/widgetset" \
+"-Fi$(lazdir)/lcl/widgetset" \
+"-Fu$(lazdir)/interfaces/*" \
+"-Fi$(lazdir)/interfaces/*" \
+"-Fu$(lazdir)/lcl/nonwin32" \
+"-Fi$(lazdir)/lcl/nonwin32" \
+"-Fu$(lazdir)/lcl/interfaces/gtk2" \
+"-Fi$(lazdir)/lcl/interfaces/gtk2" \
+"-Fu$(lazdir)/lcl/components/*" \
+"-Fi$(lazdir)/lcl/components/*" \
+"-Fu$(lazdir)/lcl/include" \
+"-Fi$(lazdir)/lcl/include" \
+"-Fu$(lazdir)/lcl" \
+"-Fi$(lazdir)/lcl"
 endif
 
 ifeq ($(UNAME),Windows)
   TARGET ?= Win32
-  LAZARUSDIRECTORIES:="-Fu$(lazdir)/*" "-Fi$(lazdir)/*" "-Fu$(lazdir)/components/printers/win32" "-Fi$(lazdir)/components/printers/win32" "-Fu$(lazdir)/packager/registration" "-Fi$(lazdir)/packager/registration" "-Fu$(lazdir)/components/*" "-Fi$(lazdir)/components/*" "-Fu$(lazdir)/lcl/forms" "-Fi$(lazdir)/lcl/forms" "-Fu$(lazdir)/lcl/widgetset" "-Fi$(lazdir)/lcl/widgetset" "-Fu$(lazdir)/interfaces/*" "-Fi$(lazdir)/interfaces/*" "-Fu$(lazdir)/lcl/interfaces/win32" "-Fi$(lazdir)/lcl/interfaces/win32" "-Fu$(lazdir)/lcl/components/*" "-Fi$(lazdir)/lcl/components/*" "-Fu$(lazdir)/lcl/include" "-Fi$(lazdir)/lcl/include" "-Fu$(lazdir)/lcl" "-Fi$(lazdir)/lcl"
+  LAZARUSDIRECTORIES:=\
+"-Fu$(lazdir)/*" \
+"-Fi$(lazdir)/*" \
+"-Fu$(lazdir)/components/printers/win32" \
+"-Fi$(lazdir)/components/printers/win32" \
+"-Fu$(lazdir)/packager/registration" \
+"-Fi$(lazdir)/packager/registration" \
+"-Fu$(lazdir)/components/*" \
+"-Fi$(lazdir)/components/*" \
+"-Fu$(lazdir)/lcl/forms" \
+"-Fi$(lazdir)/lcl/forms" \
+"-Fu$(lazdir)/lcl/widgetset" \
+"-Fi$(lazdir)/lcl/widgetset" \
+"-Fu$(lazdir)/interfaces/*" \
+"-Fi$(lazdir)/interfaces/*" \
+"-Fu$(lazdir)/lcl/interfaces/win32" \
+"-Fi$(lazdir)/lcl/interfaces/win32" \
+"-Fu$(lazdir)/lcl/components/*" \
+"-Fi$(lazdir)/lcl/components/*" \
+"-Fu$(lazdir)/lcl/include" \
+"-Fi$(lazdir)/lcl/include" \
+"-Fu$(lazdir)/lcl" \
+"-Fi$(lazdir)/lcl"
 endif
 
 # determine buildmode/interface
